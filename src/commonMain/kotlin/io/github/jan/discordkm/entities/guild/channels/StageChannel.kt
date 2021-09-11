@@ -19,7 +19,7 @@ import kotlinx.serialization.json.JsonObject
 
 class StageChannel(guild: Guild, data: JsonObject) : VoiceChannel(guild, data) {
 
-    override suspend fun modify(modifier: VoiceChannelModifier.() -> Unit): StageChannel = client.buildRestAction<StageChannel> {
+    override suspend fun modify(modifier: VoiceChannelModifier.() -> Unit): StageChannel = client.buildRestAction {
         action = RestAction.Action.patch("/channels/$id", VoiceChannelModifier().apply(modifier).build())
         transform {
             it.toJsonObject().extractGuildEntity(guild)
