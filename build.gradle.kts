@@ -1,6 +1,9 @@
 plugins {
     kotlin("multiplatform") version "1.5.30"
     kotlin("plugin.serialization") version "1.5.30"
+    id("maven-publish")
+
+
 }
 
 group = "io.github.jan.discordkm"
@@ -9,6 +12,19 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
 }
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = group.toString()
+            artifactId = "DiscordKM"
+            version = version
+
+            from(components["kotlin"])
+        }
+    }
+}
+
 
 kotlin {
     jvm {
