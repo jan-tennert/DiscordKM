@@ -44,7 +44,7 @@ object Meta {
     const val desc = "A Kotlin Multiplatform Discord API Wrapper "
     const val license = "GNU General Public License v3.0"
     const val githubRepo = "jan-tennert/DiscordKM"
-    const val release = "https://s01.oss.sonatype.org/service/local/"
+    const val release = "https://s01.oss.sonatype.org/content/repositories/releases/"
     const val snapshot = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
 }publishing {
     publications {
