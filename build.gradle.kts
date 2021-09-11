@@ -3,7 +3,7 @@ plugins {
     kotlin("plugin.serialization") version "1.5.30"
 }
 
-group = "com.github.jan.discordkm"
+group = "io.github.jan.discordkm"
 version = "1.0-SNAPSHOT"
 
 repositories {
