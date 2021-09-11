@@ -4,7 +4,7 @@ plugins {
     id("maven-publish")
     signing
     id("org.jetbrains.dokka") version "1.4.20"
-    id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 }
 
 group = "io.github.jan.discordkm"
