@@ -1,5 +1,6 @@
 package io.github.jan.discordkm.entities.messages
 
+import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.guild.Sticker
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -15,19 +16,19 @@ class MessageBuilder {
     var embeds = mutableListOf<MessageEmbed>()
     //components
     //files
-    var stickerIds = mutableListOf<Long>()
+    var stickerIds = mutableListOf<Snowflake>()
     var reference: Message.Reference? = null
     var allowedMentions = AllowedMentions()
     var tts = false
 
-    fun sticker(id: Long) { stickerIds += id }
+    fun sticker(id: Snowflake) { stickerIds += id }
 
     fun sticker(sticker: Sticker) = sticker(sticker.id)
 
     fun embed(builder: EmbedBuilder.() -> Unit) { embeds += buildEmbed(builder) }
 
-    fun reference(messageId: Long) {
-        reference = Message.Reference(messageId = messageId)
+    fun reference(messageId: Snowflake) {
+        reference = Message.Reference(messageId = messageId.long)
     }
 
     fun reference(message: Message) = reference(message.id)

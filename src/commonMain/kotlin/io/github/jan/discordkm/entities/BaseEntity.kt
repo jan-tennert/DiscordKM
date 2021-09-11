@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.entities
 
-import io.github.jan.discordkm.Client
+import io.github.jan.discordkm.clients.Client
 
 interface BaseEntity {
 

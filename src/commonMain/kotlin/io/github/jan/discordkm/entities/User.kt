@@ -1,10 +1,11 @@
 package io.github.jan.discordkm.entities
 
-import io.github.jan.discordkm.Client
+import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.entities.channels.PrivateChannel
 import io.github.jan.discordkm.entities.misc.Color
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
+import io.github.jan.discordkm.utils.DiscordImage
 import io.github.jan.discordkm.utils.extractClientEntity
 import io.github.jan.discordkm.utils.getEnums
 import io.github.jan.discordkm.utils.getId
@@ -18,7 +19,7 @@ import kotlinx.serialization.json.put
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-class User(override val client: Client, override val data: JsonObject) : Mentionable, Snowflake, Reference<User>, SerializableEntity {
+class User(override val client: Client, override val data: JsonObject) : Mentionable, SnowflakeEntity, Reference<User>, SerializableEntity {
 
     override val id = data.getId()
     override val asMention = "<@$id>"
@@ -36,7 +37,7 @@ class User(override val client: Client, override val data: JsonObject) : Mention
     /**
      * The avatar url of the user
      */
-    val avatarUrl = data.getOrNull<String>("avatar")
+    val avatarUrl = data.getOrNull<String>("avatar")?.let { DiscordImage.userAvatar(id, it) } ?: DiscordImage.defaultUserAvatar(discriminator.toInt())
 
     /**
      * If the user is a bot
@@ -59,7 +60,7 @@ class User(override val client: Client, override val data: JsonObject) : Mention
     /**
      * The banner url of the user if available
      */
-    val bannerUrl = data.getOrNull<String>("banner")
+    val bannerUrl = data.getOrNull<String>("banner")?.let { DiscordImage.userBanner(id, it) }
 
     /**
      * The user's banner color if available
@@ -83,12 +84,11 @@ class User(override val client: Client, override val data: JsonObject) : Mention
      */
     suspend fun createPrivateChannel() = client.buildRestAction<PrivateChannel> {
         action = RestAction.Action.post("/users/@me/channels", buildJsonObject {
-            put("recipient_id", id)
+            put("recipient_id", id.long)
         })
 
         check {
-            if (id == client.selfUser.id) return@check UnsupportedOperationException("You can't create a private channel with yourself")
-            return@check null
+            if (id == client.selfUser.id) throw UnsupportedOperationException("You can't create a private channel with yourself")
         }
 
         transform { it.toJsonObject().extractClientEntity(client) }

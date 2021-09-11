@@ -1,19 +1,29 @@
 package io.github.jan.discordkm.entities.guild.channels
 
 import io.github.jan.discordkm.entities.guild.Guild
+import io.github.jan.discordkm.entities.guild.channels.modifier.TextChannelModifier
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractGuildEntity
 import io.github.jan.discordkm.utils.toJsonObject
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
 class TextChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data) {
 
-    suspend fun modify(modifier: TextChannelModifier.() -> Unit) = client.buildRestAction<TextChannel> {
-        action = RestAction.Action.patch("/channels/$id", Json.encodeToString(TextChannelModifier(originalType = 0).apply(modifier)))
-        transform { it.toJsonObject().extractGuildEntity(guild) }
+    suspend inline fun <reified T : GuildTextChannel> modify(modifier: TextChannelModifier.() -> Unit = {}): T = client.buildRestAction {
+        val type = when(T::class) {
+            TextChannel::class -> null
+            NewsChannel::class -> 5
+            else -> throw IllegalStateException()
+        }
+        action = RestAction.Action.patch("/channels/$id", TextChannelModifier(type).apply(modifier).build())
+        transform {
+            when(type) {
+                null -> it.toJsonObject().extractGuildEntity<TextChannel>(guild) as T
+                5 -> it.toJsonObject().extractGuildEntity<NewsChannel>(guild) as T
+                else -> throw IllegalStateException()
+            }
+        }
         onFinish { guild.channelCache[id] = it }
     }
 

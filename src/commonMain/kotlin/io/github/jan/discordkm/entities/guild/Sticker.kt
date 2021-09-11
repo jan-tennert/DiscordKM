@@ -1,8 +1,9 @@
 package io.github.jan.discordkm.entities.guild
 
-import io.github.jan.discordkm.Client
+import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.entities.SerializableEntity
-import io.github.jan.discordkm.entities.Snowflake
+import io.github.jan.discordkm.entities.SnowflakeEntity
+import io.github.jan.discordkm.utils.DiscordImage
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrDefault
 import io.github.jan.discordkm.utils.getOrNull
@@ -13,7 +14,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmName
 
-class Sticker(override val data: JsonObject, override val client: Client) : Snowflake, SerializableEntity {
+class Sticker(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity {
 
     override val id = data.getId()
 
@@ -40,12 +41,17 @@ class Sticker(override val data: JsonObject, override val client: Client) : Snow
     /**
      * [Type] of the sticker
      */
-    val type = Type.values().first { it.ordinal + 1 == data.getOrThrow("type") }
+    val type = StickerType.values().first { it.ordinal + 1 == data.getOrThrow("type") }
 
     /**
      * [FormatType] of the sticker
      */
     val formatType = FormatType.values().first { it.ordinal + 1 == data.getOrThrow("format_type") }
+
+    /**
+     * The url of the sticker. This can be a png or a lottie
+     */
+    val url = DiscordImage.sticker(id, formatType)
 
     /**
      * If this sticker is available, can be null due to loss of server boosts
@@ -75,7 +81,7 @@ class Sticker(override val data: JsonObject, override val client: Client) : Snow
     /**
      * Represents a [Sticker Item Object](https://discord.com/developers/docs/resources/sticker#sticker-item-object)
      */
-    class Item(data: JsonObject) : Snowflake {
+    class Item(data: JsonObject) : SnowflakeEntity {
 
         val formatType = FormatType.values().first { it.ordinal + 1 == data.getValue("format_type").jsonPrimitive.int }
 
@@ -91,9 +97,9 @@ class Sticker(override val data: JsonObject, override val client: Client) : Snow
         LOTTIE
     }
 
-    enum class Type {
-        STANDARD,
-        GUILD
-    }
+}
 
+enum class StickerType {
+    STANDARD,
+    GUILD
 }

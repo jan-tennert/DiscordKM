@@ -2,7 +2,7 @@ package io.github.jan.discordkm.restaction
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.TimeSpan
-import io.github.jan.discordkm.Client
+import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.utils.DiscordKMInfo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.receive
@@ -50,6 +50,7 @@ class RestClient(val client: Client) {
             }.receive<String>()
         }
         "PATCH" -> {
+            println(data!!)
             rateLimiter.queue(endpoint) {
                 http.patch<HttpResponse>(generateUrl(endpoint)) {
                     body = data!!

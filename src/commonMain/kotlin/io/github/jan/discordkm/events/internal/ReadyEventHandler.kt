@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.events.internal
 
-import io.github.jan.discordkm.DiscordClient
+import io.github.jan.discordkm.clients.DiscordClient
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.events.ReadyEvent
 import io.github.jan.discordkm.utils.extractClientEntity

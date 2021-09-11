@@ -2,11 +2,15 @@ package io.github.jan.discordkm.entities.guild
 
 import com.soywiz.klock.ISO8601
 import com.soywiz.klock.parse
+import io.github.jan.discordkm.entities.PermissionHolder
 import io.github.jan.discordkm.entities.Reference
 import io.github.jan.discordkm.entities.SerializableEntity
 import io.github.jan.discordkm.entities.Snowflake
+import io.github.jan.discordkm.entities.SnowflakeEntity
 import io.github.jan.discordkm.entities.User
-import io.github.jan.discordkm.entities.misc.RoleList
+import io.github.jan.discordkm.entities.guild.channels.GuildChannel
+import io.github.jan.discordkm.entities.lists.RoleList
+import io.github.jan.discordkm.entities.misc.EnumList
 import io.github.jan.discordkm.utils.extractClientEntity
 import io.github.jan.discordkm.utils.getOrDefault
 import io.github.jan.discordkm.utils.getOrNull
@@ -19,15 +23,47 @@ import kotlinx.serialization.json.long
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-class Member(val guild: Guild, override val data: JsonObject) : Reference<Member>, Snowflake, SerializableEntity {
-
-    override val client = guild.client
+class Member(val guild: Guild, override val data: JsonObject) : Reference<Member>, SnowflakeEntity, SerializableEntity, PermissionHolder {
 
     /**
      * Returns the [User] of this member
      */
     var user = data.getValue("user").jsonObject.extractClientEntity<User>(guild.client)
         private set
+
+    override val client = guild.client
+
+    override val id = user.id
+
+    /**
+     * Whether the member is the owner of the guild
+     */
+    @get:JvmName("isOwner")
+    val isOwner = (guild.ownerId == id)
+
+    /**
+     * Returns all permissions this user has
+     */
+    override val permissions: EnumList<Permission>
+        get() {
+            val permissions = roles.map { it.permissions.toList() }.flatten().toMutableList()
+            if(isOwner) permissions += Permission.ALL_PERMISSIONS
+            return EnumList(Permission, permissions)
+        }
+
+    override fun getPermissionsFor(channel: GuildChannel): EnumList<Permission> {
+        if(isOwner) return EnumList(Permission, Permission.ALL_PERMISSIONS)
+        if(Permission.ADMINISTRATOR in permissions)return EnumList(Permission, Permission.ALL_PERMISSIONS)
+        if(channel.permissionOverrides.isEmpty()) return EnumList(Permission, guild.everyoneRole.permissions.toList())
+
+        //*Placeholder*
+        val permissions = mutableSetOf<Permission>()
+        channel.permissionOverrides.forEach {
+            if(it.holder is Role && it.holder in roles) permissions.addAll(it.allow.toList())
+            if(it.holder is Member && it.holder.id == id) permissions.addAll(it.allow.toList())
+        }
+        return EnumList(Permission, permissions.toList())
+    }
 
     /**
      * Returns the nickname of the member. If the member doesn't have a nickname it returns his real name
@@ -37,7 +73,7 @@ class Member(val guild: Guild, override val data: JsonObject) : Reference<Member
     /**
      * Returns the roles of the member
      */
-    val roles = RoleList(guild, data.getValue("roles").jsonArray.map { guild.roles[it.jsonPrimitive.long]!! })
+    val roles = RoleList(guild, data.getValue("roles").jsonArray.map { guild.roles[Snowflake.fromId(it.jsonPrimitive.long)]!! })
 
     /**
      * Returns the date when the member joined his guild
@@ -75,6 +111,5 @@ class Member(val guild: Guild, override val data: JsonObject) : Reference<Member
         return other.id == id
     }
     
-    override val id = user.id
 
 }

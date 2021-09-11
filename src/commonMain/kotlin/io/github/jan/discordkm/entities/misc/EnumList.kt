@@ -3,7 +3,7 @@ package io.github.jan.discordkm.entities.misc
 import io.github.jan.discordkm.entities.EnumSerializer
 import io.github.jan.discordkm.entities.SerializableEnum
 
-class EnumList<T : SerializableEnum<T>>(private val serializer: EnumSerializer<T>, private val list: List<T>) : Iterable<T> {
+class EnumList<T : SerializableEnum<T>>(serializer: EnumSerializer<T>, private val list: List<T>) : Iterable<T> {
 
     val rawValue = serializer.encode(list)
     override operator fun iterator() = list.iterator()

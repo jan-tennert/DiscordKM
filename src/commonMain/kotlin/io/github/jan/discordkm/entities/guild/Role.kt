@@ -1,9 +1,11 @@
 package io.github.jan.discordkm.entities.guild
 
 import io.github.jan.discordkm.entities.Mentionable
+import io.github.jan.discordkm.entities.PermissionHolder
 import io.github.jan.discordkm.entities.Reference
 import io.github.jan.discordkm.entities.SerializableEntity
-import io.github.jan.discordkm.entities.Snowflake
+import io.github.jan.discordkm.entities.SnowflakeEntity
+import io.github.jan.discordkm.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.utils.getColor
 import io.github.jan.discordkm.utils.getEnums
 import io.github.jan.discordkm.utils.getId
@@ -13,7 +15,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-class Role(val guild: Guild, override val data: JsonObject) : Mentionable, Reference<Role>, Snowflake, SerializableEntity {
+class Role(val guild: Guild, override val data: JsonObject) : Mentionable, Reference<Role>, SnowflakeEntity, SerializableEntity, PermissionHolder {
 
     override val id = data.getId()
 
@@ -41,7 +43,9 @@ class Role(val guild: Guild, override val data: JsonObject) : Mentionable, Refer
     /**
      * The permissions which this role has
      */
-    val permissions = data.getEnums("permissions", Permission)
+    override val permissions = data.getEnums("permissions", Permission)
+
+    override fun getPermissionsFor(channel: GuildChannel) = channel.permissionOverrides.first { it.holder is Role && it.holder.id == id }.allow
 
     /**
      * Whether this role is managed by an interaction

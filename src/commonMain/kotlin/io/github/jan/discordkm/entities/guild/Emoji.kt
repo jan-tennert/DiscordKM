@@ -1,14 +1,14 @@
 package io.github.jan.discordkm.entities.guild
 
-import io.github.jan.discordkm.Client
+import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.entities.SerializableEntity
-import io.github.jan.discordkm.entities.Snowflake
+import io.github.jan.discordkm.entities.SnowflakeEntity
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrThrow
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmName
 
-class Emoji(override val data: JsonObject, override val client: Client) : Snowflake, SerializableEntity {
+class Emoji(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity {
 
     override val id = data.getId()
     val name = data.getOrThrow<String>("name")

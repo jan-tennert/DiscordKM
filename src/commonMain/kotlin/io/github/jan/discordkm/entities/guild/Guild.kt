@@ -2,23 +2,25 @@ package io.github.jan.discordkm.entities.guild
 
 import com.soywiz.klock.seconds
 import io.github.jan.discordkm.Cache
-import io.github.jan.discordkm.Client
+import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.entities.EnumSerializer
 import io.github.jan.discordkm.entities.Reference
 import io.github.jan.discordkm.entities.SerializableEntity
 import io.github.jan.discordkm.entities.SerializableEnum
 import io.github.jan.discordkm.entities.Snowflake
-import io.github.jan.discordkm.entities.channels.Channel
+import io.github.jan.discordkm.entities.SnowflakeEntity
+import io.github.jan.discordkm.entities.channels.ChannelType
 import io.github.jan.discordkm.entities.guild.channels.Category
 import io.github.jan.discordkm.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.entities.guild.channels.StageChannel
 import io.github.jan.discordkm.entities.guild.channels.TextChannel
 import io.github.jan.discordkm.entities.guild.channels.VoiceChannel
-import io.github.jan.discordkm.entities.misc.ChannelList
-import io.github.jan.discordkm.entities.misc.MemberList
-import io.github.jan.discordkm.entities.misc.RoleList
+import io.github.jan.discordkm.entities.lists.RetrievableChannelList
+import io.github.jan.discordkm.entities.lists.RetrievableMemberList
+import io.github.jan.discordkm.entities.lists.RoleList
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
+import io.github.jan.discordkm.utils.DiscordImage
 import io.github.jan.discordkm.utils.extract
 import io.github.jan.discordkm.utils.extractGuildEntity
 import io.github.jan.discordkm.utils.getEnums
@@ -33,27 +35,31 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-class Guild (override val client: Client, override val data: JsonObject) : Snowflake, Reference<Guild>, SerializableEntity {
+class Guild (override val client: Client, override val data: JsonObject) : SnowflakeEntity, Reference<Guild>, SerializableEntity {
 
     override val id = data.getId()
 
+    /**
+     * The id owner the guild's owner
+     */
+    val ownerId = Snowflake.fromId(data.getOrThrow<Long>("owner_id"))
+
     @PublishedApi
-    internal var roleCache = io.github.jan.discordkm.Cache.fromSnowflakeList(data.getValue("roles").jsonArray.map { it.jsonObject.extractGuildEntity<Role>(this) })
+    internal var roleCache = Cache.fromSnowflakeEntityList(data.getValue("roles").jsonArray.map { it.jsonObject.extractGuildEntity<Role>(this) })
     @PublishedApi
-    internal var memberCache = io.github.jan.discordkm.Cache.fromSnowflakeList(data.getValue("members").jsonArray.map { it.jsonObject.extractGuildEntity<Member>(this) })
+    internal var memberCache = Cache.fromSnowflakeEntityList(data.getValue("members").jsonArray.map { it.jsonObject.extractGuildEntity<Member>(this) })
     @PublishedApi
-    internal var channelCache = io.github.jan.discordkm.Cache.fromSnowflakeList(data.getValue("channels").jsonArray.map { json ->
-        when (Channel.Type.values().first { it.id == json.jsonObject.getOrThrow<Int>("type") }) {
-            Channel.Type.GUILD_TEXT -> json.jsonObject.extractGuildEntity<TextChannel>(this)
-            Channel.Type.GUILD_VOICE -> json.jsonObject.extractGuildEntity<VoiceChannel>(this)
-            Channel.Type.GUILD_CATEGORY -> json.jsonObject.extractGuildEntity<Category>(this)
-            Channel.Type.GUILD_NEWS -> json.jsonObject.extractGuildEntity<NewsChannel>(this)
-            Channel.Type.GUILD_STORE -> TODO()
-            Channel.Type.GUILD_STAGE_VOICE -> json.jsonObject.extractGuildEntity<StageChannel>(this)
+    internal var channelCache = Cache.fromSnowflakeEntityList(data.getValue("channels").jsonArray.map { json ->
+        when (ChannelType.values().first { it.id == json.jsonObject.getOrThrow<Int>("type") }) {
+            ChannelType.GUILD_TEXT -> json.jsonObject.extractGuildEntity<TextChannel>(this)
+            ChannelType.GUILD_VOICE -> json.jsonObject.extractGuildEntity<VoiceChannel>(this)
+            ChannelType.GUILD_CATEGORY -> json.jsonObject.extractGuildEntity<Category>(this)
+            ChannelType.GUILD_NEWS -> json.jsonObject.extractGuildEntity<NewsChannel>(this)
+            ChannelType.GUILD_STORE -> TODO()
+            ChannelType.GUILD_STAGE_VOICE -> json.jsonObject.extractGuildEntity<StageChannel>(this)
             else -> throw IllegalStateException()
         }
-    }
-    )
+    })
 
     /**
      * Name of the guild
@@ -63,32 +69,23 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
     /**
      * Icon Url of the guild
      */
-    val iconUrl = data.getOrNull<String>("icon")
+    val iconUrl = data.getOrNull<String>("icon")?.let { DiscordImage.guildIcon(id, it) }
 
     /**
      * Icon hash; returned when in the guild template
      */
-    val iconHashUrl = data.getOrNull<String>("icon_hash")
+    val iconHash = data.getOrNull<String>("icon_hash")
 
     /**
      * Splash hash
      */
-    val splash = data.getOrNull<String>("splash")
+    val splash = data.getOrNull<String>("splash")?.let { DiscordImage.guildSplash(id, it) }
 
     /**
      * Discovery splash is only available if the guild has the [Feature] feature
      */
-    val discoverySplash = data.getOrNull<String>("discovery_splash")
+    val discoverySplash = data.getOrNull<String>("discovery_splash")?.let { DiscordImage.guildDiscoverySplash(id, it) }
 
-    /**
-     * The id owner the guild's owner
-     */
-    val ownerId = data.getOrThrow<Long>("owner_id")
-
-    /**
-     * Gets the owner of the guild from the cache
-     */
-    val owner = members.firstOrNull { it.id == ownerId }
     //val permissions only sent when you check for the bot's guilds
     //region deprecated
 
@@ -135,10 +132,24 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
         get() = RoleList(this, roleCache.values.toList())
 
     /**
+     * Returns the default role
+     */
+    val everyoneRole: Role
+        get() = roles["@everyone"].first()
+
+    val selfMember: Member
+        get() = members[client.selfUser.id]!!
+
+    /**
      * Returns the [Member]s in the guild
      */
     val members
-        get() = MemberList(this, memberCache.values.toList())
+        get() = RetrievableMemberList(this, memberCache.values.toList())
+
+    /**
+     * Gets the owner of the guild from the cache
+     */
+    val owner = members.firstOrNull { it.id == ownerId }
 
 
     /**
@@ -194,8 +205,8 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
         internal set
     //voice states
 
-    val channels: ChannelList
-        get() = ChannelList(this, channelCache.values)
+    val channels: RetrievableChannelList
+        get() = RetrievableChannelList(this, channelCache.values)
 
     //presences
 
@@ -212,7 +223,7 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
     /**
      * The banner of this guild
      */
-    val banner = data.getOrNull<String>("banner")
+    val banner = data.getOrNull<String>("banner")?.let { DiscordImage.guildBanner(id, it) }
 
     /**
      * The [PremiumTier] of the guild (server boost level)

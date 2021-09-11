@@ -2,25 +2,36 @@ package io.github.jan.discordkm.entities.messages
 
 import com.soywiz.klock.ISO8601
 import com.soywiz.klock.parse
-import io.github.jan.discordkm.Client
 import io.github.jan.discordkm.entities.EnumSerializer
 import io.github.jan.discordkm.entities.Reference
 import io.github.jan.discordkm.entities.SerializableEntity
 import io.github.jan.discordkm.entities.SerializableEnum
 import io.github.jan.discordkm.entities.Snowflake
+import io.github.jan.discordkm.entities.SnowflakeEntity
 import io.github.jan.discordkm.entities.User
+import io.github.jan.discordkm.entities.channels.ChannelType
+import io.github.jan.discordkm.entities.channels.MessageChannel
+import io.github.jan.discordkm.entities.guild.Permission
 import io.github.jan.discordkm.entities.guild.Role
 import io.github.jan.discordkm.entities.guild.Sticker
+import io.github.jan.discordkm.entities.guild.channels.GuildChannel
+import io.github.jan.discordkm.entities.guild.channels.NewsChannel
+import io.github.jan.discordkm.exceptions.PermissionException
+import io.github.jan.discordkm.restaction.RestAction
+import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extract
 import io.github.jan.discordkm.utils.extractClientEntity
 import io.github.jan.discordkm.utils.extractGuildEntity
+import io.github.jan.discordkm.utils.extractMessageChannelEntity
 import io.github.jan.discordkm.utils.getEnums
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrNull
 import io.github.jan.discordkm.utils.getOrThrow
+import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
@@ -28,21 +39,29 @@ import kotlinx.serialization.json.jsonObject
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-class Message(override val client: Client, override val data: JsonObject) : Snowflake, Reference<Message>, SerializableEntity {
+class Message(val channel: MessageChannel, override val data: JsonObject) : SnowflakeEntity, Reference<Message>, SerializableEntity {
 
     override val id = data.getId()
-    //channel
+
+    val channelId = data.getOrNull<Snowflake>("channel_id")
+
+    /**
+     * The channel this message was sent to
+     */
+    override val client = channel.client
 
     /**
      * Returns a [Guild] if sent in a guild channel
      */
-    val guild = client.guilds[data.getOrNull<Long>("guild_id") ?: 0L]
+    val guild = client.guilds[data.getOrNull<Snowflake>("guild_id") ?: Snowflake.empty()]
 
     /**
      * Returns the [User] who sent the message
      */
     val author = data.getValue("author").jsonObject.extractClientEntity<User>(client)
-    //member
+
+    val member = guild?.members?.get(author.id)
+
     /**
      * Returns the content of the message
      */
@@ -56,7 +75,7 @@ class Message(override val client: Client, override val data: JsonObject) : Snow
     /**
      * Returns the time the message was edited
      */
-    val messageEditedTime = ISO8601.DATETIME_COMPLETE.tryParse(data.getOrNull<String>("edited_timestamp") ?: "")
+    val messageEditedTime = ISO8601.DATETIME_UTC_COMPLETE.tryParse(data.getOrNull<String>("edited_timestamp") ?: "")
 
     /**
      * Whether this message is a text to speech message or not
@@ -78,8 +97,8 @@ class Message(override val client: Client, override val data: JsonObject) : Snow
     /**
      * Returns a list of mentioned roles
      */
-    val mentionedRoles = data["mentioned_roles"]?.let {
-        it.jsonArray.map { it.jsonObject.extractGuildEntity<Role>(guild!!) }
+    val mentionedRoles: List<Role> = data["mentioned_roles"]?.let {
+        it.jsonArray.map { it.jsonObject.extractGuildEntity(guild!!) }
     } ?: emptyList()
 
     //mentioned channels
@@ -110,7 +129,7 @@ class Message(override val client: Client, override val data: JsonObject) : Snow
     /**
      * The [Type] of the message
      */
-    val type = Type.values().first { it.ordinal == data.getOrThrow<Int>("type") }
+    val type = ChannelType.values().first { it.ordinal == data.getOrThrow<Int>("type") }
 
     //activity
     //application
@@ -139,38 +158,53 @@ class Message(override val client: Client, override val data: JsonObject) : Snow
      */
     val stickerItems = data["sticker_items"]?.jsonArray?.map { Sticker.Item(it.jsonObject) } ?: emptyList()
 
+    /**
+     * Crossposts this message if it was sent in a [NewsChannel]
+     */
+    suspend fun crosspost() = client.buildRestAction<Unit> {
+        action = RestAction.Action.post("/channels/${channelId}/messages/${id}/crosspost", "")
+        transform {  }
+        check {
+            when {
+             // TODO: check permissions
+                channel.type == ChannelType.DM -> throw UnsupportedOperationException("You can't crosspost a message in a private channel")
+                channel.type != ChannelType.GUILD_NEWS -> throw UnsupportedOperationException("You can only crosspost in a news channel!")
+            }
+        }
+    }
+
+    /**
+     * Deletes the message in the channel
+     * Needs [Permission.MANAGE_MESSAGES] to delete other's messages
+     */
+    suspend fun delete() = client.buildRestAction<Unit> {
+        action = RestAction.Action.delete("/channels/${channelId}/messages/$id")
+        transform {  }
+        check {
+            if(channel.type == ChannelType.DM && author.id != client.selfUser.id) throw PermissionException("You can't delete others messages in a private channel")
+            val canDelete = author.id == client.selfUser.id || Permission.MANAGE_MESSAGES in guild!!.selfMember.getPermissionsFor(channel as GuildChannel)
+            if(!canDelete) throw PermissionException("You can't delete others messages without the permission MANAGE_MESSAGES")
+        }
+    }
+
+    suspend fun edit(message: DataMessage) = client.buildRestAction<Message> {
+        action = RestAction.Action.patch("/channels/${channel.id}/messages/$id", Json.encodeToString(message))
+        transform { it.toJsonObject().extractMessageChannelEntity(channel) }
+        check {
+            if(author.id != client.selfUser.id) throw UnsupportedOperationException("You can't edit other's messages!")
+        }
+    }
+
+    suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(message))
+
+    suspend fun edit(content: String) = edit(buildMessage { this.content = content })
+
     override fun getValue(ref: Any?, property: KProperty<*>): Message {
         TODO("Not yet implemented")
     }
 
     @Serializable
     data class Reference(@SerialName("message_id") val messageId: Long? = null, @SerialName("guild_id") val guildId: Long? = null, @SerialName("channel_id") val channelId: Long? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)
-
-    enum class Type {
-        DEFAULT,
-        RECIPIENT_ADD,
-        RECIPIENT_REMOVE,
-        CALL,
-        CHANNEL_NAME_CHANGE,
-        CHANNEL_ICON_CHANGE,
-        CHANNEL_PINNED_MESSAGE,
-        GUILD_MEMBER_JOIN,
-        USER_PREMIUM_GUILD_SUBSCRIPTION,
-        USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_1,
-        USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_2,
-        USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_3,
-        CHANNEL_FOLLOW_ADD,
-        GUILD_DISCOVERY_DISQUALIFIED,
-        GUILD_DISCOVERY_REQUALIFIED,
-        GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING,
-        GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING,
-        THREAD_CREATED,
-        REPLY,
-        CHAT_INPUT_COMMAND,
-        THREAD_STARTER_MESSAGE,
-        GUILD_INVITE_REMINDER,
-        CONTEXT_MENU_COMMAND
-    }
 
     enum class Flag(override val offset: Int) : SerializableEnum<Flag> {
 
@@ -190,6 +224,32 @@ class Message(override val client: Client, override val data: JsonObject) : Snow
     }
 
 
+}
+
+enum class MessageType {
+    DEFAULT,
+    RECIPIENT_ADD,
+    RECIPIENT_REMOVE,
+    CALL,
+    CHANNEL_NAME_CHANGE,
+    CHANNEL_ICON_CHANGE,
+    CHANNEL_PINNED_MESSAGE,
+    GUILD_MEMBER_JOIN,
+    USER_PREMIUM_GUILD_SUBSCRIPTION,
+    USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_1,
+    USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_2,
+    USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_3,
+    CHANNEL_FOLLOW_ADD,
+    GUILD_DISCOVERY_DISQUALIFIED,
+    GUILD_DISCOVERY_REQUALIFIED,
+    GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING,
+    GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING,
+    THREAD_CREATED,
+    REPLY,
+    CHAT_INPUT_COMMAND,
+    THREAD_STARTER_MESSAGE,
+    GUILD_INVITE_REMINDER,
+    CONTEXT_MENU_COMMAND
 }
 
 fun buildMessage(builder: MessageBuilder.() -> Unit) = MessageBuilder().apply(builder).build()

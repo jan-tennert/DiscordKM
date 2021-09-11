@@ -1,9 +1,13 @@
 package io.github.jan.discordkm.utils
 
-import io.github.jan.discordkm.Client
+import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.entities.EnumSerializer
 import io.github.jan.discordkm.entities.SerializableEnum
+import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.User
+import io.github.jan.discordkm.entities.channels.Channel
+import io.github.jan.discordkm.entities.channels.ChannelType
+import io.github.jan.discordkm.entities.channels.MessageChannel
 import io.github.jan.discordkm.entities.channels.PrivateChannel
 import io.github.jan.discordkm.entities.guild.Emoji
 import io.github.jan.discordkm.entities.guild.Guild
@@ -15,6 +19,8 @@ import io.github.jan.discordkm.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.entities.guild.channels.StageChannel
 import io.github.jan.discordkm.entities.guild.channels.TextChannel
 import io.github.jan.discordkm.entities.guild.channels.VoiceChannel
+import io.github.jan.discordkm.entities.guild.invites.Invite
+import io.github.jan.discordkm.entities.guild.invites.InviteApplication
 import io.github.jan.discordkm.entities.messages.Message
 import io.github.jan.discordkm.entities.messages.MessageEmbed
 import io.github.jan.discordkm.entities.misc.Color
@@ -23,6 +29,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.double
@@ -31,9 +38,10 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.longOrNull
+import kotlinx.serialization.json.put
 
-fun JsonObject.getId(): Long {
-    return getValue("id").jsonPrimitive.content.toLong()
+fun JsonObject.getId(): Snowflake {
+    return Snowflake.fromId(getValue("id").jsonPrimitive.content)
 }
 fun JsonObject.getColor(key: String) = Color(getValue(key).jsonPrimitive.int)
 fun <T : SerializableEnum<T>> JsonObject.getEnums(key: String, serializer: EnumSerializer<T>) = if(get(key)?.jsonPrimitive?.long != null) serializer.decode(get(key)?.jsonPrimitive?.long!!) else EnumList.empty()
@@ -53,6 +61,7 @@ inline fun <reified T> JsonObject.getOrThrow(key: String): T {
         Long::class -> getValue(key).jsonPrimitive.long as T
         Double::class -> getValue(key).jsonPrimitive.double as T
         Boolean::class -> getValue(key).jsonPrimitive.boolean as T
+        Snowflake::class -> Snowflake.fromId(getValue(key).jsonPrimitive.content) as T
         else -> throw IllegalStateException()
     }
 }
@@ -83,11 +92,17 @@ inline fun <reified T>JsonObject.extractGuildEntity(guild: Guild) = when(T::clas
 
 inline fun <reified T>JsonObject.extractClientEntity(client: Client) = when(T::class) {
     PrivateChannel::class -> PrivateChannel(client, this) as T
-    Message::class -> Message(client, this) as T
     User::class -> User(client, this) as T
     Guild::class -> Guild(client, this) as T
     Emoji::class -> Emoji(this, client) as T
     Sticker::class -> Sticker(this, client) as T
+    Invite::class -> Invite(client, this) as T
+    InviteApplication::class -> InviteApplication(client, this) as T
+    else -> throw IllegalStateException()
+}
+
+inline fun <reified T>JsonObject.extractMessageChannelEntity(channel: MessageChannel) = when(T::class) {
+    Message::class -> Message(channel, this) as T
     else -> throw IllegalStateException()
 }
 
@@ -95,3 +110,17 @@ inline fun <reified T>JsonObject.extract() = when(T::class) {
     MessageEmbed::class -> Json.decodeFromString<MessageEmbed>(toString()) as T
     else -> throw IllegalStateException()
 }
+
+inline fun JsonObject.extractChannel(client: Client, guild: Guild? = null): Channel = when(ChannelType.values().first { it.id == getValue("type").jsonPrimitive.int }) {
+    ChannelType.GUILD_TEXT -> extractGuildEntity<TextChannel>(guild!!)
+    ChannelType.GUILD_VOICE -> extractGuildEntity<VoiceChannel>(guild!!)
+    ChannelType.GUILD_CATEGORY -> extractGuildEntity<Category>(guild!!)
+    ChannelType.DM -> extractClientEntity<PrivateChannel>(client)
+    ChannelType.GUILD_NEWS -> extractGuildEntity<NewsChannel>(guild!!)
+    ChannelType.GUILD_STAGE_VOICE -> extractGuildEntity<StageChannel>(guild!!)
+    else -> throw IllegalStateException()
+}
+
+fun <V>JsonObjectBuilder.putOptional(key: String, value: V?) { value?.let { put(key, value.toString()) }}
+
+fun JsonObjectBuilder.putJsonObject(json: JsonObject) = json.forEach { (key, value) -> put(key, value) }

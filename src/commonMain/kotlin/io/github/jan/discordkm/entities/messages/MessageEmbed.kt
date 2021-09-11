@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class MessageEmbed(val title: String?,
-                        val type: Type = Type.UNKNOWN,
+                        val type: EmbedType = EmbedType.UNKNOWN,
                         val description: String? = null,
                         val url: String? = null,
                         @Contextual val timestamp: DateTimeTz? = null,
@@ -35,16 +35,6 @@ data class MessageEmbed(val title: String?,
 
     @Serializable
     data class Field(val name: String = "", val value: String = "", val inline: Boolean = false)
-
-    enum class Type {
-        UNKNOWN,
-        RICH,
-        IMAGE,
-        VIDEO,
-        GIFV,
-        ARTICLE,
-        LINK
-    }
 
     companion object {
 
@@ -109,8 +99,19 @@ class EmbedBuilder @Deprecated("Use buildEmbed instead") constructor() {
 
     }
 
-    fun build() = MessageEmbed(title, MessageEmbed.Type.RICH, description, url, timestamp, color, footer?.asFooter(), image?.asMedia(), thumbnail?.asMedia(), null, null, author?.asAuthor(), mapFields())
+    fun build() = MessageEmbed(title, EmbedType.RICH, description, url, timestamp, color, footer?.asFooter(), image?.asMedia(), thumbnail?.asMedia(), null, null, author?.asAuthor(), mapFields())
 
 }
+
+enum class EmbedType {
+    UNKNOWN,
+    RICH,
+    IMAGE,
+    VIDEO,
+    GIFV,
+    ARTICLE,
+    LINK
+}
+
 
 inline fun buildEmbed(builder: EmbedBuilder.() -> Unit) = EmbedBuilder().apply(builder).build()

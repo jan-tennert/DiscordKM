@@ -3,7 +3,7 @@ package io.github.jan.discordkm.websocket
 import com.soywiz.klogger.Logger
 import com.soywiz.korio.net.ws.WebSocketClient
 import com.soywiz.korio.net.ws.WsCloseInfo
-import io.github.jan.discordkm.DiscordClient
+import io.github.jan.discordkm.clients.DiscordClient
 import io.github.jan.discordkm.events.internal.GuildCreateEventHandler
 import io.github.jan.discordkm.events.internal.ReadyEventHandler
 import io.github.jan.discordkm.serialization.IdentifyPayload
@@ -65,6 +65,7 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
         when(OpCode.fromCode(payload.opCode)) {
             OpCode.DISPATCH -> {
                 payload.eventName?.let { LOGGER.debug { "Received event $it" } }
+                println(payload)
                 handleRawEvent(payload)
             }
             OpCode.HEARTBEAT -> {

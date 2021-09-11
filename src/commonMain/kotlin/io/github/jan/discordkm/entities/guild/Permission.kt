@@ -2,7 +2,6 @@ package io.github.jan.discordkm.entities.guild
 
 import io.github.jan.discordkm.entities.EnumSerializer
 import io.github.jan.discordkm.entities.SerializableEnum
-import io.github.jan.discordkm.entities.misc.EnumList
 
 enum class Permission(override val offset: Int) : SerializableEnum<Permission> {
 
@@ -46,6 +45,8 @@ enum class Permission(override val offset: Int) : SerializableEnum<Permission> {
     UNKNOWN(-1);
 
     companion object : EnumSerializer<Permission> {
+        val ALL_PERMISSIONS = values().filter { it != UNKNOWN }
+
         override val values = values().toList()
     }
 
