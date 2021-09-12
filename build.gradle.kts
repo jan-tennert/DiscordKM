@@ -6,7 +6,7 @@ plugins {
     id("org.jetbrains.dokka") version "1.4.20"
 }
 
-group = "io.github.jan.discordkm"
+group = "io.github.jan-tennert.discordkm"
 version = "0.0.1"
 
 val repositoryId: String? = System.getenv("SONATYPE_REPOSITORY_ID")
@@ -55,7 +55,7 @@ publishing {
         maven {
             name = "Oss"
             setUrl {
-                "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
             }
             credentials {
                 username = System.getenv("OSSRH_USERNAME")
@@ -64,10 +64,10 @@ publishing {
         }
         maven {
             name = "Snapshot"
-            setUrl { "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
+            setUrl { "https://oss.sonatype.org/content/repositories/snapshots/" }
             credentials {
-                username = System.getenv("SONATYPE_USERNAME")
-                password = System.getenv("SONATYPE_PASSWORD")
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
             }
         }
     }
