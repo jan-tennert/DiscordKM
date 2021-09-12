@@ -55,9 +55,7 @@ publishing {
         maven {
             name = "Oss"
             setUrl {
-                val repositoryId =
-                    System.getenv("SONATYPE_REPOSITORY_ID") ?: error("Missing env variable: SONATYPE_REPOSITORY_ID")
-                "https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${repositoryId}/"
+                "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
             }
             credentials {
                 username = System.getenv("OSSRH_USERNAME")
