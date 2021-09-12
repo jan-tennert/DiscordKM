@@ -19,6 +19,7 @@ import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.lists.ChannelList
 import io.github.jan.discordkm.entities.lists.GuildList
 import io.github.jan.discordkm.entities.lists.MemberList
+import io.github.jan.discordkm.entities.lists.ThreadList
 import io.github.jan.discordkm.entities.lists.UserList
 import io.github.jan.discordkm.entities.misc.Image
 import io.github.jan.discordkm.restaction.RestAction
@@ -49,7 +50,8 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
         get() = Cache<User>(IsoMutableMap { members.map { it.user }.associateBy { it.id }.toMutableMap()})
     val users: UserList
         get() = UserList(this, userCache.values.toList())
-
+    val threads: ThreadList
+        get() = ThreadList(guilds.map { it.threads.internalList }.flatten())
 
     suspend fun editSelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<User> {
         val edit = SelfUserEdit()
@@ -60,6 +62,11 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
         })
         transform { it.toJsonObject().extractClientEntity(this@Client) }
         onFinish { selfUser = it }
+    }
+
+    suspend fun retrieveRTCRegions() = buildRestAction<String> {
+        action = RestAction.Action.get("/voice/regions")
+        transform { it }
     }
 
     data class SelfUserEdit(var username: String? = null, var image: Image? = null)

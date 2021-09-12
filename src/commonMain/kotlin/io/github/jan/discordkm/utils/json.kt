@@ -27,6 +27,7 @@ import io.github.jan.discordkm.entities.guild.channels.Category
 import io.github.jan.discordkm.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.entities.guild.channels.StageChannel
 import io.github.jan.discordkm.entities.guild.channels.TextChannel
+import io.github.jan.discordkm.entities.guild.channels.Thread
 import io.github.jan.discordkm.entities.guild.channels.VoiceChannel
 import io.github.jan.discordkm.entities.guild.invites.Invite
 import io.github.jan.discordkm.entities.guild.invites.InviteApplication
@@ -65,7 +66,9 @@ fun String.toJsonArray() = Json.decodeFromString<JsonArray>(this)
 inline fun <reified T> JsonObject.getOrThrow(key: String): T {
     if(getValue(key).toString() == "null") throw NoSuchElementException()
     return when(T::class) {
-        String::class -> getValue(key).jsonPrimitive.content as T
+        String::class -> try {
+            getValue(key).jsonPrimitive.content
+        } catch(_: Exception) { getValue(key).toString() } as T
         Int::class -> getValue(key).jsonPrimitive.int as T
         Long::class -> getValue(key).jsonPrimitive.long as T
         Double::class -> getValue(key).jsonPrimitive.double as T
@@ -96,6 +99,8 @@ inline fun <reified T>JsonObject.extractGuildEntity(guild: Guild) = when(T::clas
     NewsChannel::class -> NewsChannel(guild, this) as T
     Category::class -> Category(guild, this) as T
     TextChannel::class -> TextChannel(guild, this) as T
+    Thread::class -> Thread(guild, this) as T
+    Thread.ThreadMember::class -> Thread.ThreadMember(guild, this) as T
     else -> throw IllegalStateException()
 }
 
@@ -103,7 +108,7 @@ inline fun <reified T>JsonObject.extractClientEntity(client: Client) = when(T::c
     PrivateChannel::class -> PrivateChannel(client, this) as T
     User::class -> User(client, this) as T
     Guild::class -> Guild(client, this) as T
-    Emoji::class -> Emoji(this, client) as T
+    Emoji::class -> Emoji.Emote(this, client) as T
     Sticker::class -> Sticker(this, client) as T
     Invite::class -> Invite(client, this) as T
     InviteApplication::class -> InviteApplication(client, this) as T

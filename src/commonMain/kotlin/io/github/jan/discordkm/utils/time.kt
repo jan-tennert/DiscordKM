@@ -11,7 +11,9 @@ package io.github.jan.discordkm.utils
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
+import com.soywiz.klock.minutes
 import com.soywiz.klock.parse
+import io.github.jan.discordkm.entities.guild.channels.Thread
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -24,4 +26,14 @@ object ISO8601Serializer : KSerializer<DateTimeTz> {
     override val descriptor = PrimitiveSerialDescriptor("ISO8601 Timestamp", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: DateTimeTz) = encoder.encodeString(ISO8601.DATETIME_UTC_COMPLETE.format(value))
+}
+
+object ThreadDurationSerializer : KSerializer<Thread.ThreadDuration> {
+
+    override fun deserialize(decoder: Decoder) = Thread.ThreadDuration.raw(decoder.decodeInt().minutes)
+
+    override val descriptor = PrimitiveSerialDescriptor("ThreadDuration", PrimitiveKind.INT)
+
+    override fun serialize(encoder: Encoder, value: Thread.ThreadDuration) = encoder.encodeInt(value.duration.minutes.toInt())
+
 }

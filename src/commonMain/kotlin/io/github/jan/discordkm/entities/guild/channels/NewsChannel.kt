@@ -19,6 +19,10 @@ import kotlinx.serialization.json.JsonObject
 
 class NewsChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data) {
 
+    /**
+     * Modifies this news channel
+     * A news channel can also be converted to an [TextChannel] by setting the type parameter [T] to TextChannel
+     */
     suspend inline fun <reified T : GuildTextChannel> modify(modifier: TextChannelModifier.() -> Unit = {}): T = client.buildRestAction {
         val type = when(T::class) {
             TextChannel::class -> 0

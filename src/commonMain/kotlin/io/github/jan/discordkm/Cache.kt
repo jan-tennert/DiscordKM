@@ -18,11 +18,13 @@ class Cache<T>(internal var internalMap: IsoMutableMap<Snowflake, T> = IsoMutabl
     val values: List<T>
         get() = internalMap.values.toList()
 
-    operator fun set(id: Snowflake, value: T) {
+    @PublishedApi
+    internal operator fun set(id: Snowflake, value: T) {
         internalMap[id] = value
     }
 
-    fun remove(id: Snowflake) {
+    @PublishedApi
+    internal fun remove(id: Snowflake) {
         internalMap.remove(id)
     }
 

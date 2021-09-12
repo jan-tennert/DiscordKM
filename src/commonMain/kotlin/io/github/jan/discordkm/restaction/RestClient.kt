@@ -21,6 +21,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpMethod
 
@@ -34,10 +35,6 @@ class RestClient(val client: Client) {
     }
     internal val rateLimiter = RateLimiter(client.loggingLevel)
 
-    suspend fun get(endpoint: String) = custom(HttpMethod.Get, endpoint)
-    suspend fun post(endpoint: String, data: String) = custom(HttpMethod.Post, endpoint, data)
-    suspend fun delete(endpoint: String) = custom(HttpMethod.Delete, endpoint)
-    suspend fun patch(endpoint: String, data: String) = custom(HttpMethod.Patch, endpoint, data)
     suspend fun custom(method: HttpMethod, endpoint: String, data: String? = null) = when(method.value) {
         "GET" -> {
             rateLimiter.queue(endpoint) {
@@ -66,6 +63,11 @@ class RestClient(val client: Client) {
 
                     header("Content-Type", "application/json")
                 }
+            }.receive<String>()
+        }
+        "PUT" -> {
+            rateLimiter.queue(endpoint) {
+                http.put(generateUrl(endpoint))
             }.receive<String>()
         }
         else -> throw UnsupportedOperationException()

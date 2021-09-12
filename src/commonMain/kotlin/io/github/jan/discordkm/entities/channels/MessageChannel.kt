@@ -9,30 +9,71 @@
  */
 package io.github.jan.discordkm.entities.channels
 
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import io.github.jan.discordkm.Cache
+import io.github.jan.discordkm.entities.Snowflake
+import io.github.jan.discordkm.entities.guild.Permission
+import io.github.jan.discordkm.entities.lists.MessageList
 import io.github.jan.discordkm.entities.messages.DataMessage
 import io.github.jan.discordkm.entities.messages.EmbedBuilder
 import io.github.jan.discordkm.entities.messages.Message
+import io.github.jan.discordkm.entities.messages.MessageBuilder
+import io.github.jan.discordkm.entities.messages.MessageEmbed
 import io.github.jan.discordkm.entities.messages.buildEmbed
 import io.github.jan.discordkm.entities.messages.buildMessage
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractMessageChannelEntity
+import io.github.jan.discordkm.utils.getOrNull
 import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+
 interface MessageChannel : Channel {
 
-    suspend fun sendMessage(message: DataMessage) = client.buildRestAction<Message> {
-        action = RestAction.Action.post("/channels/$id/messages", Json.encodeToString(message))
+    /**
+     * The id of the last message sent in this channel
+     */
+    val lastMessageId: Snowflake?
+        get() = data.getOrNull<Snowflake>("last_message_id")
+
+    /**
+     * The time a user without the permission [Permission.MANAGE_MESSAGES] or [Permission.MANAGE_CHANNELS] has to wait before sending another messages
+     */
+    val slowModeTime: TimeSpan?
+        get() = data.getOrNull<Int>("rate_limit_per_user")?.seconds
+
+    val messageCache: Cache<Message>
+
+    val messages: MessageList
+        get() = MessageList(this, messageCache.values)
+
+
+    suspend fun send(message: DataMessage) = client.buildRestAction<Message> {
+        action = RestAction.Action.post("/channels/${id}/messages", Json.encodeToString(message))
         transform {
             it.toJsonObject().extractMessageChannelEntity(this@MessageChannel)
         }
+        onFinish { messageCache[it.id] = it }
     }
 
-    suspend fun sendMessage(content: String) = sendMessage(buildMessage { this.content = content })
+    suspend fun send(builder: MessageBuilder.() -> Unit) = send(buildMessage(builder))
 
-    suspend fun sendEmbed(embed: EmbedBuilder.() -> Unit) = sendMessage(buildMessage { embeds += buildEmbed(embed) })
+    suspend fun send(content: String) = send(buildMessage { this.content = content })
+
+    suspend fun sendEmbed(embed: EmbedBuilder.() -> Unit) = send(buildMessage { embeds += buildEmbed(embed) })
+
+    suspend fun sendEmbeds(embeds: Iterable<MessageEmbed>) = send { this.embeds.addAll(embeds) }
+
+    /**
+     * Starts typing in this channel. This lasts for approximately 10 seconds
+     */
+    suspend fun sendTyping() = client.buildRestAction<Unit> {
+        action = RestAction.Action.post("/channels/$id/typing", "")
+        transform {  }
+    }
 
    // fun sendFile(file: VfsFile) : RestAction<DataMessage>
 

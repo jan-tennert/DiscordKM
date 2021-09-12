@@ -9,10 +9,9 @@
  */
 package io.github.jan.discordkm.events
 
-import io.github.jan.discordkm.clients.Client
+import io.github.jan.discordkm.entities.BaseEntity
 
-sealed interface Event {
+sealed interface Event : BaseEntity  {
 
-    val client: Client
 
 }

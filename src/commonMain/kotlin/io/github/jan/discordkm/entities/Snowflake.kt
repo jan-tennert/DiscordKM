@@ -53,8 +53,10 @@ interface SnowflakeEntity {
     val id: Snowflake
     val creationDate: DateTimeTz
         get() = id.timestamp
-    
+
 }
+
+//just channel.send and messagelist for retrieve etc.
 
 val Long.asSnowflake: Snowflake
     get() = Snowflake.fromId(this)

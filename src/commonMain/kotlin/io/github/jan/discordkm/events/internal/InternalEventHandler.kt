@@ -9,10 +9,10 @@
  */
 package io.github.jan.discordkm.events.internal
 
-import io.github.jan.discordkm.events.ReadyEvent
+import io.github.jan.discordkm.events.Event
 import kotlinx.serialization.json.JsonObject
 
-internal interface InternalEventHandler <T> {
+internal interface InternalEventHandler <T : Event> {
 
     fun handle(data: JsonObject) : T
 

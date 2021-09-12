@@ -47,10 +47,11 @@ enum class Permission(override val offset: Int) : SerializableEnum<Permission> {
     MANAGE_EMOJIS_AND_STICKERS(30),
     USE_APPLICATION_COMMANDS(31),
     REQUEST_TO_SPEAK(32),
-    MANAGE_THREADS(33),
-    USE_PUBLIC_THREADS(34),
-    USE_PRIVATE_THREADS(35),
-    USE_EXTERNAL_STICKERS(36),
+    MANAGE_THREADS(34),
+    USE_PUBLIC_THREADS(35),
+    USE_PRIVATE_THREADS(36),
+    USE_EXTERNAL_STICKERS(37),
+    START_EMBEDDED_ACTIVITIES(39),
     UNKNOWN(-1);
 
     companion object : EnumSerializer<Permission> {

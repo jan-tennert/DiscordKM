@@ -19,6 +19,9 @@ import kotlinx.serialization.json.JsonObject
 
 class Category(guild: Guild, data: JsonObject) : GuildChannel(guild, data) {
 
+    /**
+     * Modifies this category
+     */
     suspend fun modify(modifier: CategoryModifier.() -> Unit = {}): Category = client.buildRestAction<Category> {
         action = RestAction.Action.patch("/channels/$id", CategoryModifier().apply(modifier).build())
         transform {

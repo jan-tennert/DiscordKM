@@ -81,7 +81,7 @@ publishing {
                 url.set("https://github.com/jan-tennert/DiscordKM")
                 licenses {
                     license {
-                        name.set("GPG-3.0")
+                        name.set("GPL-3.0")
                         url.set("https://www.gnu.org/licenses/gpl-3.0.en.html")
                     }
                 }

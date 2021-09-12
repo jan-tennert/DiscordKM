@@ -15,6 +15,10 @@ import io.github.jan.discordkm.entities.SnowflakeEntity
 sealed interface DiscordList <T : SnowflakeEntity> : Iterable<T> {
 
     val internalList: List<T>
+    val size: Int
+        get() = internalList.size
+
+    operator fun contains(other: Snowflake) = internalList.any { it.id == other }
 
     /**
      * Gets this object from the cache

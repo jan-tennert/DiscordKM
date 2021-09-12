@@ -11,32 +11,54 @@ package io.github.jan.discordkm.entities.guild
 
 import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.entities.SerializableEntity
+import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.SnowflakeEntity
+import io.github.jan.discordkm.entities.User
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrThrow
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmName
 
-class Emoji(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity {
+interface Emoji {
 
-    override val id = data.getId()
-    val name = data.getOrThrow<String>("name")
+    val name: String
 
-    @get:JvmName("isAnimated")
-    val isAnimated = data.getOrThrow<Boolean>("animated")
-    //allowed users?
-    //managed?
-    //require colons?
+    class Emote @PublishedApi internal constructor(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity {
+        override val id = data.getId()
+        val name = data.getOrThrow<String>("name")
 
-    /**
-     * If the emoji is available, can be null due to loss of server boosts
-     */
-    @get:JvmName("isAvailable")
-    val isAvailable = data.getOrThrow<Boolean>("available")
+        @get:JvmName("isAnimated")
+        val isAnimated = data.getOrThrow<Boolean>("animated")
+        //allowed users?
+        //managed?
+        //require colons?
 
-    override fun equals(other: Any?): Boolean {
-        if(other !is Emoji) return false
-        return other.name == name && other.id == id
+        /**
+         * If the emoji is available, can be null due to loss of server boosts
+         */
+        @get:JvmName("isAvailable")
+        val isAvailable = data.getOrThrow<Boolean>("available")
+
+        fun toEmoji() = object : Emoji {
+            override val name = "${this@Emote.name}:$id"
+        }
+
+    }
+
+    companion object {
+
+        fun fromEmoji(unicode: String) = object : Emoji {
+            override val name = unicode
+        }
+
+        fun fromEmote(name: String, id: Snowflake) = object : Emoji {
+            override val name = "$name:$id"
+        }
+
+        fun fromEmote(emote: Emote) = emote.toEmoji()
+
     }
 
 }
+
+class Reaction(val emoji: Emoji, val user: User)

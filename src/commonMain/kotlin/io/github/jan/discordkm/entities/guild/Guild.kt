@@ -23,10 +23,12 @@ import io.github.jan.discordkm.entities.guild.channels.Category
 import io.github.jan.discordkm.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.entities.guild.channels.StageChannel
 import io.github.jan.discordkm.entities.guild.channels.TextChannel
+import io.github.jan.discordkm.entities.guild.channels.Thread
 import io.github.jan.discordkm.entities.guild.channels.VoiceChannel
 import io.github.jan.discordkm.entities.lists.RetrievableChannelList
 import io.github.jan.discordkm.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.entities.lists.RoleList
+import io.github.jan.discordkm.entities.lists.ThreadList
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.DiscordImage
@@ -69,6 +71,8 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
             else -> throw IllegalStateException()
         }
     })
+    @PublishedApi
+    internal var threadCache = Cache.fromSnowflakeEntityList(data.getValue("threads").jsonArray.map { Thread(this, it.jsonObject) })
 
     /**
      * Name of the guild
@@ -216,6 +220,9 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
 
     val channels: RetrievableChannelList
         get() = RetrievableChannelList(this, channelCache.values)
+
+    val threads: ThreadList
+        get() = ThreadList(threadCache.values)
 
     //presences
 

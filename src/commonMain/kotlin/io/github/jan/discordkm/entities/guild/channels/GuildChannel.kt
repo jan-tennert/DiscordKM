@@ -9,28 +9,32 @@
  */
 package io.github.jan.discordkm.entities.guild.channels
 
+import com.soywiz.klock.DateTimeTz
+import com.soywiz.klock.ISO8601
 import com.soywiz.klock.minutes
+import io.github.jan.discordkm.Cache
 import io.github.jan.discordkm.entities.PermissionHolder
 import io.github.jan.discordkm.entities.Reference
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.channels.Channel
-import io.github.jan.discordkm.entities.channels.ChannelType
+import io.github.jan.discordkm.entities.channels.IParent
+import io.github.jan.discordkm.entities.channels.Invitable
 import io.github.jan.discordkm.entities.channels.MessageChannel
 import io.github.jan.discordkm.entities.guild.Guild
+import io.github.jan.discordkm.entities.guild.GuildEntity
 import io.github.jan.discordkm.entities.guild.Permission
-import io.github.jan.discordkm.entities.guild.invites.Invite
-import io.github.jan.discordkm.entities.guild.invites.InviteBuilder
+import io.github.jan.discordkm.entities.lists.ThreadList
+import io.github.jan.discordkm.entities.messages.Message
 import io.github.jan.discordkm.restaction.RestAction
+import io.github.jan.discordkm.restaction.buildQuery
 import io.github.jan.discordkm.restaction.buildRestAction
-import io.github.jan.discordkm.utils.extractClientEntity
 import io.github.jan.discordkm.utils.getEnums
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrDefault
 import io.github.jan.discordkm.utils.getOrNull
 import io.github.jan.discordkm.utils.getOrThrow
-import io.github.jan.discordkm.utils.toJsonArray
 import io.github.jan.discordkm.utils.toJsonObject
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
@@ -43,7 +47,7 @@ import kotlinx.serialization.json.putJsonArray
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-sealed class GuildChannel(val guild: Guild, final override val data: JsonObject) : Channel, Reference<GuildChannel> {
+sealed class GuildChannel (override val guild: Guild, final override val data: JsonObject) : Channel, Reference<GuildChannel>, GuildEntity {
 
     override fun getValue(ref: Any?, property: KProperty<*>): GuildChannel {
         TODO("Not yet implemented")
@@ -53,13 +57,17 @@ sealed class GuildChannel(val guild: Guild, final override val data: JsonObject)
 
     final override val id = data.getId()
 
-    val position = data.getOrThrow<Int>("position")
+    /**
+     * The position of the channel in the hierarchy
+     * Can be null if this guild channel is a [Thread]
+     */
+    val position = data.getOrNull<Int>("position")
 
+    /**
+     * The name of the channel
+     */
     val name = data.getOrThrow<String>("name")
 
-    val parentId = data.getOrNull<Snowflake>("parent_id")
-
-//    val parent = guild.channels[parentId ?: Snowflake.empty()] as? Category
 
     /**
      * The [PermissionOverride]s for this guild channel
@@ -75,37 +83,25 @@ sealed class GuildChannel(val guild: Guild, final override val data: JsonObject)
         PermissionOverride(holder, allow, deny)
     }?.toSet() ?: emptySet()
 
+    /**
+     * Deletes the channel.
+     * Requires [Permission.MANAGE_CHANNELS] for Guild Channels and [Permission.MANAGE_THREADS] for Threads
+     */
     override suspend fun delete() = client.buildRestAction<Unit> {
         action = RestAction.Action.delete("/channels/$id")
         transform {  }
         onFinish { guild.channelCache.remove(id) }
     }
 
-    suspend fun createInvite(builder: InviteBuilder.() -> Unit = {}) = client.buildRestAction<Invite> {
-        val inviteBuilder = InviteBuilder().apply(builder)
-        if(inviteBuilder.target != null && type !in listOf(ChannelType.GUILD_STAGE_VOICE, ChannelType.GUILD_VOICE)) throw IllegalArgumentException("You can't add targets to text channel invites!")
-        action = RestAction.Action.post("/channels/$id/invites", Json.encodeToString(inviteBuilder.build()))
-        transform { it.toJsonObject().extractClientEntity(client) }
-        //TODO: check permission
-    }
-
-    suspend fun retrieveInvites() = client.buildRestAction<List<Invite>> {
-        action = RestAction.Action.get("/channels/$id/invites")
-        transform { json -> json.toJsonArray().map { it.jsonObject.extractClientEntity(client) } }
-    }
-
-    //retrieve parent?
-
     //permission overrides
 }
 
-sealed class GuildTextChannel(guild: Guild, data: JsonObject) : GuildChannel(guild, data), MessageChannel {
+sealed class GuildMessageChannel(guild: Guild, data: JsonObject) : GuildChannel(guild, data), MessageChannel {
 
-    val topic = data.getOrNull<String>("topic")
-    val defaultAutoArchiveDuration = if(data["default_auto_archive_duration"] != null) Thread.ThreadDuration.raw(data.getValue("default_auto_archive_duration").jsonPrimitive.int.minutes) else Thread.ThreadDuration.ZERO
-    @get:JvmName("isNSFW")
-    val isNSFW = data.getOrDefault("nsfw", false)
-
+    override var messageCache: Cache<Message> = Cache.fromSnowflakeEntityList(emptyList())
+    /**
+     * Deletes multiple messages in this channel
+     */
     suspend fun deleteMessages(ids: Iterable<Snowflake>) = client.buildRestAction<Unit> {
         action = RestAction.Action.post("/channels/$id/messages/bulk-delete", buildJsonObject {
             putJsonArray("messages") {
@@ -114,6 +110,73 @@ sealed class GuildTextChannel(guild: Guild, data: JsonObject) : GuildChannel(gui
         })
         transform {  }
         //TODO: Check permissions
+    }
+
+}
+sealed class GuildTextChannel(guild: Guild, data: JsonObject) : GuildMessageChannel(guild, data), Invitable, IParent {
+
+    /**
+     * The topic of the channel
+     */
+    val topic = data.getOrNull<String>("topic")
+
+    /**
+     * The default time after threads get achieved in this channel
+     */
+    val defaultAutoArchiveDuration = if(data["default_auto_archive_duration"] != null) Thread.ThreadDuration.raw(data.getValue("default_auto_archive_duration").jsonPrimitive.int.minutes) else Thread.ThreadDuration.HOUR
+
+    /**
+     * Whether this channel is nsfw or not
+     */
+    @get:JvmName("isNSFW")
+    val isNSFW = data.getOrDefault("nsfw", false)
+
+    /**
+     * Returns a list of all [Thread]s in this channel
+     */
+    val threads
+        get() = ThreadList(guild.threads.filter { it.parentId == id })
+
+    /**
+     * Retrieves all public achieved threads
+     * @param limit How many threads will get retrieved
+     * @param before Threads before this timestamp
+     */
+    suspend fun retrievePublicArchivedThreads(limit: Int? = null, before: DateTimeTz? = null) = client.buildRestAction<List<Thread>> {
+        action = RestAction.Action.get("/channels/${id}/threads/archived/public" + buildQuery {
+            putOptional("limit", limit)
+            putOptional("before", before?.let { ISO8601.DATETIME_UTC_COMPLETE.format(before) })
+        })
+        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(guild, thread.jsonObject, it.toJsonObject().jsonArray.map { Json.decodeFromString("members") }) }}
+        onFinish { it.forEach { thread -> guild.threadCache[thread.id] = thread } }
+    }
+
+    /**
+     * Retrieves all private achieved threads
+     * @param limit How many threads will get retrieved
+     * @param before Threads before this timestamp
+     */
+    suspend fun retrievePrivateArchivedThreads(limit: Int? = null, before: DateTimeTz? = null) = client.buildRestAction<List<Thread>> {
+        action = RestAction.Action.get("/channels/${id}/threads/archived/private" + buildQuery {
+            putOptional("limit", limit)
+            putOptional("before", before?.let { ISO8601.DATETIME_UTC_COMPLETE.format(before) })
+        })
+        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(guild, thread.jsonObject, it.toJsonObject().jsonArray.map { Json.decodeFromString("members") }) }}
+        onFinish { it.forEach { thread -> guild.threadCache[thread.id] = thread } }
+    }
+
+    /**
+     * Retrieves all joined private archived threads
+     * @param limit How many threads will get retrieved
+     * @param before Threads before this id
+     */
+    suspend fun retrieveJoinedPrivateArchivedThreads(limit: Int? = null, before: Snowflake? = null) = client.buildRestAction<List<Thread>> {
+        action = RestAction.Action.get("/channels/${id}/users/@me/threads/archived/private" + buildQuery {
+            putOptional("limit", limit)
+            putOptional("before", before)
+        })
+        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(guild, thread.jsonObject, it.toJsonObject().jsonArray.map { Json.decodeFromString("members") }) }}
+        onFinish { it.forEach { thread -> guild.threadCache[thread.id] = thread } }
     }
 
 }

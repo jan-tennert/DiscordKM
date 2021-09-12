@@ -20,11 +20,15 @@ import io.github.jan.discordkm.entities.SnowflakeEntity
 import io.github.jan.discordkm.entities.User
 import io.github.jan.discordkm.entities.channels.ChannelType
 import io.github.jan.discordkm.entities.channels.MessageChannel
+import io.github.jan.discordkm.entities.channels.PrivateChannel
 import io.github.jan.discordkm.entities.guild.Permission
 import io.github.jan.discordkm.entities.guild.Role
 import io.github.jan.discordkm.entities.guild.Sticker
 import io.github.jan.discordkm.entities.guild.channels.GuildChannel
+import io.github.jan.discordkm.entities.guild.channels.GuildTextChannel
 import io.github.jan.discordkm.entities.guild.channels.NewsChannel
+import io.github.jan.discordkm.entities.guild.channels.Thread
+import io.github.jan.discordkm.entities.lists.ReactionList
 import io.github.jan.discordkm.exceptions.PermissionException
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
@@ -43,8 +47,10 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
@@ -74,7 +80,8 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Returns the content of the message
      */
-    val content = data.getOrThrow<String>("content")
+    var content = data.getOrThrow<String>("content")
+        private set
 
     /**
      * Returns the time the message was sent
@@ -115,7 +122,9 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Returns a list of embeds included in this message
      */
-    val embeds = data.getValue("embeds").jsonArray.map { it.jsonObject.extract<MessageEmbed>() }
+    private val _embeds = data.getValue("embeds").jsonArray.map { it.jsonObject.extract<MessageEmbed>() }.toMutableList()
+    val embeds: List<MessageEmbed>
+        get() = _embeds
 
     //reactions
 
@@ -167,6 +176,8 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
     val stickerItems = data["sticker_items"]?.jsonArray?.map { Sticker.Item(it.jsonObject) } ?: emptyList()
 
+    val reactions = ReactionList(this)
+
     /**
      * Crossposts this message if it was sent in a [NewsChannel]
      */
@@ -210,6 +221,39 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
 
     override fun getValue(ref: Any?, property: KProperty<*>): Message {
         TODO("Not yet implemented")
+    }
+
+    /**
+     * Creates a thread from this message
+     * @param name The name this thread will get
+     * @param autoArchiveDuration The [Thread.ThreadDuration] after the thread will be achieved
+     */
+    suspend fun createThread(name: String, autoArchiveDuration: Thread.ThreadDuration = (channel as GuildTextChannel).defaultAutoArchiveDuration) = client.buildRestAction<Thread> {
+        action = RestAction.Action.post("/channels/${channel.id}/messages/$id/threads", buildJsonObject {
+            put("name", name)
+            put("auto_archive_duration", autoArchiveDuration.duration.minutes.toInt())
+        })
+        transform { it.toJsonObject().extractGuildEntity(guild!!) }
+        onFinish { guild!!.threadCache[it.id] = it }
+        check { if(guild == null) throw UnsupportedOperationException("You can't create a thread from a private channel message") }
+    }
+
+    /**
+     * Pins this message in this channel
+     */
+    suspend fun pin() = client.buildRestAction<Unit> {
+        action = RestAction.Action.put("/channels/${channel.id}/pins/$id")
+        transform {  }
+        check { if(channel is PrivateChannel) throw UnsupportedOperationException("You can't pin a message in a private channel!"); if(isPinned) throw IllegalStateException("You can't pin a pinned message!'")}
+    }
+
+    /**
+     * Unpins this message in this channel
+     */
+    suspend fun unpin() = client.buildRestAction<Unit> {
+        action = RestAction.Action.delete("/channels/${channel.id}/pins/$id")
+        transform {  }
+        check { if(channel is PrivateChannel) throw UnsupportedOperationException("You can't unpin a message in a private channel!"); if(!isPinned) throw IllegalStateException("You can't unpin an unpinned message!") }
     }
 
     @Serializable

@@ -9,6 +9,8 @@
  */
 package io.github.jan.discordkm.entities.guild.channels
 
+import io.github.jan.discordkm.entities.channels.IParent
+import io.github.jan.discordkm.entities.channels.Invitable
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.channels.modifier.VoiceChannelModifier
 import io.github.jan.discordkm.restaction.RestAction
@@ -19,7 +21,7 @@ import io.github.jan.discordkm.utils.getOrThrow
 import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 
-open class VoiceChannel(guild: Guild, data: JsonObject) : GuildChannel(guild, data) {
+open class VoiceChannel(guild: Guild, data: JsonObject) : GuildChannel(guild, data), Invitable, IParent {
 
     val userLimit = data.getOrThrow<Int>("user_limit")
 
@@ -29,6 +31,9 @@ open class VoiceChannel(guild: Guild, data: JsonObject) : GuildChannel(guild, da
 
     val videoQualityMode = if(data.getOrNull<Int>("video_quality_mode") != null) VideoQualityMode.values().first { it.ordinal == data.getOrNull<Int>("video_quality_mode") } else VideoQualityMode.AUTO
 
+    /**
+     * Modifies this voice channel
+     */
     open suspend fun modify(modifier: VoiceChannelModifier.() -> Unit = {}): VoiceChannel = client.buildRestAction<VoiceChannel> {
         action = RestAction.Action.patch("/channels/$id", VoiceChannelModifier().apply(modifier).build())
         transform {

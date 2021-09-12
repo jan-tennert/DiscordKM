@@ -50,6 +50,7 @@ abstract class RestAction<T> internal constructor(private val action: Action, va
             fun post(endpoint: String, body: Any) = Action(endpoint, HttpMethod.Post, body.toString())
             fun delete(endpoint: String) = Action(endpoint, HttpMethod.Delete)
             fun patch(endpoint: String, body: Any) = Action(endpoint, HttpMethod.Patch, body.toString())
+            fun put(endpoint: String) = Action(endpoint, HttpMethod.Put)
             fun custom(endpoint: String, method: HttpMethod, body: String? = null) = Action(endpoint, method, body)
 
         }

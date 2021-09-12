@@ -14,6 +14,11 @@ import com.soywiz.korio.net.ws.WebSocketClient
 import com.soywiz.korio.net.ws.WsCloseInfo
 import io.github.jan.discordkm.clients.DiscordClient
 import io.github.jan.discordkm.events.internal.GuildCreateEventHandler
+import io.github.jan.discordkm.events.internal.MessageBulkDeleteEventHandler
+import io.github.jan.discordkm.events.internal.MessageCreateEventHandler
+import io.github.jan.discordkm.events.internal.MessageDeleteEventHandler
+import io.github.jan.discordkm.events.internal.MessageReactionAddEventHandler
+import io.github.jan.discordkm.events.internal.MessageUpdateEventHandler
 import io.github.jan.discordkm.events.internal.ReadyEventHandler
 import io.github.jan.discordkm.serialization.IdentifyPayload
 import io.github.jan.discordkm.serialization.Payload
@@ -126,6 +131,13 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
         val event = when(payload.eventName!!) {
             "READY" -> ReadyEventHandler(client).handle(payload.eventData!!)
             "GUILD_CREATE" -> GuildCreateEventHandler(client).handle(payload.eventData!!)
+
+            //message events
+            "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(payload.eventData!!)
+            "MESSAGE_UPDATE" -> MessageUpdateEventHandler(client).handle(payload.eventData!!)
+            "MESSAGE_DELETE" -> MessageDeleteEventHandler(client).handle(payload.eventData!!)
+            "MESSAGE_DELETE_BULK" -> MessageBulkDeleteEventHandler(client).handle(payload.eventData!!)
+            "MESSAGE_REACTION_ADD" -> MessageReactionAddEventHandler(client).handle(payload.eventData!!)
             else -> return
         }
         client.handleEvent(event)
