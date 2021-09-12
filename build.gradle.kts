@@ -55,7 +55,7 @@ publishing {
         maven {
             name = "Oss"
             setUrl {
-                "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             }
             credentials {
                 username = System.getenv("OSSRH_USERNAME")
@@ -64,7 +64,7 @@ publishing {
         }
         maven {
             name = "Snapshot"
-            setUrl { "https://oss.sonatype.org/content/repositories/snapshots/" }
+            setUrl { "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
             credentials {
                 username = System.getenv("SONATYPE_USERNAME")
                 password = System.getenv("SONATYPE_PASSWORD")
