@@ -2,27 +2,109 @@ plugins {
     kotlin("multiplatform") version "1.5.30"
     kotlin("plugin.serialization") version "1.5.30"
     id("maven-publish")
+    signing
+    id("org.jetbrains.dokka") version "1.4.20"
 }
 
 group = "io.github.jan.discordkm"
-version = "0.1-ALPHA"
+version = "0.0.1"
+
+val repositoryId: String? = System.getenv("SONATYPE_REPOSITORY_ID")
+val sonatypeUsername: String? = System.getenv("SONATYPE_USERNAME")
+val sonatypePassword: String? = System.getenv("SONATYPE_PASSWORD")
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven") }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            groupId = group.toString()
-            artifactId = "DiscordKM"
-            version = version
+signing {
+    val signingKey = providers
+        .environmentVariable("GPG_SIGNING_KEY")
+        .forUseAtConfigurationTime()
+    val signingPassphrase = providers
+        .environmentVariable("GPG_SIGNING_PASSPHRASE")
+        .forUseAtConfigurationTime()
 
-            from(components["kotlin"])
-        }
+    if (signingKey.isPresent && signingPassphrase.isPresent) {
+        useInMemoryPgpKeys(signingKey.get(), signingPassphrase.get())
+        val extension = extensions
+            .getByName("publishing") as PublishingExtension
+        sign(extension.publications)
     }
 }
 
+val dokkaOutputDir = "$buildDir/dokka"
+
+tasks.dokkaHtml {
+    outputDirectory.set(file(dokkaOutputDir))
+}
+
+val deleteDokkaOutputDir by tasks.register<Delete>("deleteDokkaOutputDirectory") {
+    delete(dokkaOutputDir)
+}
+
+val javadocJar = tasks.register<Jar>("javadocJar") {
+    dependsOn(deleteDokkaOutputDir, tasks.dokkaHtml)
+    archiveClassifier.set("javadoc")
+    from(dokkaOutputDir)
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "Oss"
+            setUrl {
+                val repositoryId =
+                    System.getenv("SONATYPE_REPOSITORY_ID") ?: error("Missing env variable: SONATYPE_REPOSITORY_ID")
+                "https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${repositoryId}/"
+            }
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
+            }
+        }
+        maven {
+            name = "Snapshot"
+            setUrl { "https://oss.sonatype.org/content/repositories/snapshots/" }
+            credentials {
+                username = System.getenv("SONATYPE_USERNAME")
+                password = System.getenv("SONATYPE_PASSWORD")
+            }
+        }
+    }
+
+    publications {
+        withType<MavenPublication> {
+            artifact(javadocJar)
+            pom {
+                name.set("DiscordKM")
+                description.set("A Kotlin Multiplatform Discord API Wrapper ")
+                url.set("https://github.com/jan-tennert/DiscordKM")
+                licenses {
+                    license {
+                        name.set("GPG-3.0")
+                        url.set("https://www.gnu.org/licenses/gpl-3.0.en.html")
+                    }
+                }
+                issueManagement {
+                    system.set("Github")
+                    url.set("https://github.com/jan-tennert/DiscordKM/issues")
+                }
+                scm {
+                    connection.set("https://github.com/jan-tennert/DiscordKM.git")
+                    url.set("https://github.com/jan-tennert/DiscordKM")
+                }
+                developers {
+                    developer {
+                        name.set("TheRealJanGER")
+                        email.set("jan.m.tennert@gmail.com")
+                    }
+                }
+            }
+        }
+    }
+}
 
 kotlin {
     jvm {
@@ -72,6 +154,8 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-cio:1.6.3")
+                // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-html-jvm
+
             }
         }
         val jvmTest by getting
