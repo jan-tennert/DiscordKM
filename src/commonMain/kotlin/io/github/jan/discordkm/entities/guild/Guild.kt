@@ -43,6 +43,7 @@ import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrDefault
 import io.github.jan.discordkm.utils.getOrNull
 import io.github.jan.discordkm.utils.getOrThrow
+import io.github.jan.discordkm.utils.toJsonArray
 import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -316,6 +317,16 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
         transform {}
         onFinish { memberCache.remove(id) }
         check { if(Permission.KICK_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission KICK_MEMBERS to kick members from a guild") }
+    }
+
+    /**
+     * Retrieves all bans from the guild
+     */
+    @CallsTheAPI
+    suspend fun retrieveBans() = client.buildRestAction<List<Ban>> {
+        action = RestAction.Action.get("/guilds/$id/bans")
+        transform { it.toJsonArray().map { ban -> Ban(this@Guild, ban.jsonObject) }}
+        check { if(Permission.BAN_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to retrieve bans from a guild")}
     }
 
     override fun toString() = "Guild[id=$id,name=$name]"
