@@ -92,3 +92,10 @@ suspend inline fun <T> Client.buildRestAction(init: RestActionBuilder<T>.() -> U
         .onFinish { builder.onFinish(it) }
         .await()
 }
+
+/**
+ * All functions containing this annotation will call the rest api
+ */
+@Target(AnnotationTarget.FUNCTION)
+@MustBeDocumented
+annotation class CallsTheAPI

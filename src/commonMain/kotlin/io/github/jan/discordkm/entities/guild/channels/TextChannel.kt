@@ -11,7 +11,9 @@ package io.github.jan.discordkm.entities.guild.channels
 
 import io.github.jan.discordkm.entities.channels.ChannelType
 import io.github.jan.discordkm.entities.guild.Guild
+import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.entities.guild.channels.modifier.TextChannelModifier
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractGuildEntity
@@ -22,10 +24,17 @@ import kotlinx.serialization.json.put
 
 class TextChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data) {
 
+    companion object : GuildChannelBuilder<GuildTextChannel, TextChannelModifier> {
+
+        override fun create(builder: TextChannelModifier.() -> Unit) = TextChannelModifier(0).apply(builder).build()
+
+    }
+
     /**
      * Modifies this news channel
      * A news channel can also be converted to an [NewsChannel] by setting the type parameter [T] to NewsChannel
      */
+    @CallsTheAPI
     suspend inline fun <reified T : GuildTextChannel> modify(modifier: TextChannelModifier.() -> Unit = {}): T = client.buildRestAction {
         val type = when(T::class) {
             TextChannel::class -> null
@@ -49,6 +58,7 @@ class TextChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data
      * @param autoArchiveDuration The duration after the thread will be achieved
      * @param invitable Whether if non-moderators can add non-moderators to this private thread
     */
+    @CallsTheAPI
     suspend fun createPrivateThread(name: String, autoArchiveDuration: Thread.ThreadDuration = defaultAutoArchiveDuration, invitable: Boolean? = null) = client.buildRestAction<Thread> {
         action = RestAction.Action.post("/channels/$id/threads", buildJsonObject {
             put("name", name)

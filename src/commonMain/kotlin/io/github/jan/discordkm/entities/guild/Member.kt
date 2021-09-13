@@ -11,6 +11,7 @@ package io.github.jan.discordkm.entities.guild
 
 import com.soywiz.klock.ISO8601
 import com.soywiz.klock.parse
+import io.github.jan.discordkm.Cache
 import io.github.jan.discordkm.entities.PermissionHolder
 import io.github.jan.discordkm.entities.Reference
 import io.github.jan.discordkm.entities.SerializableEntity
@@ -18,13 +19,22 @@ import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.SnowflakeEntity
 import io.github.jan.discordkm.entities.User
 import io.github.jan.discordkm.entities.guild.channels.GuildChannel
-import io.github.jan.discordkm.entities.lists.RoleList
+import io.github.jan.discordkm.entities.guild.channels.VoiceChannel
+import io.github.jan.discordkm.entities.lists.RetrievableRoleList
 import io.github.jan.discordkm.entities.misc.EnumList
+import io.github.jan.discordkm.exceptions.PermissionException
+import io.github.jan.discordkm.restaction.CallsTheAPI
+import io.github.jan.discordkm.restaction.RestAction
+import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractClientEntity
+import io.github.jan.discordkm.utils.extractGuildEntity
 import io.github.jan.discordkm.utils.getOrDefault
 import io.github.jan.discordkm.utils.getOrNull
 import io.github.jan.discordkm.utils.getOrThrow
+import io.github.jan.discordkm.utils.putOptional
+import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -79,10 +89,13 @@ class Member(val guild: Guild, override val data: JsonObject) : Reference<Member
      */
     val nickname = data.getOrDefault("nick", user.name)
 
+    internal val roleCache = Cache.fromSnowflakeEntityList(data.getValue("roles").jsonArray.map { guild.roles[Snowflake.fromId(it.jsonPrimitive.long)]!! })
+
     /**
      * Returns the roles of the member
      */
-    val roles = RoleList(guild, data.getValue("roles").jsonArray.map { guild.roles[Snowflake.fromId(it.jsonPrimitive.long)]!! })
+    val roles
+        get() = RetrievableRoleList(this, roleCache.values)
 
     /**
      * Returns the date when the member joined his guild
@@ -111,6 +124,39 @@ class Member(val guild: Guild, override val data: JsonObject) : Reference<Member
      */
     val isPending = data.getOrDefault("pending", false)
 
+    /**
+     * Modifies this user
+     */
+    @CallsTheAPI
+    suspend fun modify(modifier: MemberModifier.() -> Unit) = client.buildRestAction<Member> {
+        action = RestAction.Action.patch("/guilds/${guild.id}/members/$id", MemberModifier().apply(modifier).build())
+        transform { it.toJsonObject().extractGuildEntity(guild) }
+        onFinish { guild.memberCache[it.id] = it }
+    }
+
+    /**
+     * Sets the nickname for this user
+     */
+    @CallsTheAPI
+    suspend fun setNickname(nickname: String) = modify {
+        this@modify.nickname = nickname
+    }
+
+    /**
+     * Kicks the member from the guild.
+     *
+     * Requires the permission [Permission.KICK_MEMBERS]
+     */
+    @CallsTheAPI
+    suspend fun kick() = client.buildRestAction<Unit> {
+        action = RestAction.Action.delete("/guilds/${guild.id}/members/$id")
+        transform {}
+        onFinish { guild.memberCache.remove(id) }
+        check { if(Permission.KICK_MEMBERS !in guild.selfMember.permissions) throw PermissionException("You require the permission KICK_MEMBERS to kick members from a guild") }
+    }
+
+    //mute etc in voice entity
+
     override fun getValue(ref: Any?, property: KProperty<*>) = guild.members[id]!!
 
     override fun toString() = "Member[nickname=$nickname, id=$id]"
@@ -119,6 +165,27 @@ class Member(val guild: Guild, override val data: JsonObject) : Reference<Member
         if(other !is Member) return false
         return other.id == id
     }
-    
+
+}
+
+class MemberModifier {
+
+    var nickname: String? = null
+    val roleIds = mutableListOf<Snowflake>()
+    var mute: Boolean? = null
+    var deaf: Boolean? = null
+    private var channelId: Snowflake? = null
+
+    fun role(role: Role) { roleIds += role.id }
+
+    fun moveTo(voiceChannel: VoiceChannel) { channelId = voiceChannel.id }
+
+    fun build() = buildJsonObject {
+        putOptional("nickname", nickname)
+        putOptional("roles", roleIds.ifEmpty { null })
+        putOptional("mute", mute)
+        putOptional("deaf", deaf)
+        putOptional("channel_id", channelId)
+    }
 
 }

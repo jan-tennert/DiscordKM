@@ -9,6 +9,7 @@ import io.github.jan.discordkm.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.entities.guild.channels.TextChannel
 import io.github.jan.discordkm.entities.guild.channels.Thread
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractChannel
@@ -32,6 +33,7 @@ interface IParent : SerializableEntity, GuildEntity, SnowflakeEntity {
     open val parent: GuildChannel?
         get() = (guild.channels[parentId ?: Snowflake.empty()] as? Category)
 
+    @CallsTheAPI
     suspend fun retrieveParent() = client.buildRestAction<GuildChannel> {
         action = RestAction.Action.get("/channels/$parentId")
         transform {

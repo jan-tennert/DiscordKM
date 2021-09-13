@@ -18,6 +18,7 @@ import io.github.jan.discordkm.entities.SerializableEntity
 import io.github.jan.discordkm.entities.SerializableEnum
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.SnowflakeEntity
+import io.github.jan.discordkm.entities.User
 import io.github.jan.discordkm.entities.channels.ChannelType
 import io.github.jan.discordkm.entities.guild.channels.Category
 import io.github.jan.discordkm.entities.guild.channels.NewsChannel
@@ -29,16 +30,22 @@ import io.github.jan.discordkm.entities.lists.RetrievableChannelList
 import io.github.jan.discordkm.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.entities.lists.RoleList
 import io.github.jan.discordkm.entities.lists.ThreadList
+import io.github.jan.discordkm.exceptions.PermissionException
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.DiscordImage
 import io.github.jan.discordkm.utils.extract
+import io.github.jan.discordkm.utils.extractClientEntity
 import io.github.jan.discordkm.utils.extractGuildEntity
 import io.github.jan.discordkm.utils.getEnums
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrDefault
 import io.github.jan.discordkm.utils.getOrNull
 import io.github.jan.discordkm.utils.getOrThrow
+import io.github.jan.discordkm.utils.toJsonObject
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -280,11 +287,35 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
     /**
      * Leaves the guild
      */
+    @CallsTheAPI
     suspend fun leave() = client.buildRestAction<Unit> {
         action = RestAction.Action.delete("/users/@me/guilds/$id")
         onFinish {
             client.guildCache.remove(id)
         }
+    }
+
+    /**
+     * Retrieves all active threads
+     */
+    @CallsTheAPI
+    suspend fun retrieveActiveThreads() = client.buildRestAction<List<Thread>> {
+        action = RestAction.Action.get("/guilds/${id}/threads/active")
+        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(this@Guild, thread.jsonObject, it.toJsonObject().jsonArray.map { Json.decodeFromString("members") }) }}
+        onFinish { it.forEach { thread -> threadCache[thread.id] = thread } }
+    }
+
+    /**
+     * Kicks the member from the guild.
+     *
+     * Requires the permission [Permission.KICK_MEMBERS]
+     */
+    @CallsTheAPI
+    suspend fun kick(memberId: Snowflake) = client.buildRestAction<Unit> {
+        action = RestAction.Action.delete("/guilds/${id}/members/$memberId")
+        transform {}
+        onFinish { memberCache.remove(id) }
+        check { if(Permission.KICK_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission KICK_MEMBERS to kick members from a guild") }
     }
 
     override fun toString() = "Guild[id=$id,name=$name]"
@@ -358,6 +389,16 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
     enum class MfaLevel {
         NONE,
         ELEVATED
+    }
+
+    class Ban(val guild: Guild, override val data: JsonObject) : SerializableEntity {
+
+        override val client = guild.client
+
+        val reason = data.getOrNull<String>("reason")
+
+        val user = data.getOrThrow<String>("user").toJsonObject().extractClientEntity<User>(client)
+
     }
 
     enum class SystemChannelFlag(override val offset: Int) : SerializableEnum<SystemChannelFlag> {

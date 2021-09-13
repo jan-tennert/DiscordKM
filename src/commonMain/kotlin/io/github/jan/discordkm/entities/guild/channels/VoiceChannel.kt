@@ -12,7 +12,9 @@ package io.github.jan.discordkm.entities.guild.channels
 import io.github.jan.discordkm.entities.channels.IParent
 import io.github.jan.discordkm.entities.channels.Invitable
 import io.github.jan.discordkm.entities.guild.Guild
+import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.entities.guild.channels.modifier.VoiceChannelModifier
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractGuildEntity
@@ -34,12 +36,19 @@ open class VoiceChannel(guild: Guild, data: JsonObject) : GuildChannel(guild, da
     /**
      * Modifies this voice channel
      */
+    @CallsTheAPI
     open suspend fun modify(modifier: VoiceChannelModifier.() -> Unit = {}): VoiceChannel = client.buildRestAction<VoiceChannel> {
         action = RestAction.Action.patch("/channels/$id", VoiceChannelModifier().apply(modifier).build())
         transform {
             it.toJsonObject().extractGuildEntity(guild)
         }
         onFinish { guild.channelCache[id] = it }
+    }
+
+    companion object : GuildChannelBuilder<VoiceChannel, VoiceChannelModifier> {
+
+        override fun create(builder: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(2).apply(builder).build()
+
     }
 
     enum class VideoQualityMode {

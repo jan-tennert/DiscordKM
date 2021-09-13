@@ -22,6 +22,7 @@ import io.github.jan.discordkm.entities.messages.MessageBuilder
 import io.github.jan.discordkm.entities.messages.MessageEmbed
 import io.github.jan.discordkm.entities.messages.buildEmbed
 import io.github.jan.discordkm.entities.messages.buildMessage
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractMessageChannelEntity
@@ -51,6 +52,7 @@ interface MessageChannel : Channel {
         get() = MessageList(this, messageCache.values)
 
 
+    @CallsTheAPI
     suspend fun send(message: DataMessage) = client.buildRestAction<Message> {
         action = RestAction.Action.post("/channels/${id}/messages", Json.encodeToString(message))
         transform {
@@ -59,17 +61,22 @@ interface MessageChannel : Channel {
         onFinish { messageCache[it.id] = it }
     }
 
+    @CallsTheAPI
     suspend fun send(builder: MessageBuilder.() -> Unit) = send(buildMessage(builder))
 
+    @CallsTheAPI
     suspend fun send(content: String) = send(buildMessage { this.content = content })
 
+    @CallsTheAPI
     suspend fun sendEmbed(embed: EmbedBuilder.() -> Unit) = send(buildMessage { embeds += buildEmbed(embed) })
 
+    @CallsTheAPI
     suspend fun sendEmbeds(embeds: Iterable<MessageEmbed>) = send { this.embeds.addAll(embeds) }
 
     /**
      * Starts typing in this channel. This lasts for approximately 10 seconds
      */
+    @CallsTheAPI
     suspend fun sendTyping() = client.buildRestAction<Unit> {
         action = RestAction.Action.post("/channels/$id/typing", "")
         transform {  }

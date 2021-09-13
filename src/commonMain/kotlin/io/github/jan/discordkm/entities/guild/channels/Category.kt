@@ -11,6 +11,8 @@ package io.github.jan.discordkm.entities.guild.channels
 
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.channels.modifier.CategoryModifier
+import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractGuildEntity
@@ -22,12 +24,19 @@ class Category(guild: Guild, data: JsonObject) : GuildChannel(guild, data) {
     /**
      * Modifies this category
      */
+    @CallsTheAPI
     suspend fun modify(modifier: CategoryModifier.() -> Unit = {}): Category = client.buildRestAction<Category> {
         action = RestAction.Action.patch("/channels/$id", CategoryModifier().apply(modifier).build())
         transform {
             it.toJsonObject().extractGuildEntity(guild)
         }
         onFinish { guild.channelCache[id] = it }
+    }
+
+    companion object : GuildChannelBuilder<Category, CategoryModifier> {
+
+        override fun create(builder: CategoryModifier.() -> Unit) = CategoryModifier().apply(builder).build()
+
     }
 
 }

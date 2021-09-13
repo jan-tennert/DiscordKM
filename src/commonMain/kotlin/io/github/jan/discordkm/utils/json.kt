@@ -101,7 +101,10 @@ inline fun <reified T>JsonObject.extractGuildEntity(guild: Guild) = when(T::clas
     TextChannel::class -> TextChannel(guild, this) as T
     Thread::class -> Thread(guild, this) as T
     Thread.ThreadMember::class -> Thread.ThreadMember(guild, this) as T
-    else -> throw IllegalStateException()
+    else -> {
+        println(T::class.simpleName)
+        throw IllegalStateException()
+    }
 }
 
 inline fun <reified T>JsonObject.extractClientEntity(client: Client) = when(T::class) {

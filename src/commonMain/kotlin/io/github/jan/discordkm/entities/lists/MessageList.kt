@@ -4,6 +4,7 @@ import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.channels.MessageChannel
 import io.github.jan.discordkm.entities.channels.PrivateChannel
 import io.github.jan.discordkm.entities.messages.Message
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildQuery
 import io.github.jan.discordkm.restaction.buildRestAction
@@ -19,6 +20,7 @@ class MessageList(val channel: MessageChannel, override val internalList: List<M
     /**
      * Retrieves a message from its id
      */
+    @CallsTheAPI
     suspend fun retrieve(id: Snowflake) = channel.client.buildRestAction<Message> {
         action = RestAction.Action.get("/channels/${channel.id}/messages/$id")
         transform { it.toJsonObject().extractMessageChannelEntity(channel) }
@@ -31,6 +33,7 @@ class MessageList(val channel: MessageChannel, override val internalList: List<M
      *
      * **You can only use one snowflake parameter**
      */
+    @CallsTheAPI
     suspend fun retrieveMessage(limit: Int? = null, before: Snowflake? = null, after: Snowflake? = null, around: Snowflake? = null) = channel.client.buildRestAction<List<Message>> {
         action = RestAction.Action.get("/channels/${channel.id}/messages" + buildQuery {
             putOptional("limit", limit)
@@ -42,6 +45,7 @@ class MessageList(val channel: MessageChannel, override val internalList: List<M
     /**
      * Retrieves all pinned messages in this channel
      */
+    @CallsTheAPI
     suspend fun retrievePinnedMessages() = if(channel is PrivateChannel) emptyList() else channel.client.buildRestAction<List<Message>> {
         action = RestAction.Action.get("/channels/$${channel.id}/pins")
         transform {

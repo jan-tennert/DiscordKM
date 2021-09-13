@@ -10,7 +10,9 @@
 package io.github.jan.discordkm.entities.guild.channels
 
 import io.github.jan.discordkm.entities.guild.Guild
+import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.entities.guild.channels.modifier.TextChannelModifier
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractGuildEntity
@@ -23,6 +25,7 @@ class NewsChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data
      * Modifies this news channel
      * A news channel can also be converted to an [TextChannel] by setting the type parameter [T] to TextChannel
      */
+    @CallsTheAPI
     suspend inline fun <reified T : GuildTextChannel> modify(modifier: TextChannelModifier.() -> Unit = {}): T = client.buildRestAction {
         val type = when(T::class) {
             TextChannel::class -> 0
@@ -40,6 +43,11 @@ class NewsChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data
         onFinish { guild.channelCache[id] = it }
     }
 
+    companion object : GuildChannelBuilder<GuildTextChannel, TextChannelModifier> {
+
+        override fun create(builder: TextChannelModifier.() -> Unit) = TextChannelModifier(5).apply(builder).build()
+
+    }
 
     fun asTextChannel() = TextChannel(guild, data)
 

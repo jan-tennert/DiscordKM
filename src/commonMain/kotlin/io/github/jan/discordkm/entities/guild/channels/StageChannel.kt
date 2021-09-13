@@ -10,7 +10,9 @@
 package io.github.jan.discordkm.entities.guild.channels
 
 import io.github.jan.discordkm.entities.guild.Guild
+import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.entities.guild.channels.modifier.VoiceChannelModifier
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractGuildEntity
@@ -19,12 +21,19 @@ import kotlinx.serialization.json.JsonObject
 
 class StageChannel(guild: Guild, data: JsonObject) : VoiceChannel(guild, data) {
 
+    @CallsTheAPI
     override suspend fun modify(modifier: VoiceChannelModifier.() -> Unit): StageChannel = client.buildRestAction {
         action = RestAction.Action.patch("/channels/$id", VoiceChannelModifier().apply(modifier).build())
         transform {
             it.toJsonObject().extractGuildEntity(guild)
         }
         onFinish { guild.channelCache[id] = it }
+    }
+
+    companion object : GuildChannelBuilder<VoiceChannel, VoiceChannelModifier> {
+
+        override fun create(builder: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(13).apply(builder).build()
+
     }
 
 }

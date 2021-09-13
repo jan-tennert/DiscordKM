@@ -30,6 +30,7 @@ import io.github.jan.discordkm.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.entities.guild.channels.Thread
 import io.github.jan.discordkm.entities.lists.ReactionList
 import io.github.jan.discordkm.exceptions.PermissionException
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extract
@@ -181,6 +182,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Crossposts this message if it was sent in a [NewsChannel]
      */
+    @CallsTheAPI
     suspend fun crosspost() = client.buildRestAction<Unit> {
         action = RestAction.Action.post("/channels/${channelId}/messages/${id}/crosspost", "")
         transform {  }
@@ -197,6 +199,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      * Deletes the message in the channel
      * Needs [Permission.MANAGE_MESSAGES] to delete other's messages
      */
+    @CallsTheAPI
     suspend fun delete() = client.buildRestAction<Unit> {
         action = RestAction.Action.delete("/channels/${channelId}/messages/$id")
         transform {  }
@@ -207,6 +210,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
         }
     }
 
+    @CallsTheAPI
     suspend fun edit(message: DataMessage) = client.buildRestAction<Message> {
         action = RestAction.Action.patch("/channels/${channel.id}/messages/$id", Json.encodeToString(message))
         transform { it.toJsonObject().extractMessageChannelEntity(channel) }
@@ -215,8 +219,10 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
         }
     }
 
+    @CallsTheAPI
     suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(message))
 
+    @CallsTheAPI
     suspend fun edit(content: String) = edit(buildMessage { this.content = content })
 
     override fun getValue(ref: Any?, property: KProperty<*>): Message {
@@ -228,6 +234,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      * @param name The name this thread will get
      * @param autoArchiveDuration The [Thread.ThreadDuration] after the thread will be achieved
      */
+    @CallsTheAPI
     suspend fun createThread(name: String, autoArchiveDuration: Thread.ThreadDuration = (channel as GuildTextChannel).defaultAutoArchiveDuration) = client.buildRestAction<Thread> {
         action = RestAction.Action.post("/channels/${channel.id}/messages/$id/threads", buildJsonObject {
             put("name", name)
@@ -241,6 +248,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Pins this message in this channel
      */
+    @CallsTheAPI
     suspend fun pin() = client.buildRestAction<Unit> {
         action = RestAction.Action.put("/channels/${channel.id}/pins/$id")
         transform {  }
@@ -250,6 +258,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Unpins this message in this channel
      */
+    @CallsTheAPI
     suspend fun unpin() = client.buildRestAction<Unit> {
         action = RestAction.Action.delete("/channels/${channel.id}/pins/$id")
         transform {  }

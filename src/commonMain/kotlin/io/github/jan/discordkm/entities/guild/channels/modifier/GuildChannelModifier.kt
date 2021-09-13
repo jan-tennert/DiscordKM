@@ -18,6 +18,7 @@ import io.github.jan.discordkm.entities.guild.channels.PermissionOverride
 import io.github.jan.discordkm.entities.misc.EnumList
 import io.github.jan.discordkm.utils.putJsonObject
 import io.github.jan.discordkm.utils.putOptional
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.putJsonArray
 
@@ -54,5 +55,11 @@ sealed interface NonCategoryModifier <C : GuildChannel> : GuildChannelModifier<C
         putOptional("parent_id", parentId)
         putJsonObject(super.build())
     }
+
+}
+
+interface GuildChannelBuilder<out C: GuildChannel, out M : GuildChannelModifier<out C>> {
+
+    fun create(builder: M.() -> Unit) : JsonObject
 
 }

@@ -12,6 +12,7 @@ package io.github.jan.discordkm.entities.channels
 import io.github.jan.discordkm.entities.Mentionable
 import io.github.jan.discordkm.entities.SerializableEntity
 import io.github.jan.discordkm.entities.SnowflakeEntity
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.getId
@@ -23,6 +24,7 @@ interface Channel : Mentionable, SnowflakeEntity, SerializableEntity {
     val type: ChannelType
         get() = ChannelType.values().first { it.id == data.getValue("type").jsonPrimitive.int }
 
+    @CallsTheAPI
     suspend fun delete() = client.buildRestAction<Unit> {
         action = RestAction.Action.delete("/channels/$id")
         transform {  }

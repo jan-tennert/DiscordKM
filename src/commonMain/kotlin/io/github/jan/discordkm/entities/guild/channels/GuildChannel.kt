@@ -25,6 +25,7 @@ import io.github.jan.discordkm.entities.guild.GuildEntity
 import io.github.jan.discordkm.entities.guild.Permission
 import io.github.jan.discordkm.entities.lists.ThreadList
 import io.github.jan.discordkm.entities.messages.Message
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildQuery
 import io.github.jan.discordkm.restaction.buildRestAction
@@ -87,6 +88,7 @@ sealed class GuildChannel (override val guild: Guild, final override val data: J
      * Deletes the channel.
      * Requires [Permission.MANAGE_CHANNELS] for Guild Channels and [Permission.MANAGE_THREADS] for Threads
      */
+    @CallsTheAPI
     override suspend fun delete() = client.buildRestAction<Unit> {
         action = RestAction.Action.delete("/channels/$id")
         transform {  }
@@ -102,6 +104,7 @@ sealed class GuildMessageChannel(guild: Guild, data: JsonObject) : GuildChannel(
     /**
      * Deletes multiple messages in this channel
      */
+    @CallsTheAPI
     suspend fun deleteMessages(ids: Iterable<Snowflake>) = client.buildRestAction<Unit> {
         action = RestAction.Action.post("/channels/$id/messages/bulk-delete", buildJsonObject {
             putJsonArray("messages") {
@@ -142,6 +145,7 @@ sealed class GuildTextChannel(guild: Guild, data: JsonObject) : GuildMessageChan
      * @param limit How many threads will get retrieved
      * @param before Threads before this timestamp
      */
+    @CallsTheAPI
     suspend fun retrievePublicArchivedThreads(limit: Int? = null, before: DateTimeTz? = null) = client.buildRestAction<List<Thread>> {
         action = RestAction.Action.get("/channels/${id}/threads/archived/public" + buildQuery {
             putOptional("limit", limit)
@@ -156,6 +160,7 @@ sealed class GuildTextChannel(guild: Guild, data: JsonObject) : GuildMessageChan
      * @param limit How many threads will get retrieved
      * @param before Threads before this timestamp
      */
+    @CallsTheAPI
     suspend fun retrievePrivateArchivedThreads(limit: Int? = null, before: DateTimeTz? = null) = client.buildRestAction<List<Thread>> {
         action = RestAction.Action.get("/channels/${id}/threads/archived/private" + buildQuery {
             putOptional("limit", limit)
@@ -170,6 +175,7 @@ sealed class GuildTextChannel(guild: Guild, data: JsonObject) : GuildMessageChan
      * @param limit How many threads will get retrieved
      * @param before Threads before this id
      */
+    @CallsTheAPI
     suspend fun retrieveJoinedPrivateArchivedThreads(limit: Int? = null, before: Snowflake? = null) = client.buildRestAction<List<Thread>> {
         action = RestAction.Action.get("/channels/${id}/users/@me/threads/archived/private" + buildQuery {
             putOptional("limit", limit)

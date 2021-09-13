@@ -12,6 +12,7 @@ package io.github.jan.discordkm.entities.lists
 import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.guild.Guild
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractClientEntity
@@ -21,6 +22,7 @@ class GuildList(val client: Client, override val internalList: List<Guild>) : Di
 
     override fun get(name: String) = internalList.filter { it.name == name }
 
+    @CallsTheAPI
     suspend fun retrieve(id: Snowflake) = client.buildRestAction<Guild> {
         action = RestAction.Action.get("/guilds/$id")
         transform { it.toJsonObject().extractClientEntity(client) }

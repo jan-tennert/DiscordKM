@@ -22,6 +22,7 @@ import io.github.jan.discordkm.entities.lists.MemberList
 import io.github.jan.discordkm.entities.lists.ThreadList
 import io.github.jan.discordkm.entities.lists.UserList
 import io.github.jan.discordkm.entities.misc.Image
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.RestClient
 import io.github.jan.discordkm.restaction.buildRestAction
@@ -53,6 +54,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
     val threads: ThreadList
         get() = ThreadList(guilds.map { it.threads.internalList }.flatten())
 
+    @CallsTheAPI
     suspend fun editSelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<User> {
         val edit = SelfUserEdit()
         edit.builder()
@@ -64,6 +66,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
         onFinish { selfUser = it }
     }
 
+    @CallsTheAPI
     suspend fun retrieveRTCRegions() = buildRestAction<String> {
         action = RestAction.Action.get("/voice/regions")
         transform { it }

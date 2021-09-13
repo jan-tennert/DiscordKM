@@ -48,8 +48,12 @@ object SnowflakeSerializer : KSerializer<Snowflake> {
 
 }
 
+/**
+ * Objects like [Member], [Role] or [Guild] are Snowflake entities,
+ * but if you want a snowflake entity without an object use [fromSnowflake]
+ */
 interface SnowflakeEntity {
-    
+
     val id: Snowflake
     val creationDate: DateTimeTz
         get() = id.timestamp

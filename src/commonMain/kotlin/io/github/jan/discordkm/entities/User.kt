@@ -12,6 +12,7 @@ package io.github.jan.discordkm.entities
 import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.entities.channels.PrivateChannel
 import io.github.jan.discordkm.entities.misc.Color
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.DiscordImage
@@ -91,6 +92,7 @@ class User(override val client: Client, override val data: JsonObject) : Mention
     /**
      * Creates a new [PrivateChannel]
      */
+    @CallsTheAPI
     suspend fun createPrivateChannel() = client.buildRestAction<PrivateChannel> {
         action = RestAction.Action.post("/users/@me/channels", buildJsonObject {
             put("recipient_id", id.long)

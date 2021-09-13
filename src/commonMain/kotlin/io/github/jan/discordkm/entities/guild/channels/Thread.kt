@@ -24,6 +24,7 @@ import io.github.jan.discordkm.entities.guild.channels.modifier.ThreadModifier
 import io.github.jan.discordkm.entities.lists.ThreadMemberList
 import io.github.jan.discordkm.entities.messages.DataMessage
 import io.github.jan.discordkm.entities.messages.Message
+import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.ISO8601Serializer
@@ -57,6 +58,7 @@ class Thread(guild: Guild, data: JsonObject, members: List<ThreadMember> = empty
     /**
      * Joins this [Thread]
      */
+    @CallsTheAPI
     suspend fun join() = client.buildRestAction<Unit> {
         action = RestAction.Action.put("/channels/$id/thread-members/@me")
         transform {  }
@@ -66,11 +68,13 @@ class Thread(guild: Guild, data: JsonObject, members: List<ThreadMember> = empty
     /**
      * Leaves this thread
      */
+    @CallsTheAPI
     suspend fun leave() = client.buildRestAction<Unit> {
         action = RestAction.Action.delete("/channels/$id/thread-members/@me")
         transform {  }
     }
 
+    @CallsTheAPI
     override suspend fun send(message: DataMessage) = client.buildRestAction<Message> {
         action = RestAction.Action.post("/channels/$id/messages", Json.encodeToString(message))
         transform {
@@ -82,6 +86,7 @@ class Thread(guild: Guild, data: JsonObject, members: List<ThreadMember> = empty
     /**
      * Modifies this [Thread]
      */
+    @CallsTheAPI
     suspend fun modify(modifier: ThreadModifier.() -> Unit) = client.buildRestAction<Thread> {
         action = RestAction.Action.patch("/channels/${id}", ThreadModifier(this@Thread).apply(modifier).build())
         transform { it.toJsonObject().extractGuildEntity(guild) }

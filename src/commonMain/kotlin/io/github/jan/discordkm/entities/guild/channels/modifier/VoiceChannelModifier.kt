@@ -12,12 +12,12 @@ package io.github.jan.discordkm.entities.guild.channels.modifier
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.guild.channels.PermissionOverride
 import io.github.jan.discordkm.entities.guild.channels.VoiceChannel
-import io.github.jan.discordkm.entities.misc.LimitedInt
+import io.github.jan.discordkm.entities.misc.NullableLimitedInt
 import io.github.jan.discordkm.utils.putJsonObject
 import io.github.jan.discordkm.utils.putOptional
 import kotlinx.serialization.json.buildJsonObject
 
-class VoiceChannelModifier : NonCategoryModifier<VoiceChannel> {
+class VoiceChannelModifier(val type: Int? = null) : NonCategoryModifier<VoiceChannel> {
 
     override var name: String? = null
 
@@ -27,9 +27,9 @@ class VoiceChannelModifier : NonCategoryModifier<VoiceChannel> {
 
     override var parentId: Snowflake? = null
 
-    var bitrate: Int by LimitedInt(8000, 96000)
+    var bitrate: Int? by NullableLimitedInt(8000, 96000)
 
-    var userLimit: Int by LimitedInt(0, 99)
+    var userLimit: Int? by NullableLimitedInt(0, 99)
 
     var rtcRegion: String? = null
 
@@ -40,6 +40,7 @@ class VoiceChannelModifier : NonCategoryModifier<VoiceChannel> {
         putOptional("user_limit", userLimit)
         putOptional("rtc_region", rtcRegion)
         putOptional("video_quality_mode", videoQualityMode?.ordinal?.plus(1))
+        putOptional("type", type)
         putJsonObject(super.build())
     }
 }
