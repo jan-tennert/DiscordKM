@@ -42,13 +42,11 @@ import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrDefault
 import io.github.jan.discordkm.utils.getOrNull
 import io.github.jan.discordkm.utils.getOrThrow
-import io.github.jan.discordkm.utils.putOptional
 import io.github.jan.discordkm.utils.toJsonArray
 import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -308,19 +306,6 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
     }
 
     /**
-     * Kicks the member from the guild.
-     *
-     * Requires the permission [Permission.KICK_MEMBERS]
-     */
-    @CallsTheAPI
-    suspend fun kick(memberId: Snowflake) = client.buildRestAction<Unit> {
-        action = RestAction.Action.delete("/guilds/${id}/members/$memberId")
-        transform {}
-        onFinish { memberCache.remove(id) }
-        check { if(Permission.KICK_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission KICK_MEMBERS to kick members from a guild") }
-    }
-
-    /**
      * Retrieves all bans from the guild
 
      * Requires the permission [Permission.BAN_MEMBERS]
@@ -342,39 +327,6 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
         action = RestAction.Action.get("/guilds/${id}/bans/${userId}")
         transform { Ban(this@Guild, it.toJsonObject()) }
         check { if(Permission.BAN_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to retrieve bans from a guild") }
-    }
-
-    /**
-     * Bans a member from the guild
-     *
-     * Requires the permission [Permission.BAN_MEMBERS]
-     */
-    @CallsTheAPI
-    suspend fun ban(userId: Snowflake, delDays: Int? = null) = client.buildRestAction<Unit> {
-        action = RestAction.Action.put("/guilds/${id}/bans/$userId", buildJsonObject {
-            putOptional("delete_message_days", delDays)
-        })
-        transform {  }
-        check {
-            if (delDays != null) {
-                if(delDays > 7 || delDays < 0) throw IllegalArgumentException("The delDays have to be between 0 and 7")
-            }
-            check { if(Permission.BAN_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to ban members from a guild") }
-        }
-    }
-
-    /**
-     * Unbans a member from the guild
-     *
-     * Requires the permission [Permission.BAN_MEMBERS]
-     */
-    @CallsTheAPI
-    suspend fun unban(userId: Snowflake) = client.buildRestAction<Unit> {
-        action = RestAction.Action.delete("/guilds/${id}/bans/${userId}")
-        transform {  }
-        check {
-            check { if(Permission.BAN_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to ban members from a guild") }
-        }
     }
 
     override fun toString() = "Guild[id=$id,name=$name]"

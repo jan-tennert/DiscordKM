@@ -22,7 +22,6 @@ import io.github.jan.discordkm.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.entities.guild.channels.VoiceChannel
 import io.github.jan.discordkm.entities.lists.RetrievableRoleList
 import io.github.jan.discordkm.entities.misc.EnumList
-import io.github.jan.discordkm.exceptions.PermissionException
 import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
@@ -135,25 +134,19 @@ class Member(val guild: Guild, override val data: JsonObject) : Reference<Member
     }
 
     /**
-     * Sets the nickname for this user
-     */
-    @CallsTheAPI
-    suspend fun setNickname(nickname: String) = modify {
-        this@modify.nickname = nickname
-    }
-
-    /**
      * Kicks the member from the guild.
      *
      * Requires the permission [Permission.KICK_MEMBERS]
      */
     @CallsTheAPI
-    suspend fun kick() = client.buildRestAction<Unit> {
-        action = RestAction.Action.delete("/guilds/${guild.id}/members/$id")
-        transform {}
-        onFinish { guild.memberCache.remove(id) }
-        check { if(Permission.KICK_MEMBERS !in guild.selfMember.permissions) throw PermissionException("You require the permission KICK_MEMBERS to kick members from a guild") }
-    }
+    suspend fun kick() = guild.members.kick(id)
+
+    /**
+     * Bans a member from the guild
+     *
+     * Requires the permission [Permission.BAN_MEMBERS]
+     */
+    suspend fun ban(delDays: Int?) = guild.members.ban(id, delDays)
 
     //mute etc in voice entity
 

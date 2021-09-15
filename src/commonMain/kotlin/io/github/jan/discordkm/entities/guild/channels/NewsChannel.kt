@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.entities.guild.channels
 
+import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.entities.guild.channels.modifier.TextChannelModifier
@@ -18,6 +19,8 @@ import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractGuildEntity
 import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class NewsChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data) {
 
@@ -41,6 +44,17 @@ class NewsChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data
             }
         }
         onFinish { guild.channelCache[id] = it }
+    }
+
+    /**
+     * Follows this [NewsChannel], which means members of this guild can publish a message in this channel and the channel id with [targetId] will also get the message
+     */
+    suspend fun follow(targetId: Snowflake) = client.buildRestAction<Unit> {
+        action = RestAction.Action.post("/channels/$id/followers", buildJsonObject {
+            put("webhook_channel_id", targetId.long)
+        })
+        transform {}
+        //check permission
     }
 
     companion object : GuildChannelBuilder<GuildTextChannel, TextChannelModifier> {

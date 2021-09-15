@@ -37,15 +37,15 @@ class MessageBuilder {
     var reference: Message.Reference? = null
     var allowedMentions = AllowedMentions()
     var tts = false
-    var files: MutableList<ByteArray> = mutableListOf()
+    var files: MutableList<VfsFile> = mutableListOf()
 
     fun sticker(id: Snowflake) { stickerIds += id }
 
     fun sticker(sticker: Sticker) = sticker(sticker.id)
 
-    suspend fun file(file: VfsFile) { files += file.readBytes() }
+    suspend fun file(file: VfsFile) { files += file }
 
-    suspend fun file(path: String) { files += localVfs(path).readBytes() }
+    suspend fun file(path: String) { files += localVfs(path) }
 
     fun embed(builder: EmbedBuilder.() -> Unit) { embeds += buildEmbed(builder) }
 
@@ -89,7 +89,7 @@ class DataMessage @Deprecated("Use buildMessage method") constructor(
     val tts: Boolean = false,
     val embeds: List<MessageEmbed> = emptyList(),
     val allowedMentions: AllowedMentions,
-    val files: List<ByteArray> = emptyList()
+    val files: List<VfsFile> = emptyList() //ToDo
 ) {
 
     fun buildJson() = buildJsonObject {

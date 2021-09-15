@@ -26,6 +26,7 @@ import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.getOrNull
+import io.github.jan.discordkm.utils.toJsonObject
 
 
 interface MessageChannel : Channel {
@@ -51,8 +52,10 @@ interface MessageChannel : Channel {
     @CallsTheAPI
     suspend fun send(message: DataMessage) = client.buildRestAction<Message> {
         action = RestAction.Action.post("/channels/${id}/messages", message.buildJson())
+        transform { Message(this@MessageChannel, it.toJsonObject()) }
         onFinish { messageCache[it.id] = it }
     }
+
     suspend fun send(builder: MessageBuilder.() -> Unit) = send(buildMessage(builder))
 
     @CallsTheAPI

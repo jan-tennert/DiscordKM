@@ -12,12 +12,16 @@ package io.github.jan.discordkm.entities.lists
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.Member
+import io.github.jan.discordkm.entities.guild.Permission
+import io.github.jan.discordkm.exceptions.PermissionException
 import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildQuery
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractGuildEntity
+import io.github.jan.discordkm.utils.putOptional
 import io.github.jan.discordkm.utils.toJsonObject
+import kotlinx.serialization.json.buildJsonObject
 
 sealed interface IMemberList : DiscordList<Member> {
 
@@ -69,6 +73,53 @@ class RetrievableMemberList(val guild: Guild, override val internalList: List<Me
             put("query", query)
             put("limit", limit)
         })
+    }
+
+    /**
+     * Kicks the member from the guild.
+     *
+     * Requires the permission [Permission.KICK_MEMBERS]
+     */
+    @CallsTheAPI
+    suspend fun kick(memberId: Snowflake) = guild.client.buildRestAction<Unit> {
+        action = RestAction.Action.delete("/guilds/${guild.id}/members/$memberId")
+        transform {}
+        onFinish { guild.memberCache.remove(memberId) }
+        check { if(Permission.KICK_MEMBERS !in guild.selfMember.permissions) throw PermissionException("You require the permission KICK_MEMBERS to kick members from a guild") }
+    }
+
+    /**
+     * Bans a member from the guild
+     *
+     * Requires the permission [Permission.BAN_MEMBERS]
+     */
+    @CallsTheAPI
+    suspend fun ban(userId: Snowflake, delDays: Int? = null) = guild.client.buildRestAction<Unit> {
+        action = RestAction.Action.put("/guilds/${guild.id}/bans/$userId", buildJsonObject {
+            putOptional("delete_message_days", delDays)
+        })
+        transform {  }
+        check {
+            if (delDays != null) {
+                if(delDays > 7 || delDays < 0) throw IllegalArgumentException("The delDays have to be between 0 and 7")
+            }
+            check { if(Permission.BAN_MEMBERS !in guild.selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to ban members from a guild") }
+        }
+        onFinish { guild.memberCache.remove(userId) }
+    }
+
+    /**
+     * Unbans a member from the guild
+     *
+     * Requires the permission [Permission.BAN_MEMBERS]
+     */
+    @CallsTheAPI
+    suspend fun unban(userId: Snowflake) = guild.client.buildRestAction<Unit> {
+        action = RestAction.Action.delete("/guilds/${guild.id}/bans/${userId}")
+        transform {  }
+        check {
+            check { if(Permission.BAN_MEMBERS !in guild.selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to ban members from a guild") }
+        }
     }
 
 

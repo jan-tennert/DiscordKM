@@ -33,6 +33,7 @@ import io.github.jan.discordkm.utils.extractGuildEntity
 import io.github.jan.discordkm.utils.extractMessageChannelEntity
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrThrow
+import io.github.jan.discordkm.utils.toJsonArray
 import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -40,6 +41,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import kotlin.jvm.JvmInline
 
 //maybe cache threads?
@@ -63,6 +65,17 @@ class Thread(guild: Guild, data: JsonObject, members: List<ThreadMember> = empty
         action = RestAction.Action.put("/channels/$id/thread-members/@me")
         transform {  }
         check { if(metadata.isArchived) throw UnsupportedOperationException("This thread is archived. You can't join anymore ") }
+    }
+
+    /**
+     * Retrieves all thread members from this thread
+     *
+     * Requires the intent [Intent.GUILD_MEMBERS]
+     */
+    suspend fun retrieveThreadMembers() = client.buildRestAction<List<ThreadMember>> {
+        action = RestAction.Action.get("/channels/$id/thread-members")
+        transform { it.toJsonArray().map { json -> ThreadMember(guild, json.jsonObject) }}
+        onFinish { memberCache.internalMap.clear(); memberCache.internalMap.putAll(it.associateBy { member -> member.id }) }
     }
 
     /**
