@@ -10,11 +10,12 @@
 package io.github.jan.discordkm.restaction
 
 import io.github.jan.discordkm.clients.Client
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
-abstract class RestAction<T> internal constructor(private val action: Action, val client: Client) {
+abstract class RestAction<T> internal constructor(private val action: Action, val client: Client, val builder: (HttpRequestBuilder.() -> Unit)?) {
 
     private var listeners: MutableList<RestActionListener<T>> = mutableListOf()
     private var check: () -> Unit = { }
@@ -27,7 +28,7 @@ abstract class RestAction<T> internal constructor(private val action: Action, va
     private fun send() {
         check()
         client.launch {
-            val result = client.rest.custom(action.method, action.endpoint, action.body)
+            val result = client.rest.custom(action.method, action.endpoint, action.body, builder)
             println(result)
             listeners.forEach { it((transform(result))) }
         }
@@ -47,10 +48,10 @@ abstract class RestAction<T> internal constructor(private val action: Action, va
         companion object {
 
             fun get(endpoint: String) = Action(endpoint, HttpMethod.Get)
-            fun post(endpoint: String, body: Any) = Action(endpoint, HttpMethod.Post, body.toString())
+            fun post(endpoint: String, body: Any? = null) = Action(endpoint, HttpMethod.Post, body?.toString())
             fun delete(endpoint: String) = Action(endpoint, HttpMethod.Delete)
-            fun patch(endpoint: String, body: Any) = Action(endpoint, HttpMethod.Patch, body.toString())
-            fun put(endpoint: String) = Action(endpoint, HttpMethod.Put)
+            fun patch(endpoint: String, body: Any ? = null) = Action(endpoint, HttpMethod.Patch, body?.toString())
+            fun put(endpoint: String, body: Any? = null) = Action(endpoint, HttpMethod.Put, body?.toString())
             fun custom(endpoint: String, method: HttpMethod, body: String? = null) = Action(endpoint, method, body)
 
         }
@@ -70,16 +71,20 @@ class RestActionBuilder<T>(val client: Client)  {
     internal var check: () -> Unit = {  }
     @PublishedApi
     internal var onFinish: (T) -> Unit = {}
+    @PublishedApi
+    internal var requestBuilder: (HttpRequestBuilder.() -> Unit)? = null
 
     fun transform(transform: (String) -> T) {
         this.transform = transform
     }
 
+    fun builder(requestBuilder: HttpRequestBuilder.() -> Unit) { this.requestBuilder = requestBuilder}
+
     fun onFinish(onFinish: (T) -> Unit) { this.onFinish = onFinish }
 
     fun check(check: () -> Unit) { this.check = check }
 
-    fun build() = object : RestAction<T>(action, client) {
+    fun build() = object : RestAction<T>(action, client, requestBuilder) {
         override fun transform(data: String): T = this@RestActionBuilder.transform(data)
     }
 

@@ -13,11 +13,21 @@ import com.soywiz.klogger.Logger
 import com.soywiz.korio.net.ws.WebSocketClient
 import com.soywiz.korio.net.ws.WsCloseInfo
 import io.github.jan.discordkm.clients.DiscordClient
+import io.github.jan.discordkm.events.GuildBanAddEvent
+import io.github.jan.discordkm.events.GuildBanRemoveEvent
+import io.github.jan.discordkm.events.internal.BanEventHandler
 import io.github.jan.discordkm.events.internal.GuildCreateEventHandler
+import io.github.jan.discordkm.events.internal.GuildDeleteEventHandler
+import io.github.jan.discordkm.events.internal.GuildEmojisUpdateEventHandler
+import io.github.jan.discordkm.events.internal.GuildStickersUpdateEventHandler
+import io.github.jan.discordkm.events.internal.GuildUpdateEventHandler
 import io.github.jan.discordkm.events.internal.MessageBulkDeleteEventHandler
 import io.github.jan.discordkm.events.internal.MessageCreateEventHandler
 import io.github.jan.discordkm.events.internal.MessageDeleteEventHandler
 import io.github.jan.discordkm.events.internal.MessageReactionAddEventHandler
+import io.github.jan.discordkm.events.internal.MessageReactionEmojiRemoveEventHandler
+import io.github.jan.discordkm.events.internal.MessageReactionRemoveAllEventHandler
+import io.github.jan.discordkm.events.internal.MessageReactionRemoveEventHandler
 import io.github.jan.discordkm.events.internal.MessageUpdateEventHandler
 import io.github.jan.discordkm.events.internal.ReadyEventHandler
 import io.github.jan.discordkm.serialization.IdentifyPayload
@@ -55,6 +65,7 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
         ws = WebSocketClient(generateWebsocketURL(encoding, compression))
         ws.onStringMessage {
             val json = Json.parseToJsonElement(it).jsonObject
+            println(json)
             var data = json["d"]
             if(data is JsonNull) data = null
             client.launch {
@@ -130,7 +141,15 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
       //  println(payload.eventData!!)
         val event = when(payload.eventName!!) {
             "READY" -> ReadyEventHandler(client).handle(payload.eventData!!)
+
+            //guild events
             "GUILD_CREATE" -> GuildCreateEventHandler(client).handle(payload.eventData!!)
+            "GUILD_UPDATE" -> GuildUpdateEventHandler(client).handle(payload.eventData!!)
+            "GUILD_DELETE" -> GuildDeleteEventHandler(client, LOGGER).handle(payload.eventData!!)
+            "GUILD_BAN_ADD" -> BanEventHandler(client).handle<GuildBanAddEvent>(payload.eventData!!)
+            "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(payload.eventData!!)
+            "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(payload.eventData!!)
+            "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(payload.eventData!!)
 
             //message events
             "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(payload.eventData!!)
@@ -138,6 +157,9 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
             "MESSAGE_DELETE" -> MessageDeleteEventHandler(client).handle(payload.eventData!!)
             "MESSAGE_DELETE_BULK" -> MessageBulkDeleteEventHandler(client).handle(payload.eventData!!)
             "MESSAGE_REACTION_ADD" -> MessageReactionAddEventHandler(client).handle(payload.eventData!!)
+            "MESSAGE_REACTION_REMOVE" -> MessageReactionRemoveEventHandler(client).handle(payload.eventData!!)
+            "MESSAGE_REACTION_REMOVE_ALL" -> MessageReactionRemoveAllEventHandler(client).handle(payload.eventData!!)
+            "MESSAGE_REACTION_REMOVE_EMOJI" -> MessageReactionEmojiRemoveEventHandler(client).handle(payload.eventData!!)
             else -> return
         }
         client.handleEvent(event)

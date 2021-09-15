@@ -14,7 +14,10 @@ import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.User
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.Member
+import io.github.jan.discordkm.entities.guild.Permission
 import io.github.jan.discordkm.entities.guild.Role
+import io.github.jan.discordkm.entities.guild.RoleModifier
+import io.github.jan.discordkm.exceptions.PermissionException
 import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
@@ -42,6 +45,19 @@ class RoleList(val guild: Guild, override val internalList: List<Role>) : IRoleL
             guild.roleCache.internalMap.clear()
             guild.roleCache.internalMap.putAll(it.associateBy { role -> role.id })
         }
+    }
+
+    /**
+     * Creates a role
+     *
+     * Requires the permission [Permission.MANAGE_ROLES]
+     */
+    @CallsTheAPI
+    suspend fun create(builder: RoleModifier.() -> Unit) = guild.client.buildRestAction<Role> {
+        action = RestAction.Action.post("/guilds/${guild.id}/roles", RoleModifier().apply(builder).build())
+        transform { Role(guild, it.toJsonObject()) }
+        onFinish { guild.roleCache[it.id] = it }
+        check { if(Permission.MANAGE_ROLES !in guild.selfMember.permissions) throw PermissionException("You need the permission MANAGE_ROLES to create roles") }
     }
 
 }

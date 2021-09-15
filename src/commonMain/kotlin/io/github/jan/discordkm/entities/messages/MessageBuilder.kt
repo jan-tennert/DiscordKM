@@ -9,6 +9,8 @@
  */
 package io.github.jan.discordkm.entities.messages
 
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.std.localVfs
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.guild.Sticker
 import kotlinx.serialization.KSerializer
@@ -18,6 +20,12 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 
 class MessageBuilder {
 
@@ -29,10 +37,15 @@ class MessageBuilder {
     var reference: Message.Reference? = null
     var allowedMentions = AllowedMentions()
     var tts = false
+    var files: MutableList<ByteArray> = mutableListOf()
 
     fun sticker(id: Snowflake) { stickerIds += id }
 
     fun sticker(sticker: Sticker) = sticker(sticker.id)
+
+    suspend fun file(file: VfsFile) { files += file.readBytes() }
+
+    suspend fun file(path: String) { files += localVfs(path).readBytes() }
 
     fun embed(builder: EmbedBuilder.() -> Unit) { embeds += buildEmbed(builder) }
 
@@ -42,7 +55,7 @@ class MessageBuilder {
 
     fun reference(message: Message) = reference(message.id)
 
-    fun build() = DataMessage(content, tts, embeds, allowedMentions)
+    fun build() = DataMessage(content, tts, embeds, allowedMentions, files)
 
 }
 
@@ -62,7 +75,7 @@ object AllowedMentionSerializer : KSerializer<AllowedMentionType> {
 }
 
 @Serializable
-class AllowedMentions(
+data class AllowedMentions(
     @SerialName("parse")
     val types: List<AllowedMentionType> = emptyList(),
     val roles: List<Long> = emptyList(),
@@ -71,13 +84,22 @@ class AllowedMentions(
     val replyToUser: Boolean = false
 )
 
-@Serializable
-data class DataMessage @Deprecated("Use buildMessage method") constructor(
+class DataMessage @Deprecated("Use buildMessage method") constructor(
     val content: String = "",
     val tts: Boolean = false,
     val embeds: List<MessageEmbed> = emptyList(),
-    @SerialName("allowed_mentions") val allowedMentions: AllowedMentions
-)
+    val allowedMentions: AllowedMentions,
+    val files: List<ByteArray> = emptyList()
+) {
+
+    fun buildJson() = buildJsonObject {
+        put("content", content)
+        put("tts", tts)
+        put("embeds", Json.encodeToJsonElement(embeds).jsonArray)
+        put("allowed_mentions", Json.encodeToJsonElement(allowedMentions).jsonObject)
+    }.toString()
+
+}
 /*
 Missing:
 file

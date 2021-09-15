@@ -6,8 +6,8 @@ import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.guild.Emoji
 
 /**
- * Sent when one or more guild emojis have been updated
+ * Sent when the guild emotes get updated
  *
  * Requires the intent [Intent.GUILD_EMOJIS_AND_STICKERS]
  */
-class GuildEmojiUpdateEvent(override val client: Client, override val guildId: Snowflake, val emotes: List<Emoji.Emote>) : GuildEvent
+class GuildEmojisUpdateEvent(override val client: Client, override val guildId: Snowflake, val emotes: List<Emoji.Emote>) : GuildEvent

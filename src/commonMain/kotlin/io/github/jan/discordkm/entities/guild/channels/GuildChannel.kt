@@ -185,4 +185,6 @@ sealed class GuildTextChannel(guild: Guild, data: JsonObject) : GuildMessageChan
         onFinish { it.forEach { thread -> guild.threadCache[thread.id] = thread } }
     }
 
+    override fun toString() = "GuildChannel[name=$name, id=$id, type=${ type}]"
+
 }

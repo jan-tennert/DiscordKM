@@ -4,6 +4,7 @@ import io.github.jan.discordkm.clients.Client
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.channels.MessageChannel
 import io.github.jan.discordkm.entities.guild.Emoji
+import io.github.jan.discordkm.entities.guild.Member
 import io.github.jan.discordkm.events.MessageReactionAddEvent
 import io.github.jan.discordkm.utils.getOrNull
 import io.github.jan.discordkm.utils.getOrThrow
@@ -23,6 +24,8 @@ class MessageReactionAddEventHandler(val client: Client) : InternalEventHandler<
         val userId = data.getOrThrow<Snowflake>("user_id")
         val user = client.users[userId]!!
         val messageId = data.getOrThrow<Snowflake>("message_id")
-        return MessageReactionAddEvent(client, channel, messageId, emoji, channelId, userId, user)
+        val member = data.getOrNull<Member>("member")
+        val guildId = data.getOrNull<Snowflake>("guild_id")
+        return MessageReactionAddEvent(client, channel, messageId, emoji, channelId, userId, user, member, guildId)
     }
 }

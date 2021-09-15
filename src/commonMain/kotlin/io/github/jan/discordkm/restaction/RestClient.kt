@@ -16,6 +16,7 @@ import io.github.jan.discordkm.utils.DiscordKMInfo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.receive
 import io.ktor.client.features.defaultRequest
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -35,7 +36,7 @@ class RestClient(val client: Client) {
     }
     internal val rateLimiter = RateLimiter(client.loggingLevel)
 
-    suspend fun custom(method: HttpMethod, endpoint: String, data: String? = null) = when(method.value) {
+    suspend fun custom(method: HttpMethod, endpoint: String, data: String? = null, builder: ((HttpRequestBuilder) -> Unit)?) = when(method.value) {
         "GET" -> {
             rateLimiter.queue(endpoint) {
                 http.get<HttpResponse>(generateUrl(endpoint))
@@ -44,8 +45,10 @@ class RestClient(val client: Client) {
         "POST" -> {
             rateLimiter.queue(endpoint) {
                 http.post<HttpResponse>(generateUrl(endpoint)) {
-                    body = data!!
-
+                    data?.let {
+                        body = it
+                    }
+                    builder?.invoke(this)
                     header("Content-Type", "application/json")
                 }
             }.receive<String>()
@@ -56,18 +59,24 @@ class RestClient(val client: Client) {
             }.receive<String>()
         }
         "PATCH" -> {
-            println(data!!)
             rateLimiter.queue(endpoint) {
                 http.patch<HttpResponse>(generateUrl(endpoint)) {
-                    body = data!!
-
+                    data?.let {
+                        body = it
+                    }
+                    builder?.invoke(this)
                     header("Content-Type", "application/json")
                 }
             }.receive<String>()
         }
         "PUT" -> {
             rateLimiter.queue(endpoint) {
-                http.put(generateUrl(endpoint))
+                http.put(generateUrl(endpoint)) {
+                    data?.let {
+                        body = it
+                    }
+                    builder?.invoke(this)
+                }
             }.receive<String>()
         }
         else -> throw UnsupportedOperationException()

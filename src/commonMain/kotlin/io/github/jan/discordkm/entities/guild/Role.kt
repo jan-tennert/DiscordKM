@@ -15,12 +15,24 @@ import io.github.jan.discordkm.entities.Reference
 import io.github.jan.discordkm.entities.SerializableEntity
 import io.github.jan.discordkm.entities.SnowflakeEntity
 import io.github.jan.discordkm.entities.guild.channels.GuildChannel
+import io.github.jan.discordkm.entities.misc.Color
+import io.github.jan.discordkm.entities.misc.EnumList
+import io.github.jan.discordkm.exceptions.PermissionException
+import io.github.jan.discordkm.restaction.CallsTheAPI
+import io.github.jan.discordkm.restaction.RestAction
+import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.getColor
 import io.github.jan.discordkm.utils.getEnums
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrThrow
 import io.github.jan.discordkm.utils.getRoleTag
+import io.github.jan.discordkm.utils.putOptional
+import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
@@ -85,5 +97,54 @@ class Role(val guild: Guild, override val data: JsonObject) : Mentionable, Refer
         return other.id == id
     }
 
+    /**
+     * Modifies this role
+     *
+     * Requires the permission [Permission.MANAGE_ROLES]
+     */
+    @CallsTheAPI
+    suspend fun modify(modifier: RoleModifier.() -> Unit) = client.buildRestAction<Role> {
+        action = RestAction.Action.patch("/guilds/${guild.id}/roles/${id}", RoleModifier().apply(modifier).build())
+        transform { Role(guild, it.toJsonObject()) }
+        onFinish { guild.roleCache[it.id] = it }
+        check { if(Permission.MANAGE_ROLES !in guild.selfMember.permissions) throw PermissionException("You need the permission MANAGE_ROLES to modify a role") }
+    }
+
+    /**
+     * Changes the position of the role
+     *
+     * Requires the permission [Permission.MANAGE_ROLES]
+     */
+    @CallsTheAPI
+    suspend fun setPosition(newPosition: Int) = client.buildRestAction<Role> {
+        action = RestAction.Action.patch("/guilds/${guild.id}/roles", buildJsonArray {
+            addJsonObject {
+                put("id", id.long)
+                put("position", newPosition)
+            }
+        })
+        transform { Role(guild, it.toJsonObject()) }
+        onFinish { guild.roleCache[it.id] = it }
+        check { if(Permission.MANAGE_ROLES !in guild.selfMember.permissions) throw PermissionException("You need the permission MANAGE_ROLES to modify the role position") }
+    }
+
     class Tag(val botId: Long? = null, integrationId: Long? = null, val premiumSubscriber: Boolean? = null)
+}
+
+class RoleModifier {
+
+    var name: String? = null
+    var permissions: MutableList<Permission> = mutableListOf()
+    var color: Color? = null
+    var hoist: Boolean? = null
+    var mentionable: Boolean? = null
+
+    fun build() = buildJsonObject {
+        putOptional("name", name)
+        putOptional("permissions", EnumList(Permission, permissions).rawValue)
+        putOptional("color", color)
+        putOptional("hoist", hoist)
+        putOptional("mentionable", mentionable)
+    }
+
 }

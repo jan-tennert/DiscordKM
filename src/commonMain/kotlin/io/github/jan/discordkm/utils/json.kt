@@ -111,7 +111,7 @@ inline fun <reified T>JsonObject.extractClientEntity(client: Client) = when(T::c
     PrivateChannel::class -> PrivateChannel(client, this) as T
     User::class -> User(client, this) as T
     Guild::class -> Guild(client, this) as T
-    Emoji::class -> Emoji.Emote(this, client) as T
+    Emoji.Emote::class -> Emoji.Emote(this, client) as T
     Sticker::class -> Sticker(this, client) as T
     Invite::class -> Invite(client, this) as T
     InviteApplication::class -> InviteApplication(client, this) as T
