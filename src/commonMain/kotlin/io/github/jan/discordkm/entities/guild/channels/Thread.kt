@@ -106,6 +106,9 @@ class Thread(guild: Guild, data: JsonObject, members: List<ThreadMember> = empty
         onFinish { guild.threadCache[id] = it }
     }
 
+    override suspend fun retrieve() = throw UnsupportedOperationException()
+
+
     @Serializable
     data class ThreadMetadata(
         @SerialName("archived")

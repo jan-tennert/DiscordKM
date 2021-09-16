@@ -45,6 +45,8 @@ open class VoiceChannel(guild: Guild, data: JsonObject) : GuildChannel(guild, da
         onFinish { guild.channelCache[id] = it }
     }
 
+    override suspend fun retrieve() = guild.channels.retrieve<VoiceChannel>(id)
+
     companion object : GuildChannelBuilder<VoiceChannel, VoiceChannelModifier> {
 
         override fun create(builder: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(2).apply(builder).build()

@@ -129,6 +129,8 @@ class Role(val guild: Guild, override val data: JsonObject) : Mentionable, Refer
     }
 
     class Tag(val botId: Long? = null, integrationId: Long? = null, val premiumSubscriber: Boolean? = null)
+
+    override suspend fun retrieve() = guild.roles.retrieveRoles().first { it.id == id }
 }
 
 class RoleModifier {

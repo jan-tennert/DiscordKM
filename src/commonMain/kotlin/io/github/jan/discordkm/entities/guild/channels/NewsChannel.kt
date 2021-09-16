@@ -65,4 +65,6 @@ class NewsChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data
 
     fun asTextChannel() = TextChannel(guild, data)
 
+    override suspend fun retrieve() = guild.channels.retrieve<NewsChannel>(id)
+
 }

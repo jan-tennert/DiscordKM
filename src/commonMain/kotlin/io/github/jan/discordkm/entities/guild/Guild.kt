@@ -456,4 +456,6 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
     }
 
     override fun getValue(ref: Any?, property: KProperty<*>) = client.guilds[id]!!
+
+    override suspend fun retrieve() = client.guilds.retrieve(id)
 }

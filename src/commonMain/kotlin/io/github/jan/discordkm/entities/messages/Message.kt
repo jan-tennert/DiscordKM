@@ -285,6 +285,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
 
     }
 
+    override suspend fun retrieve() = channel.messages.retrieve(id)
 
 }
 

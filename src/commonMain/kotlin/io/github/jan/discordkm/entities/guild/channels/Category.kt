@@ -33,6 +33,8 @@ class Category(guild: Guild, data: JsonObject) : GuildChannel(guild, data) {
         onFinish { guild.channelCache[id] = it }
     }
 
+    override suspend fun retrieve() = guild.channels.retrieve<Category>(id)
+
     companion object : GuildChannelBuilder<Category, CategoryModifier> {
 
         override fun create(builder: CategoryModifier.() -> Unit) = CategoryModifier().apply(builder).build()

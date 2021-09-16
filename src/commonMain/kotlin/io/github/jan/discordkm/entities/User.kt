@@ -142,4 +142,6 @@ class User(override val client: Client, override val data: JsonObject) : Mention
 
     override fun getValue(ref: Any?, property: KProperty<*>) = client.users[id]!!
 
+    override suspend fun retrieve() = client.users.retrieve(id)
+
 }

@@ -159,6 +159,8 @@ class Member(val guild: Guild, override val data: JsonObject) : Reference<Member
         return other.id == id
     }
 
+    override suspend fun retrieve() = guild.members.retrieve(id)
+
 }
 
 class MemberModifier {
