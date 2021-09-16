@@ -3,6 +3,8 @@ package io.github.jan.discordkm.entities.guild
 import io.github.jan.discordkm.entities.Reference
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.SnowflakeEntity
+import io.github.jan.discordkm.entities.guild.channels.StageChannel
+import io.github.jan.discordkm.entities.lists.getGuildChannel
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.getId
@@ -23,6 +25,8 @@ class StageInstance(override val guild: Guild, override val data: JsonObject) : 
      * The stage channel where the stage instance is in
      */
     val stageChannelId = data.getOrThrow<Snowflake>("channel_id")
+    val stageChannel
+        get() = guild.channels.getGuildChannel<StageChannel>(stageChannelId)
 
     /**
      * The topic of the stage instance

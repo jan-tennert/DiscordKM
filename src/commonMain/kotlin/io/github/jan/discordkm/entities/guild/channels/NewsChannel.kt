@@ -57,6 +57,17 @@ class NewsChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data
         //check permission
     }
 
+    /**
+     * Follows this [NewsChannel], which means members of this guild can publish a message in this channel and the channel id with [targetId] will also get the message
+     */
+    suspend fun follow(channel: TextChannel) = client.buildRestAction<Unit> {
+        action = RestAction.Action.post("/channels/$id/followers", buildJsonObject {
+            put("webhook_channel_id", channel.id.long)
+        })
+        transform {}
+        //check permission
+    }
+
     companion object : GuildChannelBuilder<GuildTextChannel, TextChannelModifier> {
 
         override fun create(builder: TextChannelModifier.() -> Unit) = TextChannelModifier(5).apply(builder).build()
