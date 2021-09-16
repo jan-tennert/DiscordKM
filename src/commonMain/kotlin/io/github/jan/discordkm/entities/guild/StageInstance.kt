@@ -7,8 +7,10 @@ import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrThrow
+import io.github.jan.discordkm.utils.putOptional
 import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
@@ -54,7 +56,10 @@ class StageInstance(override val guild: Guild, override val data: JsonObject) : 
      * Modifies this stage instance. All fields are optional
      */
     suspend fun modify(topic: String? = null, privacyLevel: PrivacyLevel? = null) = client.buildRestAction<StageInstance> {
-        action = RestAction.Action.patch("/stage-instances/$stageChannelId")
+        action = RestAction.Action.patch("/stage-instances/$stageChannelId", buildJsonObject {
+            putOptional("topic", topic)
+            putOptional("privacy_level", privacyLevel?.ordinal)
+        })
         transform { StageInstance(guild, it.toJsonObject()) }
     }
 
