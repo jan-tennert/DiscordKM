@@ -12,7 +12,7 @@ package io.github.jan.discordkm.events
 import io.github.jan.discordkm.entities.BaseEntity
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.channels.MessageChannel
-import io.github.jan.discordkm.entities.guild.Guild
+import io.github.jan.discordkm.entities.interactions.Interaction
 import io.github.jan.discordkm.entities.messages.Message
 import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
@@ -37,15 +37,17 @@ sealed interface MessageEvent : Event {
 
 }
 
+sealed interface InteractionCreateEvent : Event {
+
+    val interaction: Interaction
+
+}
+
 sealed interface GuildEvent : Event {
 
     val guildId: Snowflake
 
     @CallsTheAPI
-    suspend fun retrieveGuild() = client.buildRestAction<Guild> {
-        action = RestAction.Action.get("/guilds/${guildId}")
-        transform { Guild(client, it.toJsonObject()) }
-        onFinish { client.guildCache[it.id] = it }
-    }
+    suspend fun retrieveGuild() = client.guilds.retrieve(guildId)
 
 }

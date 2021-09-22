@@ -21,6 +21,7 @@ import io.github.jan.discordkm.events.internal.GuildDeleteEventHandler
 import io.github.jan.discordkm.events.internal.GuildEmojisUpdateEventHandler
 import io.github.jan.discordkm.events.internal.GuildStickersUpdateEventHandler
 import io.github.jan.discordkm.events.internal.GuildUpdateEventHandler
+import io.github.jan.discordkm.events.internal.InteractionCreateEventHandler
 import io.github.jan.discordkm.events.internal.MessageBulkDeleteEventHandler
 import io.github.jan.discordkm.events.internal.MessageCreateEventHandler
 import io.github.jan.discordkm.events.internal.MessageDeleteEventHandler
@@ -150,6 +151,9 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
             "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(payload.eventData!!)
             "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(payload.eventData!!)
             "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(payload.eventData!!)
+
+            //interactions
+            "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(payload.eventData!!)
 
             //message events
             "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(payload.eventData!!)

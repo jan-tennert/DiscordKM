@@ -14,22 +14,23 @@ import io.github.jan.discordkm.entities.channels.Invitable
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.entities.guild.channels.modifier.VoiceChannelModifier
+import io.github.jan.discordkm.entities.lists.retrieve
 import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractGuildEntity
+import io.github.jan.discordkm.utils.getOrDefault
 import io.github.jan.discordkm.utils.getOrNull
-import io.github.jan.discordkm.utils.getOrThrow
 import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 
 open class VoiceChannel(guild: Guild, data: JsonObject) : GuildChannel(guild, data), Invitable, IParent {
 
-    val userLimit = data.getOrThrow<Int>("user_limit")
+    val userLimit = data.getOrDefault("user_limit", 0)
 
     val regionId = data.getOrNull<String>("rtc_region")
 
-    val bitrate = data.getOrThrow<Int>("bitrate")
+    val bitrate = data.getOrDefault<Int>("bitrate", 0)
 
     val videoQualityMode = if(data.getOrNull<Int>("video_quality_mode") != null) VideoQualityMode.values().first { it.ordinal == data.getOrNull<Int>("video_quality_mode") } else VideoQualityMode.AUTO
 
@@ -45,7 +46,7 @@ open class VoiceChannel(guild: Guild, data: JsonObject) : GuildChannel(guild, da
         onFinish { guild.channelCache[id] = it }
     }
 
-    override suspend fun retrieve() = guild.channels.retrieve<VoiceChannel>(id)
+    override suspend fun retrieve() = guild.channels.retrieve(id) as VoiceChannel
 
     companion object : GuildChannelBuilder<VoiceChannel, VoiceChannelModifier> {
 

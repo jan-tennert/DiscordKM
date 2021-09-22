@@ -7,18 +7,24 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.entities
+package io.github.jan.discordkm.entities.interactions.commands
 
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.int
 
-interface SerializableEntity : BaseEntity {
+@Serializable
+data class OptionChoice(val name: String, @SerialName("value") val value: JsonPrimitive) {
 
-    val data: JsonObject
+    val string: String
+        get() = value.content
 
-}
+    val int: Int
+        get() = value.int
 
-interface NonClientSerializableEntity {
-
-    fun toJson() : JsonObject
+    val double: Double
+        get() = value.double
 
 }

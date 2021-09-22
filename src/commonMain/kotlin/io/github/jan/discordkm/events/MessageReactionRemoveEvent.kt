@@ -6,11 +6,7 @@ import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.User
 import io.github.jan.discordkm.entities.channels.MessageChannel
 import io.github.jan.discordkm.entities.guild.Emoji
-import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.restaction.CallsTheAPI
-import io.github.jan.discordkm.restaction.RestAction
-import io.github.jan.discordkm.restaction.buildRestAction
-import io.github.jan.discordkm.utils.toJsonObject
 
 /**
  * Sent when someone removes a reaction
@@ -29,10 +25,6 @@ class MessageReactionRemoveEvent(
 ) : MessageEvent {
 
     @CallsTheAPI
-    suspend fun retrieveGuild() = client.buildRestAction<Guild> {
-        action = RestAction.Action.get("/guilds/${guildId}")
-        transform { Guild(client, it.toJsonObject()) }
-        onFinish { client.guildCache[it.id] = it }
-    }
+    suspend fun retrieveGuild() = client.guilds.retrieve(guildId!!)
 
 }

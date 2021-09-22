@@ -13,6 +13,7 @@ import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.entities.guild.channels.modifier.TextChannelModifier
+import io.github.jan.discordkm.entities.lists.retrieve
 import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
@@ -76,6 +77,6 @@ class NewsChannel(guild: Guild, data: JsonObject) : GuildTextChannel(guild, data
 
     fun asTextChannel() = TextChannel(guild, data)
 
-    override suspend fun retrieve() = guild.channels.retrieve<NewsChannel>(id)
+    override suspend fun retrieve() = guild.channels.retrieve(id) as NewsChannel
 
 }

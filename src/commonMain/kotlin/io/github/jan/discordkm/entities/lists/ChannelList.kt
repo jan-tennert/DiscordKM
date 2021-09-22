@@ -9,7 +9,10 @@
  */
 package io.github.jan.discordkm.entities.lists
 
+import io.github.jan.discordkm.clients.Client
+import io.github.jan.discordkm.entities.BaseEntity
 import io.github.jan.discordkm.entities.Snowflake
+import io.github.jan.discordkm.entities.channels.MessageChannel
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.channels.Category
 import io.github.jan.discordkm.entities.guild.channels.GuildChannel
@@ -23,28 +26,30 @@ import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
 import io.github.jan.discordkm.utils.extractChannel
-import io.github.jan.discordkm.utils.extractGuildEntity
+import io.github.jan.discordkm.utils.getOrNull
 import io.github.jan.discordkm.utils.toJsonArray
 import io.github.jan.discordkm.utils.toJsonObject
 import kotlinx.serialization.json.jsonObject
 
-sealed interface IChannelList : DiscordList<GuildChannel> {
+sealed interface IChannelList : DiscordList<GuildChannel>, BaseEntity {
 
     override fun get(name: String) = internalList.filter { it.name == name }
 
 }
 
+/**
+ * Retrieves a guild channel by its id
+ */
+@CallsTheAPI
+suspend inline fun IChannelList.retrieve(id: Snowflake) = client.buildRestAction<MessageChannel> {
+    action = RestAction.Action.get("/channels/$id")
+    transform { it.toJsonObject().extractChannel(client, client.guilds[it.toJsonObject().getOrNull<Snowflake>("guild_id") ?: Snowflake.empty()]) as MessageChannel }
+    //onFinish { guild.channelCache[id] = it }
+}
+
 class RetrievableChannelList(val guild: Guild, override val internalList: List<GuildChannel>) : IChannelList {
 
-    /**
-     * Retrieves a guild channel by its id
-     */
-    @CallsTheAPI
-    suspend inline fun <reified T : GuildChannel> retrieve(id: Snowflake) = guild.client.buildRestAction<T> {
-        action = RestAction.Action.get("/channels/$id")
-        transform { it.toJsonObject().extractGuildEntity(guild) }
-        onFinish { guild.channelCache[id] = it }
-    }
+
 
     /**
      * Returns all guild channels in this guild
@@ -71,9 +76,10 @@ class RetrievableChannelList(val guild: Guild, override val internalList: List<G
         onFinish { guild.channelCache[it.id] = it }
     }
 
+    override val client = guild.client
 }
 
-class ChannelList(override val internalList: List<GuildChannel>) : IChannelList
+class ChannelList(override val client: Client, override val internalList: List<GuildChannel>) : IChannelList
 
 inline fun <reified C : GuildChannel> IChannelList.getGuildChannel(id: Snowflake) : C {
     return when(C::class) {

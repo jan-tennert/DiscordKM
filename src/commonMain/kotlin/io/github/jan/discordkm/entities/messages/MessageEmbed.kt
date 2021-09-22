@@ -12,7 +12,12 @@ package io.github.jan.discordkm.entities.messages
 import com.soywiz.klock.DateTimeTz
 import io.github.jan.discordkm.entities.misc.Color
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
@@ -112,6 +117,7 @@ class EmbedBuilder @Deprecated("Use buildEmbed instead") constructor() {
 
 }
 
+@Serializable(with = EmbedType.Serializer::class)
 enum class EmbedType {
     UNKNOWN,
     RICH,
@@ -119,7 +125,18 @@ enum class EmbedType {
     VIDEO,
     GIFV,
     ARTICLE,
-    LINK
+    LINK;
+
+    object Serializer : KSerializer<EmbedType> {
+        override fun deserialize(decoder: Decoder) = values().first { it.name == decoder.decodeString().uppercase() }
+
+        override val descriptor = PrimitiveSerialDescriptor("EmbedType", PrimitiveKind.STRING)
+
+        override fun serialize(encoder: Encoder, value: EmbedType) {
+            encoder.encodeString(value.name.lowercase())
+        }
+
+    }
 }
 
 

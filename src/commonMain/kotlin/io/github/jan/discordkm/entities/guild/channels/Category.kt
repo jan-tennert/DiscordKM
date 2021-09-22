@@ -12,6 +12,7 @@ package io.github.jan.discordkm.entities.guild.channels
 import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.channels.modifier.CategoryModifier
 import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
+import io.github.jan.discordkm.entities.lists.retrieve
 import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
@@ -33,7 +34,7 @@ class Category(guild: Guild, data: JsonObject) : GuildChannel(guild, data) {
         onFinish { guild.channelCache[id] = it }
     }
 
-    override suspend fun retrieve() = guild.channels.retrieve<Category>(id)
+    override suspend fun retrieve() = guild.channels.retrieve(id) as Category
 
     companion object : GuildChannelBuilder<Category, CategoryModifier> {
 

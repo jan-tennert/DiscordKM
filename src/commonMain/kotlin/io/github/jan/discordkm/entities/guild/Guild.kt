@@ -26,6 +26,7 @@ import io.github.jan.discordkm.entities.guild.channels.StageChannel
 import io.github.jan.discordkm.entities.guild.channels.TextChannel
 import io.github.jan.discordkm.entities.guild.channels.Thread
 import io.github.jan.discordkm.entities.guild.channels.VoiceChannel
+import io.github.jan.discordkm.entities.lists.GuildCommandList
 import io.github.jan.discordkm.entities.lists.RetrievableChannelList
 import io.github.jan.discordkm.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.entities.lists.RoleList
@@ -159,6 +160,9 @@ class Guild (override val client: Client, override val data: JsonObject) : Snowf
 
     val selfMember: Member
         get() = members[client.selfUser.id]!!
+
+    val commands: GuildCommandList
+        get() = GuildCommandList(this, emptyList()) //add cache
 
     /**
      * Returns the [Member]s in the guild

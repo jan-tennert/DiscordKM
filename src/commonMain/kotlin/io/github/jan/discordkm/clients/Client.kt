@@ -44,7 +44,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
     val guilds: GuildList
         get() = GuildList(this, guildCache.values.toList())
     val channels: ChannelList
-        get() = ChannelList(guilds.map { it.channels.internalList }.flatten())
+        get() = ChannelList(this, guilds.map { it.channels.internalList }.flatten())
     val members: MemberList
         get() = MemberList(guilds.map { it.members.internalList }.flatten())
     internal val userCache

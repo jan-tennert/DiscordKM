@@ -13,6 +13,7 @@ import io.github.jan.discordkm.entities.guild.Guild
 import io.github.jan.discordkm.entities.guild.StageInstance
 import io.github.jan.discordkm.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.entities.guild.channels.modifier.VoiceChannelModifier
+import io.github.jan.discordkm.entities.lists.retrieve
 import io.github.jan.discordkm.restaction.CallsTheAPI
 import io.github.jan.discordkm.restaction.RestAction
 import io.github.jan.discordkm.restaction.buildRestAction
@@ -33,7 +34,7 @@ class StageChannel(guild: Guild, data: JsonObject) : VoiceChannel(guild, data) {
         onFinish { guild.channelCache[id] = it }
     }
 
-    override suspend fun retrieve() = guild.channels.retrieve<StageChannel>(id)
+    override suspend fun retrieve() = guild.channels.retrieve(id) as StageChannel
 
     /**
      * Creates a new stage instance in this [StageChannel]
