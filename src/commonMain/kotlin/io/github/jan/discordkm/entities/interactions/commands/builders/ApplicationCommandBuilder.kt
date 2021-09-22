@@ -92,6 +92,7 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
 
     inner class SubCommandGroupBuilder(internal val subCommands: MutableList<CommandOption> = mutableListOf()) {
 
+        @CommandBuilder
         fun subCommand(
             name: String,
             description: String,

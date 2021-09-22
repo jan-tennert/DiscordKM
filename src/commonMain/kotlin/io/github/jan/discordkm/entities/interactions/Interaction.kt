@@ -18,8 +18,10 @@ import io.github.jan.discordkm.entities.channels.Channel
 import io.github.jan.discordkm.entities.channels.MessageChannel
 import io.github.jan.discordkm.entities.guild.Member
 import io.github.jan.discordkm.entities.guild.Role
+import io.github.jan.discordkm.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.entities.lists.retrieve
 import io.github.jan.discordkm.entities.messages.DataMessage
+import io.github.jan.discordkm.entities.messages.Message
 import io.github.jan.discordkm.entities.messages.MessageBuilder
 import io.github.jan.discordkm.entities.messages.buildMessage
 import io.github.jan.discordkm.restaction.RestAction
@@ -36,7 +38,7 @@ import kotlinx.serialization.json.put
 open class Interaction(override val client: Client, override val data: JsonObject) : SerializableEntity {
 
     val token: String
-        get() = data.getOrThrow<String>("token")
+        get() = data.getOrThrow("token")
 
     val type: InteractionType
         get() = InteractionType.values().first { it.ordinal == data.getOrThrow<Int>("type") }
@@ -89,13 +91,43 @@ open class Interaction(override val client: Client, override val data: JsonObjec
                 if(ephemeral) put("flags", 1 shl 6)
             })
         })
-        transform {  }
+        transform { }
         onFinish { isAcknowledged = true }
+    }
+
+    suspend fun editOriginalMessage(message: DataMessage) = client.buildRestAction<Message> {
+        action = RestAction.Action.patch("/webhooks/${applicationId}/$token/messages/@original", message.buildJson())
+        transform { Message(channel!!, it.toJsonObject()) }
+    }
+
+    suspend fun deleteOriginalMessage() = client.buildRestAction<Unit> {
+        action = RestAction.Action.delete("/webhooks/$applicationId/$token/messages/@original")
+        transform {  }
+    }
+
+    suspend fun sendFollowUpMessage(message: DataMessage) = client.buildRestAction<Message> {
+        action = RestAction.Action.post("/webhooks/$applicationId/$token", message.buildJson())
+        transform { Message(channel!!, it.toJsonObject()) }
+    }
+
+    suspend fun editFollowUpMessage(id: Snowflake) = client.buildRestAction<Message> {
+        action = RestAction.Action.patch("/webhooks/$applicationId/$token/messages/$id")
+        transform { Message(channel!!, it.toJsonObject()) }
+    }
+
+    suspend fun getFollowUpMessage(id: Snowflake) = client.buildRestAction<Message> {
+        action = RestAction.Action.get("/webhooks/$applicationId/$token/messages/$id")
+        transform { Message(channel!!, it.toJsonObject()) }
+    }
+
+    suspend fun deleteFollowUpMessage(id: Snowflake) = client.buildRestAction<Unit> {
+        action = RestAction.Action.delete("/webhooks/$applicationId/$token/messages/$id")
+        transform { }
     }
 
     suspend fun reply(ephemeral: Boolean = false, message: MessageBuilder.() -> Unit) = reply(ephemeral, buildMessage(message))
 
-    class InteractionOption(val name: String, val value: Any) {
+    class InteractionOption(val name: String, val type: CommandOption.OptionType, val value: Any) {
 
         val user: User
             get() = value as User
@@ -130,4 +162,3 @@ open class Interaction(override val client: Client, override val data: JsonObjec
     }
 
 }
-

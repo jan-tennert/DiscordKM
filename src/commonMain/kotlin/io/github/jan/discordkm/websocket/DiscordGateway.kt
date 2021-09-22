@@ -139,7 +139,6 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
     }
 
     private suspend fun handleRawEvent(payload: Payload) {
-      //  println(payload.eventData!!)
         val event = when(payload.eventName!!) {
             "READY" -> ReadyEventHandler(client).handle(payload.eventData!!)
 
