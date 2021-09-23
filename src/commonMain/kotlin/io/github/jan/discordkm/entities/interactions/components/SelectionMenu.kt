@@ -33,7 +33,6 @@ class SelectionMenuBuilder(var customId: String, var minValues: Int, var maxValu
             minValues = value.first
             maxValues = value.second
         }
-    private var action: OnSelected = {}
 
     fun onSelected(client: Client, action: OnSelected) {
         if(client is DiscordClient) {
