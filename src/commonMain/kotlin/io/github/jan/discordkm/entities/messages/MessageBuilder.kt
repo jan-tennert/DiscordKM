@@ -13,6 +13,12 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.localVfs
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.guild.Sticker
+import io.github.jan.discordkm.entities.interactions.components.ActionRow
+import io.github.jan.discordkm.entities.interactions.components.ActionRowBuilder
+import io.github.jan.discordkm.entities.interactions.components.Button
+import io.github.jan.discordkm.entities.interactions.components.Component
+import io.github.jan.discordkm.entities.interactions.components.RowBuilder
+import io.github.jan.discordkm.entities.interactions.components.SelectionMenu
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -26,6 +32,9 @@ import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
 class MessageBuilder {
 
@@ -38,6 +47,11 @@ class MessageBuilder {
     var allowedMentions = AllowedMentions()
     var tts = false
     var files: MutableList<VfsFile> = mutableListOf()
+    var actionRows = mutableListOf<ActionRow>()
+
+    fun actionRow(builder: RowBuilder.() -> Unit) { actionRows += RowBuilder().apply(builder).build() }
+
+    fun actionRows(builder: ActionRowBuilder.() -> Unit) { actionRows += ActionRowBuilder().apply(builder).rows }
 
     fun sticker(id: Snowflake) { stickerIds += id }
 
@@ -55,7 +69,7 @@ class MessageBuilder {
 
     fun reference(message: Message) = reference(message.id)
 
-    fun build() = DataMessage(content, tts, embeds, allowedMentions, files)
+    fun build() = DataMessage(content, tts, embeds, allowedMentions, files, actionRows)
 
 }
 
@@ -84,19 +98,42 @@ data class AllowedMentions(
     val replyToUser: Boolean = false
 )
 
+val componentJson = Json {
+    classDiscriminator = "classType"
+    ignoreUnknownKeys = true
+    serializersModule = SerializersModule {
+        polymorphic(Component::class) {
+            subclass(SelectionMenu::class)
+            subclass(Button::class)
+            subclass(ActionRow::class)
+        }
+    }
+}
+
 class DataMessage @Deprecated("Use buildMessage method") constructor(
     val content: String = "",
     val tts: Boolean = false,
     val embeds: List<MessageEmbed> = emptyList(),
     val allowedMentions: AllowedMentions,
-    val files: List<VfsFile> = emptyList() //ToDo
+    val files: List<VfsFile> = emptyList(), //ToDo
+    val components: List<ActionRow>
 ) {
+
+    fun modify(builder: MessageBuilder.() -> Unit) = MessageBuilder().apply {
+        content = this@DataMessage.content
+        tts = this@DataMessage.tts
+        embeds = this@DataMessage.embeds.toMutableList()
+        allowedMentions = this@DataMessage.allowedMentions
+        //files
+        actionRows = this@DataMessage.components.toMutableList()
+    }.apply(builder).build()
 
     fun buildJson() = buildJsonObject {
         put("content", content)
         put("tts", tts)
         put("embeds", Json.encodeToJsonElement(embeds).jsonArray)
         put("allowed_mentions", Json.encodeToJsonElement(allowedMentions).jsonObject)
+        put("components", componentJson.encodeToJsonElement(components))
     }.toString()
 
 }

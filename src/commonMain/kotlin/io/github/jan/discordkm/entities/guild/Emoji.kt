@@ -10,18 +10,25 @@
 package io.github.jan.discordkm.entities.guild
 
 import io.github.jan.discordkm.clients.Client
+import io.github.jan.discordkm.entities.Mentionable
 import io.github.jan.discordkm.entities.SerializableEntity
 import io.github.jan.discordkm.entities.Snowflake
 import io.github.jan.discordkm.entities.SnowflakeEntity
 import io.github.jan.discordkm.entities.User
 import io.github.jan.discordkm.utils.getId
 import io.github.jan.discordkm.utils.getOrThrow
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmName
 
-interface Emoji {
-
-    val name: String
+@Serializable
+class Emoji(
+    val id: Snowflake? = null,
+    val name: String,
+    @SerialName("animated")
+    val isAnimated: Boolean = false
+) : Mentionable {
 
     class Emote @PublishedApi internal constructor(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity {
         override val id = data.getId()
@@ -39,25 +46,20 @@ interface Emoji {
         @get:JvmName("isAvailable")
         val isAvailable = data.getOrThrow<Boolean>("available")
 
-        fun toEmoji() = object : Emoji {
-            override val name = "${this@Emote.name}:$id"
-        }
-
+        fun toEmoji() = Emoji(name = name, id = id)
     }
 
     companion object {
 
-        fun fromEmoji(unicode: String) = object : Emoji {
-            override val name = unicode
-        }
+        fun fromEmoji(unicode: String)= Emoji(name = unicode)
 
-        fun fromEmote(name: String, id: Snowflake) = object : Emoji {
-            override val name = "$name:$id"
-        }
+        fun fromEmote(name: String, id: Snowflake) = Emoji(name = name, id = id)
 
         fun fromEmote(emote: Emote) = emote.toEmoji()
 
     }
+
+    override val asMention = if(id != null) "$id:$name" else name
 
 }
 

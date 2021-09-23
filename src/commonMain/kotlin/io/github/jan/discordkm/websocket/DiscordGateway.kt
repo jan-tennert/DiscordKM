@@ -138,34 +138,36 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
         ws.close(WsCloseInfo.NormalClosure)
     }
 
-    private suspend fun handleRawEvent(payload: Payload) {
-        val event = when(payload.eventName!!) {
-            "READY" -> ReadyEventHandler(client).handle(payload.eventData!!)
+    private suspend fun handleRawEvent(payload: Payload) = coroutineScope {
+        launch {
+            val event = when(payload.eventName!!) {
+                "READY" -> ReadyEventHandler(client).handle(payload.eventData!!)
 
-            //guild events
-            "GUILD_CREATE" -> GuildCreateEventHandler(client).handle(payload.eventData!!)
-            "GUILD_UPDATE" -> GuildUpdateEventHandler(client).handle(payload.eventData!!)
-            "GUILD_DELETE" -> GuildDeleteEventHandler(client, LOGGER).handle(payload.eventData!!)
-            "GUILD_BAN_ADD" -> BanEventHandler(client).handle<GuildBanAddEvent>(payload.eventData!!)
-            "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(payload.eventData!!)
-            "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(payload.eventData!!)
-            "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(payload.eventData!!)
+                //guild events
+                "GUILD_CREATE" -> GuildCreateEventHandler(client).handle(payload.eventData!!)
+                "GUILD_UPDATE" -> GuildUpdateEventHandler(client).handle(payload.eventData!!)
+                "GUILD_DELETE" -> GuildDeleteEventHandler(client, LOGGER).handle(payload.eventData!!)
+                "GUILD_BAN_ADD" -> BanEventHandler(client).handle<GuildBanAddEvent>(payload.eventData!!)
+                "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(payload.eventData!!)
+                "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(payload.eventData!!)
+                "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(payload.eventData!!)
 
-            //interactions
-            "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(payload.eventData!!)
+                //interactions
+                "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(payload.eventData!!)
 
-            //message events
-            "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(payload.eventData!!)
-            "MESSAGE_UPDATE" -> MessageUpdateEventHandler(client).handle(payload.eventData!!)
-            "MESSAGE_DELETE" -> MessageDeleteEventHandler(client).handle(payload.eventData!!)
-            "MESSAGE_DELETE_BULK" -> MessageBulkDeleteEventHandler(client).handle(payload.eventData!!)
-            "MESSAGE_REACTION_ADD" -> MessageReactionAddEventHandler(client).handle(payload.eventData!!)
-            "MESSAGE_REACTION_REMOVE" -> MessageReactionRemoveEventHandler(client).handle(payload.eventData!!)
-            "MESSAGE_REACTION_REMOVE_ALL" -> MessageReactionRemoveAllEventHandler(client).handle(payload.eventData!!)
-            "MESSAGE_REACTION_REMOVE_EMOJI" -> MessageReactionEmojiRemoveEventHandler(client).handle(payload.eventData!!)
-            else -> return
+                //message events
+                "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(payload.eventData!!)
+                "MESSAGE_UPDATE" -> MessageUpdateEventHandler(client).handle(payload.eventData!!)
+                "MESSAGE_DELETE" -> MessageDeleteEventHandler(client).handle(payload.eventData!!)
+                "MESSAGE_DELETE_BULK" -> MessageBulkDeleteEventHandler(client).handle(payload.eventData!!)
+                "MESSAGE_REACTION_ADD" -> MessageReactionAddEventHandler(client).handle(payload.eventData!!)
+                "MESSAGE_REACTION_REMOVE" -> MessageReactionRemoveEventHandler(client).handle(payload.eventData!!)
+                "MESSAGE_REACTION_REMOVE_ALL" -> MessageReactionRemoveAllEventHandler(client).handle(payload.eventData!!)
+                "MESSAGE_REACTION_REMOVE_EMOJI" -> MessageReactionEmojiRemoveEventHandler(client).handle(payload.eventData!!)
+                else -> return@launch
+            }
+            client.handleEvent(event)
         }
-        client.handleEvent(event)
     }
 
     enum class OpCode(val code: Int) {

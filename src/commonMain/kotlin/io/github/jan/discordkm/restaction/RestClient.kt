@@ -43,6 +43,7 @@ class RestClient(val client: Client) {
             }.receive<String>()
         }
         "POST" -> {
+            println(data)
             rateLimiter.queue(endpoint) {
                 http.post<HttpResponse>(generateUrl(endpoint)) {
                     data?.let {

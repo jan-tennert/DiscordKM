@@ -28,6 +28,10 @@ import io.github.jan.discordkm.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.entities.guild.channels.GuildTextChannel
 import io.github.jan.discordkm.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.entities.guild.channels.Thread
+import io.github.jan.discordkm.entities.interactions.components.ActionRow
+import io.github.jan.discordkm.entities.interactions.components.Button
+import io.github.jan.discordkm.entities.interactions.components.ComponentType
+import io.github.jan.discordkm.entities.interactions.components.SelectionMenu
 import io.github.jan.discordkm.entities.lists.ReactionList
 import io.github.jan.discordkm.exceptions.PermissionException
 import io.github.jan.discordkm.restaction.CallsTheAPI
@@ -60,6 +64,25 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     override val id = data.getId()
 
     val channelId = data.getOrNull<Snowflake>("channel_id")
+
+    val actionRows = data["components"]?.let { json ->
+        json.jsonArray.map { row ->
+            val internalComponents = row.jsonObject.getValue("components").jsonArray.map { component ->
+                when (ComponentType.values().first { it.ordinal + 1 == component.jsonObject.getOrThrow<Int>("type") }) {
+                    ComponentType.BUTTON -> componentJson.decodeFromJsonElement(
+                        Button.serializer(),
+                        component
+                    )
+                    ComponentType.SELECTION_MENU -> componentJson.decodeFromJsonElement(
+                        SelectionMenu.serializer(),
+                        component
+                    )
+                    else -> throw IllegalStateException()
+                }
+            }
+            ActionRow(internalComponents)
+        }
+    } ?: emptyList()
 
     /**
      * The channel this message was sent to
@@ -264,6 +287,8 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
         transform {  }
         check { if(channel is PrivateChannel) throw UnsupportedOperationException("You can't unpin a message in a private channel!"); if(!isPinned) throw IllegalStateException("You can't unpin an unpinned message!") }
     }
+
+    fun copy() = DataMessage(content, isTTS, embeds, components = actionRows, allowedMentions = AllowedMentions()) //files, allowed mentions?
 
     @Serializable
     data class Reference(@SerialName("message_id") val messageId: Long? = null, @SerialName("guild_id") val guildId: Long? = null, @SerialName("channel_id") val channelId: Long? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)

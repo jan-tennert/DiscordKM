@@ -77,7 +77,7 @@ class EmbedBuilder @Deprecated("Use buildEmbed instead") constructor() {
     fun footer(text: String = "", iconUrl: String? = null, builder: Footer.() -> Unit = {}) {
         footer = Footer(text, iconUrl).apply(builder)
     }
-    fun thumbnail(url: String = "", builder: Media.() -> Unit) {
+    fun thumbnail(url: String = "", builder: Media.() -> Unit = {}) {
         thumbnail = Media(url).apply(builder)
     }
     fun image(url: String = "", builder: Media.() -> Unit = {}) {

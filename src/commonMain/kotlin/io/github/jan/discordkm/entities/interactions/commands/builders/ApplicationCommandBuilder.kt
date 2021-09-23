@@ -41,10 +41,10 @@ class ChatInputCommandBuilder(name: String, description: String, internal val op
 open class OptionBuilder(open val options: MutableList<CommandOption> = mutableListOf()) {
 
     @CommandBuilder
-    fun string(name: String, description: String, required: Boolean = false, choices: ChoicesBuilder<String>.() -> Unit = {}) {
+    fun string(name: String, description: String, required: Boolean = false, autocomplete: Boolean? = null, choices: ChoicesBuilder<String>.() -> Unit = {}) {
         val choiceBuilder = ChoicesBuilder<String>()
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.STRING, name, description, required, choiceBuilder.choices)
+        options += CommandOption(CommandOption.OptionType.STRING, name, description, required, choiceBuilder.choices, autocomplete = autocomplete)
     }
 
     @CommandBuilder
@@ -106,7 +106,7 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
 
     }
 
-    inner class ChoicesBuilder<T>(val choices: MutableList<OptionChoice> = mutableListOf()) {
+    class ChoicesBuilder<T>(val choices: MutableList<OptionChoice> = mutableListOf()) {
 
         fun choice(name: String, value: T) {
             val primitiveValue = when(value) {

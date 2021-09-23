@@ -19,6 +19,7 @@ import io.github.jan.discordkm.entities.channels.MessageChannel
 import io.github.jan.discordkm.entities.guild.Member
 import io.github.jan.discordkm.entities.guild.Role
 import io.github.jan.discordkm.entities.interactions.commands.CommandOption
+import io.github.jan.discordkm.entities.interactions.commands.builders.OptionBuilder
 import io.github.jan.discordkm.entities.lists.retrieve
 import io.github.jan.discordkm.entities.messages.DataMessage
 import io.github.jan.discordkm.entities.messages.Message
@@ -34,6 +35,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 open class Interaction(override val client: Client, override val data: JsonObject) : SerializableEntity {
 
@@ -64,9 +66,10 @@ open class Interaction(override val client: Client, override val data: JsonObjec
     val channel: MessageChannel?
         get() = client.channels[channelId] as? MessageChannel
 
-    var isAcknowledged: Boolean = false
+    val message: Message?
+        get() = data["message"]?.let { Message(channel!!, it.jsonObject) }
 
-    suspend fun retrieveGuild() = client.guilds.retrieve(guildId!!)
+    var isAcknowledged: Boolean = false
 
     suspend fun retrieveChannel() = client.channels.retrieve(channelId)
 
@@ -95,6 +98,10 @@ open class Interaction(override val client: Client, override val data: JsonObjec
         onFinish { isAcknowledged = true }
     }
 
+    suspend fun reply(ephemeral: Boolean = false, message: MessageBuilder.() -> Unit) = reply(ephemeral, buildMessage(message))
+
+    suspend fun reply(ephemeral: Boolean = false, message: String) = reply(ephemeral, buildMessage { content = message })
+
     suspend fun editOriginalMessage(message: DataMessage) = client.buildRestAction<Message> {
         action = RestAction.Action.patch("/webhooks/${applicationId}/$token/messages/@original", message.buildJson())
         transform { Message(channel!!, it.toJsonObject()) }
@@ -110,8 +117,12 @@ open class Interaction(override val client: Client, override val data: JsonObjec
         transform { Message(channel!!, it.toJsonObject()) }
     }
 
-    suspend fun editFollowUpMessage(id: Snowflake) = client.buildRestAction<Message> {
-        action = RestAction.Action.patch("/webhooks/$applicationId/$token/messages/$id")
+    suspend fun sendFollowUpMessage(message: MessageBuilder.() -> Unit) = sendFollowUpMessage(buildMessage(message))
+
+    suspend fun sendFollowUpMessage(message: String) = sendFollowUpMessage { content = message }
+
+    suspend fun editFollowUpMessage(id: Snowflake, message: DataMessage) = client.buildRestAction<Message> {
+        action = RestAction.Action.patch("/webhooks/$applicationId/$token/messages/$id", message.buildJson())
         transform { Message(channel!!, it.toJsonObject()) }
     }
 
@@ -124,8 +135,6 @@ open class Interaction(override val client: Client, override val data: JsonObjec
         action = RestAction.Action.delete("/webhooks/$applicationId/$token/messages/$id")
         transform { }
     }
-
-    suspend fun reply(ephemeral: Boolean = false, message: MessageBuilder.() -> Unit) = reply(ephemeral, buildMessage(message))
 
     class InteractionOption(val name: String, val type: CommandOption.OptionType, val value: Any) {
 
@@ -158,7 +167,28 @@ open class Interaction(override val client: Client, override val data: JsonObjec
     enum class InteractionType {
         PING,
         APPLICATION_COMMAND,
-        MESSAGE_COMPONENT
+        MESSAGE_COMPONENT,
+        APPLICATION_COMMAND_AUTOCOMPLETE
     }
 
 }
+
+class AutoCompleteInteraction(client: Client, data: JsonObject) : Interaction(client, data) {
+
+    suspend fun replyChoices(choices: OptionBuilder.ChoicesBuilder<String>.() -> Unit) = client.buildRestAction<Unit> {
+        val formattedChoices = OptionBuilder.ChoicesBuilder<String>().apply(choices).choices.map { buildJsonObject { put("name", it.name); put("value", it.string) } }
+        action = RestAction.Action.post("/interactions/$id/$token/callback", buildJsonObject {
+            put("type", 8) //reply choices
+            put("data", buildJsonObject {
+                putJsonArray("choices") {
+                    formattedChoices.forEach { add(it) }
+                }
+            })
+        })
+        transform { }
+        onFinish { isAcknowledged = true }
+    }
+
+}
+
+typealias AutoCompleteChoice = Pair<String, String>
