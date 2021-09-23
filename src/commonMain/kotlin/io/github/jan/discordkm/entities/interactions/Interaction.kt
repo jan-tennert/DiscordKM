@@ -39,40 +39,74 @@ import kotlinx.serialization.json.putJsonArray
 
 open class Interaction(override val client: Client, override val data: JsonObject) : SerializableEntity {
 
+    /**
+     * The interaction token
+     */
     val token: String
         get() = data.getOrThrow("token")
 
+    /**
+     * The [InteractionType]
+     */
     val type: InteractionType
         get() = InteractionType.values().first { it.ordinal == data.getOrThrow<Int>("type") }
 
+    /**
+     * The interaction id
+     */
     val id: Snowflake
         get() = data.getOrThrow("id")
 
+    /**
+     * The application id
+     */
     val applicationId: Snowflake
         get() = data.getOrThrow("application_id")
 
+    /**
+     * The guild id, if this was sent in a guild
+     */
     val guildId: Snowflake?
         get() = data.getOrNull("guild_id")
 
+    /**
+     * The member, if a guild member was involved in this interaction
+     */
     val member: Member?
         get() = data["member"]?.let { Member(client.guilds[guildId!!]!!, it.jsonObject) }
 
+    /**
+     * The channel id, if this interaction was sent in a channel
+     */
     val channelId: Snowflake
         get() = data.getOrThrow("channel_id")
 
+    /**
+     * The user, if this interaction was sent in a private channel
+     */
     val user: User?
         get() = data["user"]?.let { User(client, it.jsonObject) }
 
     val channel: MessageChannel?
         get() = client.channels[channelId] as? MessageChannel
 
+    /**
+     * The message, if this is a ComponentInteraction
+     */
     val message: Message?
         get() = data["message"]?.let { Message(channel!!, it.jsonObject) }
 
+    /**
+     * Whether this interaction was already acknowledged
+     */
     var isAcknowledged: Boolean = false
+        internal set
 
     suspend fun retrieveChannel() = client.channels.retrieve(channelId)
 
+    /**
+     * Replies to this interaction without a message
+     */
     suspend fun deferReply(ephemeral: Boolean = false) = client.buildRestAction<Unit> {
         action = RestAction.Action.post("/interactions/$id/$token/callback", buildJsonObject {
             put("type", 5) //reply without message
@@ -86,6 +120,9 @@ open class Interaction(override val client: Client, override val data: JsonObjec
         onFinish { isAcknowledged = true }
     }
 
+    /**
+     * Replies to this interaction
+     */
     suspend fun reply(ephemeral: Boolean = false, message: DataMessage) = client.buildRestAction<Unit> {
         action = RestAction.Action.post("/interactions/$id/$token/callback", buildJsonObject {
             put("type", 4) //reply with message
@@ -98,39 +135,69 @@ open class Interaction(override val client: Client, override val data: JsonObjec
         onFinish { isAcknowledged = true }
     }
 
+    /**
+     * Replies to this interaction
+     */
     suspend fun reply(ephemeral: Boolean = false, message: MessageBuilder.() -> Unit) = reply(ephemeral, buildMessage(message))
 
+    /**
+     * Replies to this interaction
+     */
     suspend fun reply(ephemeral: Boolean = false, message: String) = reply(ephemeral, buildMessage { content = message })
 
+    /**
+     * Edits the original reply message
+     */
     suspend fun editOriginalMessage(message: DataMessage) = client.buildRestAction<Message> {
         action = RestAction.Action.patch("/webhooks/${applicationId}/$token/messages/@original", message.buildJson())
         transform { Message(channel!!, it.toJsonObject()) }
     }
 
+    /**
+     * Deletes the original reply message
+     */
     suspend fun deleteOriginalMessage() = client.buildRestAction<Unit> {
         action = RestAction.Action.delete("/webhooks/$applicationId/$token/messages/@original")
         transform {  }
     }
 
+    /**
+     * Sends a follow-up message
+     */
     suspend fun sendFollowUpMessage(message: DataMessage) = client.buildRestAction<Message> {
         action = RestAction.Action.post("/webhooks/$applicationId/$token", message.buildJson())
         transform { Message(channel!!, it.toJsonObject()) }
     }
 
+    /**
+     * Sends a follow-up message
+     */
     suspend fun sendFollowUpMessage(message: MessageBuilder.() -> Unit) = sendFollowUpMessage(buildMessage(message))
 
+    /**
+     * Sends a follow-up message
+     */
     suspend fun sendFollowUpMessage(message: String) = sendFollowUpMessage { content = message }
 
+    /**
+     * Edits a follow-up message
+     */
     suspend fun editFollowUpMessage(id: Snowflake, message: DataMessage) = client.buildRestAction<Message> {
         action = RestAction.Action.patch("/webhooks/$applicationId/$token/messages/$id", message.buildJson())
         transform { Message(channel!!, it.toJsonObject()) }
     }
 
+    /**
+     * Retrieves a follow-up message
+     */
     suspend fun getFollowUpMessage(id: Snowflake) = client.buildRestAction<Message> {
         action = RestAction.Action.get("/webhooks/$applicationId/$token/messages/$id")
         transform { Message(channel!!, it.toJsonObject()) }
     }
 
+    /**
+     * Deletes a follow-up message
+     */
     suspend fun deleteFollowUpMessage(id: Snowflake) = client.buildRestAction<Unit> {
         action = RestAction.Action.delete("/webhooks/$applicationId/$token/messages/$id")
         transform { }
@@ -175,6 +242,9 @@ open class Interaction(override val client: Client, override val data: JsonObjec
 
 class AutoCompleteInteraction(client: Client, data: JsonObject) : Interaction(client, data) {
 
+    /**
+     * Replies to the [AutoCompleteInteraction] with the given choices.
+     */
     suspend fun replyChoices(choices: OptionBuilder.ChoicesBuilder<String>.() -> Unit) = client.buildRestAction<Unit> {
         val formattedChoices = OptionBuilder.ChoicesBuilder<String>().apply(choices).choices.map { buildJsonObject { put("name", it.name); put("value", it.string) } }
         action = RestAction.Action.post("/interactions/$id/$token/callback", buildJsonObject {
@@ -190,5 +260,3 @@ class AutoCompleteInteraction(client: Client, data: JsonObject) : Interaction(cl
     }
 
 }
-
-typealias AutoCompleteChoice = Pair<String, String>
