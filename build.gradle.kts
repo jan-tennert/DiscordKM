@@ -4,7 +4,6 @@ plugins {
     id("maven-publish")
     signing
     id("org.jetbrains.dokka") version "1.4.20"
-    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 }
 
 group = "io.github.jan-tennert.discordkm"
@@ -13,17 +12,6 @@ version = "0.0.1"
 val repositoryId: String? = System.getenv("SONATYPE_REPOSITORY_ID")
 val sonatypeUsername: String? = System.getenv("SONATYPE_USERNAME")
 val sonatypePassword: String? = System.getenv("SONATYPE_PASSWORD")
-
-nexusPublishing {
-    repositories {
-        sonatype {  //only for users registered in Sonatype after 24 Feb 2021
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-            username.set(sonatypeUsername)
-            password.set(sonatypePassword)
-        }
-    }
-}
 
 repositories {
     mavenCentral()
