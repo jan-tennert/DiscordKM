@@ -51,8 +51,6 @@ val javadocJar = tasks.register<Jar>("javadocJar") {
 }
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension.addPublishing() {
-    val publicationsFromMainHost =
-        listOf(jvm(), js()).map { it.name } + "kotlinMultiplatform"
     publishing {
         repositories {
             maven {
@@ -76,12 +74,6 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension.addPublishing()
         }
 
         publications {
-            matching { it.name in publicationsFromMainHost }.all {
-                val targetPublication = this@all
-                tasks.withType<AbstractPublishToMaven>()
-                    .matching { it.publication == targetPublication }
-                    .configureEach { onlyIf { findProperty("isMainHost") == "true" } }
-            }
             withType<MavenPublication> {
                 artifact(javadocJar)
                 pom {
