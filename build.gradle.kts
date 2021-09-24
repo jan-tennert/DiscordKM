@@ -132,12 +132,11 @@ kotlin {
         }
         nodejs()
     }
-    val hostOs = System.getProperty("os.name")
-    val isMingwX64 = hostOs.startsWith("Windows")
     macosX64("macosX64")
     linuxX64("linuxX64")
     mingwX64("mingwX64")
     addPublishing()
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -169,20 +168,19 @@ kotlin {
             }
         }
         val jsTest by getting
-        val macosX64Main by getting {
+        val nativeMain = create("native") {
             dependencies {
                 implementation("io.ktor:ktor-client-curl:1.6.3")
             }
+        }
+        val macosX64Main by getting {
+            dependsOn(nativeMain)
         }
         val linuxX64Main by getting {
-            dependencies {
-                implementation("io.ktor:ktor-client-curl:1.6.3")
-            }
+            dependsOn(nativeMain)
         }
         val mingwX64Main by getting {
-            dependencies {
-                implementation("io.ktor:ktor-client-curl:1.6.3")
-            }
+            dependsOn(nativeMain)
         }
     }
 }
