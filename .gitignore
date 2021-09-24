@@ -3,3 +3,5 @@
 /build/
 /build/classes/kotlin/jvm/main/
 /.idea/
+src/jvmMain/resources/test.json
+src/jvmMain/kotlin/test.kt

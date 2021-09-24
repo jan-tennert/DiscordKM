@@ -157,8 +157,6 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-cio:1.6.3")
-                // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-html-jvm
-
             }
         }
         val jvmTest by getting
