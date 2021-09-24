@@ -4,6 +4,7 @@ plugins {
     id("maven-publish")
     signing
     id("org.jetbrains.dokka") version "1.4.20"
+    id("io.codearte.nexus-staging") version "0.30.0"
 }
 
 group = "io.github.jan-tennert.discordkm"
