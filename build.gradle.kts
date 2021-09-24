@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.jan-tennert.discordkm"
-version = "0.0.1"
+version = "0.0.2"
 
 val repositoryId: String? = System.getenv("SONATYPE_REPOSITORY_ID")
 val sonatypeUsername: String? = System.getenv("SONATYPE_USERNAME")
