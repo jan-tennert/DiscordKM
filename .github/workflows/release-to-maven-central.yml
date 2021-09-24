@@ -40,7 +40,7 @@ jobs:
       - name: Publish package
         run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishMacosX64PublicationToOssRepository
     env:
-       SONATYPE_REPOSITORY_ID: ${{ steps.create.outputs.repository-id }}
+       SONATYPE_REPOSITORY_ID: ${{ needs.create_staging_repository.outputs.repository-id }}
   publishLinuxJSJVM:
     needs: createStageRepo
     runs-on: ubuntu-latest
@@ -58,7 +58,7 @@ jobs:
       - name: Publish package
         run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishLinuxX64PublicationToOssRepository publishJsPublicationToOssRepository publishJvmPublicationToOssRepository
     env:
-       SONATYPE_REPOSITORY_ID: ${{ steps.create.outputs.repository-id }}
+       SONATYPE_REPOSITORY_ID: ${{ needs.create_staging_repository.outputs.repository-id }}
   publishWindows:
     needs: createStageRepo
     runs-on: windows-latest
@@ -76,4 +76,4 @@ jobs:
       - name: Publish package
         run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishMingwX64PublicationToOssRepository
     env:
-       SONATYPE_REPOSITORY_ID: ${{ steps.create.outputs.repository-id }}
+       SONATYPE_REPOSITORY_ID: ${{ needs.create_staging_repository.outputs.repository-id }}
