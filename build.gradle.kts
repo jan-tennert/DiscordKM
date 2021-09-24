@@ -58,7 +58,7 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension.addPublishing()
             maven {
                 name = "Oss"
                 setUrl {
-                    "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                    "https://s01.oss.sonatype.org/service/local/staging/deploy/deployByRepositoryId/${System.getenv("SONATYPE_REPOSITORY_ID")}"
                 }
                 credentials {
                     username = System.getenv("OSSRH_USERNAME")
