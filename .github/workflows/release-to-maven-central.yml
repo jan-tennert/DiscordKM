@@ -5,7 +5,6 @@ on:
       releaseversion:
         description: 'Release version'
         required: true
-        default: '0.0.1'
 
 env:
    GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
@@ -15,7 +14,7 @@ env:
    SONATYPE_REPOSITORY_ID: ${{ secrets.SONATYPE_REPOSITORY_ID }}
 
 jobs:
-  publish:
+  publishJSJVM:
     runs-on: macos-latest
     steps:
       - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
@@ -25,7 +24,22 @@ jobs:
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 8
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Publish package
+        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishJvmPublicationToOssRepository publishJsPublicationToOssRepository
+  publishMacOS:
+    runs-on: macos-latest
+    steps:
+      - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
+
+      - uses: actions/checkout@v2
+
+      - name: Set up Maven Central Repository
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Publish package
@@ -40,7 +54,7 @@ jobs:
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 8
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Publish package
@@ -55,7 +69,7 @@ jobs:
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 8
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Publish package
