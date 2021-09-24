@@ -12,10 +12,19 @@ env:
    GPG_SIGNING_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
    OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
    OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-   SONATYPE_REPOSITORY_ID: ${{ secrets.SONATYPE_REPOSITORY_ID }}
 
 jobs:
-  publish:
+  createStageRepo:
+    runs-on: ubuntu-latest
+    name: Create Staging Repository
+    outputs:
+      repository-id: ${{ steps.create.outputs.repository-id }}
+    steps:
+      - id: create
+        run: curl -s -X POST -d @file.xml -u ${{ secrets.OSSRH_USERNAME }}:${{ secrets.OSSRH_PASSWORD }} -H Content-Type:application/xml -v https://s01.oss.sonatype.org/service/local/staging/profiles/41f46ef85cfd45/start | grep stagedRepositoryId | cut -d ">" -f2 | cut -d"<" -f1
+
+  publishMacOS:
+    needs: createStageRepo
     runs-on: macos-latest
     steps:
       - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
@@ -30,7 +39,10 @@ jobs:
         run: chmod +x gradlew
       - name: Publish package
         run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishMacosX64PublicationToOssRepository
-  publishLinux:
+    env:
+       SONATYPE_REPOSITORY_ID: ${{ steps.create.outputs.repository-id }}
+  publishLinuxJSJVM:
+    needs: createStageRepo
     runs-on: ubuntu-latest
     steps:
       - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
@@ -44,8 +56,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Publish package
-        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishLinuxX64PublicationToOssRepository
+        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishLinuxX64PublicationToOssRepository publishJsPublicationToOssRepository publishJvmPublicationToOssRepository
+    env:
+       SONATYPE_REPOSITORY_ID: ${{ steps.create.outputs.repository-id }}
   publishWindows:
+    needs: createStageRepo
     runs-on: windows-latest
     steps:
       - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
@@ -60,3 +75,5 @@ jobs:
         run: chmod +x gradlew
       - name: Publish package
         run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishMingwX64PublicationToOssRepository
+    env:
+       SONATYPE_REPOSITORY_ID: ${{ steps.create.outputs.repository-id }}
