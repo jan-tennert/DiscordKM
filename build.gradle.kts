@@ -50,53 +50,63 @@ val javadocJar = tasks.register<Jar>("javadocJar") {
     from(dokkaOutputDir)
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "Oss"
-            setUrl {
-                "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+fun org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension.addPublishing() {
+    val publicationsFromMainHost =
+        listOf(jvm(), js()).map { it.name } + "kotlinMultiplatform"
+    publishing {
+        repositories {
+            maven {
+                name = "Oss"
+                setUrl {
+                    "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                }
+                credentials {
+                    username = System.getenv("OSSRH_USERNAME")
+                    password = System.getenv("OSSRH_PASSWORD")
+                }
             }
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
+            maven {
+                name = "Snapshot"
+                setUrl { "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
+                credentials {
+                    username = System.getenv("OSSRH_USERNAME")
+                    password = System.getenv("OSSRH_PASSWORD")
+                }
             }
         }
-        maven {
-            name = "Snapshot"
-            setUrl { "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
-            }
-        }
-    }
 
-    publications {
-        withType<MavenPublication> {
-            artifact(javadocJar)
-            pom {
-                name.set("DiscordKM")
-                description.set("A Kotlin Multiplatform Discord API Wrapper ")
-                url.set("https://github.com/jan-tennert/DiscordKM")
-                licenses {
-                    license {
-                        name.set("GPL-3.0")
-                        url.set("https://www.gnu.org/licenses/gpl-3.0.en.html")
-                    }
-                }
-                issueManagement {
-                    system.set("Github")
-                    url.set("https://github.com/jan-tennert/DiscordKM/issues")
-                }
-                scm {
-                    connection.set("https://github.com/jan-tennert/DiscordKM.git")
+        publications {
+            matching { it.name in publicationsFromMainHost }.all {
+                val targetPublication = this@all
+                tasks.withType<AbstractPublishToMaven>()
+                    .matching { it.publication == targetPublication }
+                    .configureEach { onlyIf { findProperty("isMainHost") == "true" } }
+            }
+            withType<MavenPublication> {
+                artifact(javadocJar)
+                pom {
+                    name.set("DiscordKM")
+                    description.set("A Kotlin Multiplatform Discord API Wrapper ")
                     url.set("https://github.com/jan-tennert/DiscordKM")
-                }
-                developers {
-                    developer {
-                        name.set("TheRealJanGER")
-                        email.set("jan.m.tennert@gmail.com")
+                    licenses {
+                        license {
+                            name.set("GPL-3.0")
+                            url.set("https://www.gnu.org/licenses/gpl-3.0.en.html")
+                        }
+                    }
+                    issueManagement {
+                        system.set("Github")
+                        url.set("https://github.com/jan-tennert/DiscordKM/issues")
+                    }
+                    scm {
+                        connection.set("https://github.com/jan-tennert/DiscordKM.git")
+                        url.set("https://github.com/jan-tennert/DiscordKM")
+                    }
+                    developers {
+                        developer {
+                            name.set("TheRealJanGER")
+                            email.set("jan.m.tennert@gmail.com")
+                        }
                     }
                 }
             }
@@ -127,7 +137,7 @@ kotlin {
     macosX64("macosX64")
     linuxX64("linuxX64")
     mingwX64("mingwX64")
-
+    addPublishing()
     sourceSets {
         val commonMain by getting {
             dependencies {
