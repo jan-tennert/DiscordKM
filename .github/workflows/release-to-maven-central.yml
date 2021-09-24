@@ -20,7 +20,7 @@ jobs:
     outputs:
       repository-id: ${{ steps.create.outputs.repository-id }}
     steps:
-      - id: create
+      - name: create
         run: curl -s -X POST -d @file.xml -u ${{ secrets.OSSRH_USERNAME }}:${{ secrets.OSSRH_PASSWORD }} -H Content-Type:application/xml -v https://s01.oss.sonatype.org/service/local/staging/profiles/41f46ef85cfd45/start | grep stagedRepositoryId | cut -d ">" -f2 | cut -d"<" -f1
 
   publishMacOS:
