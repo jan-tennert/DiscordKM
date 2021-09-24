@@ -27,4 +27,4 @@ jobs:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           SONATYPE_REPOSITORY_ID: ${{ secrets.SONATYPE_REPOSITORY_ID }}
-        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishAllPublicationsToOssRepository
+        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishAllPublicationsToSonatypeRepository closeAndReleaseSonatypeStagingRepository
