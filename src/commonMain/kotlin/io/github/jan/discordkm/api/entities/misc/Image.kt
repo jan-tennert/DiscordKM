@@ -7,30 +7,18 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm
+package io.github.jan.discordkm.api.entities.misc
 
-import co.touchlab.stately.collections.IsoMutableMap
-import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.krypto.encoding.Base64
+import kotlin.jvm.JvmInline
 
-class Cache<T>(internal var internalMap: IsoMutableMap<Snowflake, T> = IsoMutableMap()) {
-
-    val values: List<T>
-        get() = internalMap.values.toList()
-
-    @PublishedApi
-    internal operator fun set(id: Snowflake, value: T) {
-        internalMap[id] = value
-    }
-
-    @PublishedApi
-    internal fun remove(id: Snowflake) {
-        internalMap.remove(id)
-    }
+@JvmInline
+value class Image(val url: String) {
 
     companion object {
 
-        fun <S : SnowflakeEntity> fromSnowflakeEntityList(list: List<S>) = Cache(IsoMutableMap { mutableMapOf<Snowflake, S>().apply { putAll(list.associateBy { it.id }) } })
+        suspend fun fromLocal(file: VfsFile) = Image("data:image/jpeg;base64,${Base64.encode(file.readBytes())}")
 
     }
 

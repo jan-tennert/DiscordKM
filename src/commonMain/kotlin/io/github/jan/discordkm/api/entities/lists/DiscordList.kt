@@ -7,31 +7,29 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm
+package io.github.jan.discordkm.api.entities.lists
 
-import co.touchlab.stately.collections.IsoMutableMap
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 
-class Cache<T>(internal var internalMap: IsoMutableMap<Snowflake, T> = IsoMutableMap()) {
+sealed interface DiscordList <T : SnowflakeEntity> : Iterable<T> {
 
-    val values: List<T>
-        get() = internalMap.values.toList()
+    val internalList: List<T>
+    val size: Int
+        get() = internalList.size
 
-    @PublishedApi
-    internal operator fun set(id: Snowflake, value: T) {
-        internalMap[id] = value
-    }
+    operator fun contains(other: Snowflake) = internalList.any { it.id == other }
 
-    @PublishedApi
-    internal fun remove(id: Snowflake) {
-        internalMap.remove(id)
-    }
+    /**
+     * Gets this object from the cache
+     */
+    operator fun get(id: Snowflake) = internalList.firstOrNull { it.id == id }
 
-    companion object {
+    /**
+     * Searches for the object in the cache and returns a list of matching objects
+     */
+    operator fun get(name: String) : List<T>
 
-        fun <S : SnowflakeEntity> fromSnowflakeEntityList(list: List<S>) = Cache(IsoMutableMap { mutableMapOf<Snowflake, S>().apply { putAll(list.associateBy { it.id }) } })
-
-    }
+    override operator fun iterator() = internalList.iterator()
 
 }

@@ -9,33 +9,37 @@
  */
 package io.github.jan.discordkm.websocket
 
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klogger.Logger
 import com.soywiz.korio.net.ws.WebSocketClient
 import com.soywiz.korio.net.ws.WsCloseInfo
-import io.github.jan.discordkm.clients.DiscordClient
-import io.github.jan.discordkm.events.GuildBanAddEvent
-import io.github.jan.discordkm.events.GuildBanRemoveEvent
-import io.github.jan.discordkm.events.internal.BanEventHandler
-import io.github.jan.discordkm.events.internal.GuildCreateEventHandler
-import io.github.jan.discordkm.events.internal.GuildDeleteEventHandler
-import io.github.jan.discordkm.events.internal.GuildEmojisUpdateEventHandler
-import io.github.jan.discordkm.events.internal.GuildStickersUpdateEventHandler
-import io.github.jan.discordkm.events.internal.GuildUpdateEventHandler
-import io.github.jan.discordkm.events.internal.InteractionCreateEventHandler
-import io.github.jan.discordkm.events.internal.MessageBulkDeleteEventHandler
-import io.github.jan.discordkm.events.internal.MessageCreateEventHandler
-import io.github.jan.discordkm.events.internal.MessageDeleteEventHandler
-import io.github.jan.discordkm.events.internal.MessageReactionAddEventHandler
-import io.github.jan.discordkm.events.internal.MessageReactionEmojiRemoveEventHandler
-import io.github.jan.discordkm.events.internal.MessageReactionRemoveAllEventHandler
-import io.github.jan.discordkm.events.internal.MessageReactionRemoveEventHandler
-import io.github.jan.discordkm.events.internal.MessageUpdateEventHandler
-import io.github.jan.discordkm.events.internal.ReadyEventHandler
-import io.github.jan.discordkm.serialization.IdentifyPayload
-import io.github.jan.discordkm.serialization.Payload
-import io.github.jan.discordkm.serialization.send
-import io.github.jan.discordkm.utils.LoggerOutput
-import io.github.jan.discordkm.utils.generateWebsocketURL
+import io.github.jan.discordkm.api.entities.activity.DiscordActivity
+import io.github.jan.discordkm.api.entities.activity.PresenceStatus
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.events.GuildBanAddEvent
+import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
+import io.github.jan.discordkm.internal.events.internal.BanEventHandler
+import io.github.jan.discordkm.internal.events.internal.GuildCreateEventHandler
+import io.github.jan.discordkm.internal.events.internal.GuildDeleteEventHandler
+import io.github.jan.discordkm.internal.events.internal.GuildEmojisUpdateEventHandler
+import io.github.jan.discordkm.internal.events.internal.GuildStickersUpdateEventHandler
+import io.github.jan.discordkm.internal.events.internal.GuildUpdateEventHandler
+import io.github.jan.discordkm.internal.events.internal.InteractionCreateEventHandler
+import io.github.jan.discordkm.internal.events.internal.MessageBulkDeleteEventHandler
+import io.github.jan.discordkm.internal.events.internal.MessageCreateEventHandler
+import io.github.jan.discordkm.internal.events.internal.MessageDeleteEventHandler
+import io.github.jan.discordkm.internal.events.internal.MessageReactionAddEventHandler
+import io.github.jan.discordkm.internal.events.internal.MessageReactionEmojiRemoveEventHandler
+import io.github.jan.discordkm.internal.events.internal.MessageReactionRemoveAllEventHandler
+import io.github.jan.discordkm.internal.events.internal.MessageReactionRemoveEventHandler
+import io.github.jan.discordkm.internal.events.internal.MessageUpdateEventHandler
+import io.github.jan.discordkm.internal.events.internal.ReadyEventHandler
+import io.github.jan.discordkm.internal.events.internal.VoiceStateUpdateEventHandler
+import io.github.jan.discordkm.internal.serialization.IdentifyPayload
+import io.github.jan.discordkm.internal.serialization.Payload
+import io.github.jan.discordkm.internal.serialization.send
+import io.github.jan.discordkm.internal.utils.LoggerOutput
+import io.github.jan.discordkm.internal.utils.generateWebsocketURL
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -49,13 +53,21 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
 
-class DiscordGateway(val encoding: Encoding, val compression: Compression, val client: DiscordClient) {
+class DiscordGateway(
+    val encoding: Encoding,
+    val compression: Compression,
+    val client: DiscordClient,
+    val status: PresenceStatus,
+    val activity: DiscordActivity?,
+    val reconnectDelay: TimeSpan,
+) {
 
     lateinit var ws: WebSocketClient
     private val LOGGER = Logger("Websocket")
     private var heartbeatInterval = 0L
     private var lastSequenceNumber: Int? = null
     internal var sessionId: String? = null
+    private var closed = true
 
     init {
         LOGGER.level = client.loggingLevel
@@ -63,12 +75,14 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
     }
 
     suspend fun start() {
+        closed = false
+        if(sessionId != null) com.soywiz.korio.async.delay(reconnectDelay)
         ws = WebSocketClient(generateWebsocketURL(encoding, compression))
         ws.onStringMessage {
             val json = Json.parseToJsonElement(it).jsonObject
-            println(json)
             var data = json["d"]
             if(data is JsonNull) data = null
+            if(data.toString() == "false") data = null
             client.launch {
                 onEvent(Payload(
                     json.getValue("op").jsonPrimitive.int,
@@ -80,10 +94,17 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
         }
         ws.onOpen { LOGGER.info { "Connected to gateway!" } }
         ws.onError {
+            if(it.toString().contains("StandaloneCoroutine was cancelled")) return@onError
             LOGGER.error { "Gateway error: $it" }
         }
         ws.onClose {
-            LOGGER.info { "Connection closed!" }
+            if(it.message != null) {
+                LOGGER.error { "Disconnected from gateway. Reason: ${it.message}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
+                client.launch { start() }
+            } else {
+                LOGGER.info { "Connection closed!" }
+                closed = true
+            }
         }
     }
 
@@ -91,14 +112,20 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
         when(OpCode.fromCode(payload.opCode)) {
             OpCode.DISPATCH -> {
                 payload.eventName?.let { LOGGER.debug { "Received event $it" } }
-                println(payload)
+                lastSequenceNumber = payload.sequenceNumber
                 handleRawEvent(payload)
             }
             OpCode.HEARTBEAT -> {
                 sendHeartbeat()
             }
             OpCode.RECONNECT -> TODO()
-            OpCode.INVALID_SESSION -> TODO()
+            OpCode.INVALID_SESSION -> {
+                LOGGER.warn { "Failed to resume! Trying to reconnect manually..." }
+                ws.close()
+                sessionId = null
+                closed = true
+                start()
+            }
             OpCode.HELLO -> {
                 heartbeatInterval = payload.eventData!!["heartbeat_interval"]!!.jsonPrimitive.long
                 coroutineScope {
@@ -107,8 +134,17 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
                         startHeartbeating()
                     }
                     launch {
-                        LOGGER.debug { "Authenticate..." }
-                        ws.send(IdentifyPayload(client.token, client.intents.rawValue))
+                        if(sessionId != null) {
+                            LOGGER.info { "Trying to resume..." }
+                            ws.send(Payload(6, buildJsonObject {
+                                put("token", client.token)
+                                put("session_id", sessionId)
+                                put("seq", lastSequenceNumber)
+                            }))
+                        } else {
+                            LOGGER.debug { "Authenticate..." }
+                            ws.send(IdentifyPayload(client.token, client.intents.rawValue, status, activity))
+                        }
                     }
                 }
             }
@@ -120,6 +156,7 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
 
     private suspend fun startHeartbeating() {
         while(true) {
+            if(closed) return
             delay(heartbeatInterval)
             sendHeartbeat()
             LOGGER.debug { "Sending heartbeat..." }
@@ -134,11 +171,17 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
         }.toString())
     }
 
+    //make executer for this
+    suspend fun send(payload: Payload) {
+        ws.send(payload)
+    }
+
     fun close() {
         ws.close(WsCloseInfo.NormalClosure)
     }
 
     private suspend fun handleRawEvent(payload: Payload) = coroutineScope {
+        println(payload.eventData)
         launch {
             val event = when(payload.eventName!!) {
                 "READY" -> ReadyEventHandler(client).handle(payload.eventData!!)
@@ -164,6 +207,9 @@ class DiscordGateway(val encoding: Encoding, val compression: Compression, val c
                 "MESSAGE_REACTION_REMOVE" -> MessageReactionRemoveEventHandler(client).handle(payload.eventData!!)
                 "MESSAGE_REACTION_REMOVE_ALL" -> MessageReactionRemoveAllEventHandler(client).handle(payload.eventData!!)
                 "MESSAGE_REACTION_REMOVE_EMOJI" -> MessageReactionEmojiRemoveEventHandler(client).handle(payload.eventData!!)
+
+                //voice states
+                "VOICE_STATE_UPDATE" -> VoiceStateUpdateEventHandler(client).handle(payload.eventData!!)
                 else -> return@launch
             }
             client.handleEvent(event)

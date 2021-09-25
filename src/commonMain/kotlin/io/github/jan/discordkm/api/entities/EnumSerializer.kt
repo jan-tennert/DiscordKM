@@ -7,31 +7,31 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm
+package io.github.jan.discordkm.api.entities
 
-import co.touchlab.stately.collections.IsoMutableMap
-import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.misc.EnumList
 
-class Cache<T>(internal var internalMap: IsoMutableMap<Snowflake, T> = IsoMutableMap()) {
+interface EnumSerializer <T : SerializableEnum<T>> {
 
     val values: List<T>
-        get() = internalMap.values.toList()
 
-    @PublishedApi
-    internal operator fun set(id: Snowflake, value: T) {
-        internalMap[id] = value
+    fun decode(value: Long) : EnumList<T> {
+        if (value == 0L) return EnumList.empty()
+        val list = values.filter { (value and it.rawValue) == it.rawValue; }
+        return EnumList(this, list)
+    }
+    fun encode(list: List<T>) : Long {
+        var raw: Long = 0
+        list.forEach { raw = raw or it.rawValue }
+        return raw
     }
 
-    @PublishedApi
-    internal fun remove(id: Snowflake) {
-        internalMap.remove(id)
-    }
+}
 
-    companion object {
+interface SerializableEnum <T> {
 
-        fun <S : SnowflakeEntity> fromSnowflakeEntityList(list: List<S>) = Cache(IsoMutableMap { mutableMapOf<Snowflake, S>().apply { putAll(list.associateBy { it.id }) } })
-
-    }
+    val offset: Int
+    val rawValue: Long
+        get() = 1L shl offset
 
 }
