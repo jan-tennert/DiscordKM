@@ -24,7 +24,6 @@ import io.github.jan.discordkm.api.entities.messages.buildMessage
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
-import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.toJsonObject
@@ -67,7 +66,7 @@ interface MessageChannel : Channel {
      */
 
     suspend fun sendTyping() = client.buildRestAction<Unit> {
-        route = RestAction.post("/channels/$id/typing")
+        route = Route.Channel.START_TYPING(id).post()
         transform {  }
     }
 
