@@ -1,8 +1,7 @@
 package io.github.jan.discordkm.api.entities.lists
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.ApplicationCommandBuilder
@@ -18,14 +17,14 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 
-open class CommandList(private val baseURL: String, val client: Client, override val internalList: List<ApplicationCommand>) : DiscordList<ApplicationCommand> {
+open class CommandList(private val baseURL: String, val holder: CommandHolder, override val internalList: List<ApplicationCommand>) : DiscordList<ApplicationCommand> {
 
     override fun get(name: String) = internalList.filter { it.name == name }
 
-    suspend fun create(builder: ApplicationCommandBuilder) = client.buildRestAction<ApplicationCommand> {
+    suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.post(baseURL, builder.build())
         transform { ApplicationCommand(client, it.toJsonObject()) }
-        //cache
+        onFinish { holder.commandCache[it.id] = it }
     }
 
     suspend fun createChatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) = create(chatInputCommand(builder))
@@ -34,32 +33,33 @@ open class CommandList(private val baseURL: String, val client: Client, override
 
     suspend fun createUserCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(userCommand(builder))
 
-    suspend fun retrieveCommands() = client.buildRestAction<List<ApplicationCommand>> {
+    suspend fun retrieveCommands() = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.get(baseURL)
         transform { it.toJsonArray().map { json -> ApplicationCommand(client, json.jsonObject)} }
-        //cache
+        onFinish { holder.commandCache.internalMap.clear(); holder.commandCache.internalMap.putAll(it.associateBy { command -> command.id }) }
     }
 
-    suspend fun retrieve(id: Snowflake) = client.buildRestAction<ApplicationCommand> {
+    suspend fun retrieve(id: Snowflake) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.get("$baseURL/$id")
         transform { ApplicationCommand(client, it.toJsonObject()) }
-        //cache
+        onFinish { holder.commandCache[it.id] = it }
     }
 
-    suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = client.buildRestAction<ApplicationCommand> {
+    suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.patch("$baseURL/$id", builder.build())
         transform { ApplicationCommand(client, it.toJsonObject()) }
-        //cache
+        onFinish { holder.commandCache[it.id] = it }
     }
 
-    suspend fun delete(id: Snowflake) = client.buildRestAction<ApplicationCommand> {
+    suspend fun delete(id: Snowflake) = holder.client.buildRestAction<Unit> {
         route = RestAction.delete("$baseURL/$id")
-        //cache
+        onFinish { holder.commandCache.remove(id) }
     }
 
-    suspend fun overrideCommands(commands: CommandBulkOverride.() -> Unit) = client.buildRestAction<List<ApplicationCommand>> {
+    suspend fun overrideCommands(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.put(baseURL, Json.encodeToJsonElement(CommandBulkOverride().apply(commands).commands.map { it.build() }))
         transform { it.toJsonArray().map { json -> ApplicationCommand(client, json.jsonObject)} }
+        onFinish { holder.commandCache.internalMap.clear(); holder.commandCache.internalMap.putAll(it.associateBy { command -> command.id }) }
     }
 
 
@@ -80,5 +80,3 @@ class CommandBulkOverride {
     fun messageCommand(builder: ApplicationCommandBuilder.() -> Unit) { add(ApplicationCommandBuilder(ApplicationCommandType.MESSAGE, "", "").apply(builder)) }
 
 }
-
-class GuildCommandList(val guild: Guild, internalList: List<ApplicationCommand>) : CommandList("/applications/${guild.client.selfUser.id}/guilds/${guild.id}/commands", guild.client, internalList)

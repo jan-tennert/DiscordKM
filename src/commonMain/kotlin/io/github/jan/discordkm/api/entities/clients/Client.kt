@@ -12,11 +12,15 @@ package io.github.jan.discordkm.api.entities.clients
 import co.touchlab.stately.collections.IsoMutableMap
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.Cache
+import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.EnumSerializer
 import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.interactions.CommandHolder
+import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
 import io.github.jan.discordkm.api.entities.lists.ChannelList
+import io.github.jan.discordkm.api.entities.lists.CommandList
 import io.github.jan.discordkm.api.entities.lists.GuildList
 import io.github.jan.discordkm.api.entities.lists.MemberList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
@@ -35,11 +39,18 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.coroutines.CoroutineContext
 
-sealed class Client(val token: String, val loggingLevel: Logger.Level) : CoroutineScope {
+sealed class Client(val token: String, val loggingLevel: Logger.Level) : CoroutineScope, CommandHolder, BaseEntity {
 
     internal var guildCache = Cache<Guild>()
     val rest = RestClient(this)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
+    override val client = this
+
+    override val commandCache = Cache<ApplicationCommand>()
+
+    override val commands: CommandList
+        get() = CommandList("/applications/${selfUser.id}/commands", this, commandCache.values)
+
     lateinit var selfUser: User
         internal set
     val guilds: GuildList

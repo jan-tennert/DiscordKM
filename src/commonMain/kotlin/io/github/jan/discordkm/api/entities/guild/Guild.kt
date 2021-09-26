@@ -19,7 +19,7 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
-import io.github.jan.discordkm.api.entities.lists.GuildCommandList
+import io.github.jan.discordkm.api.entities.lists.CommandList
 import io.github.jan.discordkm.api.entities.lists.RetrievableChannelList
 import io.github.jan.discordkm.api.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.api.entities.lists.RoleList
@@ -28,6 +28,7 @@ import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.UserData
+import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.VoiceStateData
 import io.github.jan.discordkm.internal.exceptions.PermissionException
 import io.github.jan.discordkm.internal.get
@@ -156,8 +157,8 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
     val selfMember: Member
         get() = members[client.selfUser.id]!!
 
-    val commands: GuildCommandList
-        get() = GuildCommandList(this, emptyList()) //add cache
+    val commands: CommandList
+        get() = (this as GuildData).commands
 
     /**
      * Returns the [Member]s in the guild

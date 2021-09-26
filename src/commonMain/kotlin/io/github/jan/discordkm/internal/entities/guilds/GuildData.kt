@@ -13,6 +13,9 @@ import io.github.jan.discordkm.api.entities.guild.channels.StageChannel
 import io.github.jan.discordkm.api.entities.guild.channels.TextChannel
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
+import io.github.jan.discordkm.api.entities.interactions.CommandHolder
+import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
+import io.github.jan.discordkm.api.entities.lists.CommandList
 import io.github.jan.discordkm.api.entities.lists.RetrievableChannelList
 import io.github.jan.discordkm.api.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.api.entities.lists.RoleList
@@ -34,7 +37,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-class GuildData(override val client: Client, override val data: JsonObject) : Guild {
+class GuildData(override val client: Client, override val data: JsonObject) : Guild, CommandHolder {
 
     @PublishedApi
     internal var roleCache = Cache.fromSnowflakeEntityList(data.getValue("roles").jsonArray.map { it.jsonObject.extractGuildEntity<Role>(this) })
@@ -84,6 +87,11 @@ class GuildData(override val client: Client, override val data: JsonObject) : Gu
 
 
     override fun toString() = "Guild[id=$id,name=$name]"
+
+    override val commandCache = Cache<ApplicationCommand>()
+
+    override val commands: CommandList
+        get() = CommandList("/applications/${client.selfUser.id}/guilds/${id}/commands", this, commandCache.values)
 
     override fun equals(other: Any?): Boolean {
         if(other !is Guild) return false
