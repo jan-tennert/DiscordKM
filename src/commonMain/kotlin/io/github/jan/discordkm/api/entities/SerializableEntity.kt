@@ -16,9 +16,3 @@ interface SerializableEntity : BaseEntity {
     val data: JsonObject
 
 }
-
-interface NonClientSerializableEntity {
-
-    fun toJson() : JsonObject
-
-}

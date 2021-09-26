@@ -23,10 +23,12 @@ import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
 import io.github.jan.discordkm.api.entities.lists.RetrievableRoleList
 import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.MemberData
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
@@ -139,7 +141,7 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
      */
 
     suspend fun modify(modifier: MemberModifier.() -> Unit) = client.buildRestAction<Member> {
-        action = RestAction.patch("/guilds/${guild.id}/members/$id", MemberModifier().apply(modifier).build())
+        route = Route.Member.MODIFY_MEMBER(guild.id, id).patch(MemberModifier().apply(modifier).build())
         transform { it.toJsonObject().extractGuildEntity(guild) }
         onFinish { (guild as GuildData).memberCache[it.id] = it }
     }

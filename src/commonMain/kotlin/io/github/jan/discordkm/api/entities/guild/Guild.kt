@@ -25,10 +25,13 @@ import io.github.jan.discordkm.api.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.api.entities.lists.RoleList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
 import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.guilds.VoiceStateData
 import io.github.jan.discordkm.internal.exceptions.PermissionException
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
 import io.github.jan.discordkm.internal.utils.DiscordImage
@@ -40,6 +43,7 @@ import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -124,19 +128,19 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * The [VerificationLevel] required for the guild
      */
     val verificationLevel: VerificationLevel
-        get() = VerificationLevel.values().first { it.ordinal == data.getOrThrow<Int>("verification_level") }
+        get() = valueOfIndex(data.getOrThrow("verification_level"))
 
     /**
      * The default [NotificationLevel] for the guild
      */
     val defaultMessageNotificationLevel: NotificationLevel
-        get() = NotificationLevel.values().first { it.ordinal == data.getOrThrow<Int>("default_message_notifications") }
+        get() = valueOfIndex(data.getOrThrow("default_message_notifications"))
 
     /**
      * The [ExplicitContentFilter] level for the guild
      */
     val explicitContentFilter: ExplicitContentFilter
-        get() = ExplicitContentFilter.values().first { it.ordinal == data.getOrThrow<Int>("explicit_content_filter") }
+        get() = valueOfIndex(data.getOrThrow<Int>("explicit_content_filter"))
 
     /**
      * Returns the [Role]s in the guild
@@ -183,8 +187,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * Required [MfaLevel] for the guild
      */
     val mfaLevel: MfaLevel
-        get() = MfaLevel.values().first { it.ordinal == data.getOrThrow<Int>("mfa_level") }
-
+        get() = valueOfIndex(data.getOrThrow<Int>("mfa_level"))
     /**
      * Application id of the guild creator if the guild is bot created
      */
@@ -254,7 +257,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * The [PremiumTier] of the guild (server boost level)
      */
     val premiumTier: PremiumTier
-        get() = PremiumTier.values().first { it.ordinal == data.getOrThrow<Int>("premium_tier") }
+        get() = valueOfIndex(data.getOrThrow("premium_tier"))
 
     /**
      * The amount of server boosts
@@ -282,7 +285,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * The [NSFWLevel] of the guild
      */
     val nsfwLevel: NSFWLevel
-        get() = NSFWLevel.values().first { it.ordinal == data.getOrThrow<Int>("nsfw_level") }
+        get() = valueOfIndex(data.getOrThrow("nsfw_level"))
 
     /**
      * All [StageInstance]s in this guild
@@ -301,7 +304,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      */
 
     suspend fun leave() = client.buildRestAction<Unit> {
-        action = RestAction.delete("/users/@me/guilds/$id")
+        route = Route.User.LEAVE_GUILD(id).delete()
         onFinish {
             client.guildCache.remove(id)
         }
@@ -318,16 +321,15 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
 
      * Requires the permission [Permission.BAN_MEMBERS]
      */
-
     suspend fun retrieveBans() : List<Ban>
+
     /**
      * Retrieves a ban object from the guild
      *
      * Requires the permission [Permission.BAN_MEMBERS]
      */
-
     suspend fun retrieveBan(userId: Snowflake) = client.buildRestAction<Ban> {
-        action = RestAction.get("/guilds/${id}/bans/${userId}")
+        route = Route.Ban.GET_BAN(id, userId).get()
         transform { Ban(this@Guild, it.toJsonObject()) }
         check { if(Permission.BAN_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to retrieve bans from a guild") }
     }

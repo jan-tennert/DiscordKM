@@ -28,7 +28,6 @@ import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteApplication
 import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.api.entities.messages.MessageEmbed
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.internal.entities.UserData
@@ -113,7 +112,6 @@ inline fun <reified T>JsonObject.extractGuildEntity(guild: Guild) = when(T::clas
     Thread::class -> ThreadData(guild, this) as T
     Thread.ThreadMember::class -> Thread.ThreadMember(guild, this) as T
     else -> {
-        println(T::class.simpleName)
         throw IllegalStateException()
     }
 }
@@ -131,11 +129,6 @@ inline fun <reified T>JsonObject.extractClientEntity(client: Client) = when(T::c
 
 inline fun <reified T>JsonObject.extractMessageChannelEntity(channel: MessageChannel) = when(T::class) {
     Message::class -> Message(channel, this) as T
-    else -> throw IllegalStateException()
-}
-
-inline fun <reified T>JsonObject.extract() = when(T::class) {
-    MessageEmbed::class -> Json.decodeFromString<MessageEmbed>(toString()) as T
     else -> throw IllegalStateException()
 }
 

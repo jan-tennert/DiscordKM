@@ -17,11 +17,16 @@ import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.RoleModifier
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.MemberData
 import io.github.jan.discordkm.internal.entities.guilds.RoleData
 import io.github.jan.discordkm.internal.exceptions.PermissionException
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.post
+import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
@@ -39,7 +44,7 @@ class RoleList(val guild: Guild, override val internalList: List<Role>) : IRoleL
 
 
     suspend fun retrieveRoles()  = guild.client.buildRestAction<List<Role>> {
-        action = RestAction.get("/guilds/${guild.id}/roles")
+        route = Route.Role.GET_ROLES(guild.id).get()
         transform {
             it.toJsonArray().map { json -> json.jsonObject.extractGuildEntity<Role>(guild) }
         }
@@ -56,7 +61,7 @@ class RoleList(val guild: Guild, override val internalList: List<Role>) : IRoleL
      */
 
     suspend fun create(builder: RoleModifier.() -> Unit) = guild.client.buildRestAction<Role> {
-        action = RestAction.post("/guilds/${guild.id}/roles", RoleModifier().apply(builder).build())
+        route = Route.Role.CREATE_ROLE(guild.id).post(RoleModifier().apply(builder).build())
         transform { RoleData(guild, it.toJsonObject()) }
         onFinish { (guild as GuildData).roleCache[it.id] = it }
         check { if(Permission.MANAGE_ROLES !in guild.selfMember.permissions) throw PermissionException("You need the permission MANAGE_ROLES to create roles") }
@@ -69,12 +74,10 @@ class RetrievableRoleList(val member: Member, override val internalList: List<Ro
 
     suspend fun add(role: Role) = add(role.id)
 
-
     suspend fun remove(role: Role) = remove(role.id)
 
-
     suspend fun add(roleId: Snowflake) = member.client.buildRestAction<Unit> {
-        action = RestAction.put("/guilds/${member.guild.id}/members/${member.id}/roles/${roleId}")
+        route = Route.Member.ADD_ROLE_TO_MEMBER(member.guild.id, member.id, roleId).put()
         transform {  }
         onFinish { member.guild.roles[roleId]?.let {
             (member as MemberData).roleCache[it.id] = it
@@ -83,7 +86,7 @@ class RetrievableRoleList(val member: Member, override val internalList: List<Ro
 
 
     suspend fun remove(roleId: Snowflake) = member.client.buildRestAction<Unit> {
-        action = RestAction.put("/guilds/${member.guild.id}/members/${member.id}/roles/${roleId}")
+        route = Route.Member.REMOVE_ROLE_FROM_MEMBER(member.guild.id, member.id, roleId).delete()
         transform {  }
         onFinish { if(member.roles.contains(roleId)) (member as MemberData).roleCache.remove(roleId) }
     }
@@ -109,7 +112,7 @@ class UserList(val client: Client, override val internalList: List<User>) : Disc
 
 
     suspend fun retrieve(id: Snowflake) = client.buildRestAction<User> {
-        action = RestAction.get("/users/$id")
+        route = Route.User.GET_USER(id).get()
         transform { it.toJsonObject().extractClientEntity(client) }
         onFinish { client.userCache[it.id] = it }
     }

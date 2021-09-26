@@ -2,7 +2,9 @@ package io.github.jan.discordkm.api.entities.interactions
 
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.OptionBuilder
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -16,7 +18,7 @@ class AutoCompleteInteraction(client: Client, data: JsonObject) : Interaction(cl
      */
     suspend fun replyChoices(choices: OptionBuilder.ChoicesBuilder<String>.() -> Unit) = client.buildRestAction<Unit> {
         val formattedChoices = OptionBuilder.ChoicesBuilder<String>().apply(choices).choices.map { buildJsonObject { put("name", it.name); put("value", it.string) } }
-        action = RestAction.post("/interactions/$id/$token/callback", buildJsonObject {
+        route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
             put("type", 8) //reply choices
             put("data", buildJsonObject {
                 putJsonArray("choices") {

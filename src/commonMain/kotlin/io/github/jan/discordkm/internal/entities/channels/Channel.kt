@@ -13,22 +13,22 @@ import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.interactions.commands.ChannelTypeSerializer
-
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
+import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.getId
+import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonPrimitive
 
 interface Channel : Mentionable, SnowflakeEntity, SerializableEntity {
 
     val type: ChannelType
-        get() = ChannelType.values().first { it.id == data.getValue("type").jsonPrimitive.int }
-
+        get() = valueOfIndex(data.getOrThrow("type"))
 
     suspend fun delete() = client.buildRestAction<Unit> {
-        action = RestAction.delete("/channels/$id")
+        route = Route.Channel.DELETE_CHANNEL(id).delete()
         transform {  }
         check {
             //TODO: check for permission

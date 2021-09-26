@@ -17,13 +17,16 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.receive
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.request.delete
+import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 
 class RestClient(val client: Client) {
 
@@ -33,7 +36,7 @@ class RestClient(val client: Client) {
             header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, 0.1)")
         }
     }
-    internal val rateLimiter = RateLimiter(client.loggingLevel)
+    private val rateLimiter = RateLimiter(client.loggingLevel)
 
     suspend fun custom(method: HttpMethod, endpoint: String, data: Any? = null) = when(method.value) {
         "GET" -> {
@@ -42,13 +45,16 @@ class RestClient(val client: Client) {
             }.receive<String>()
         }
         "POST" -> {
-            println(data)
             rateLimiter.queue(endpoint) {
                 http.post<HttpResponse>(generateUrl(endpoint)) {
                     data?.let {
-                        body = it
+                        body = if(it is MultiPartFormDataContent) {
+                            it
+                        } else {
+                            contentType(ContentType.Application.Json)
+                            it.toString()
+                        }
                     }
-                    header("Content-Type", "application/json")
                 }
             }.receive<String>()
         }
@@ -61,9 +67,13 @@ class RestClient(val client: Client) {
             rateLimiter.queue(endpoint) {
                 http.patch<HttpResponse>(generateUrl(endpoint)) {
                     data?.let {
-                        body = it
+                        body = if(it is MultiPartFormDataContent) {
+                            it
+                        } else {
+                            contentType(ContentType.Application.Json)
+                            it.toString()
+                        }
                     }
-                    header("Content-Type", "application/json")
                 }
             }.receive<String>()
         }
@@ -71,7 +81,12 @@ class RestClient(val client: Client) {
             rateLimiter.queue(endpoint) {
                 http.put(generateUrl(endpoint)) {
                     data?.let {
-                        body = it
+                        body = if(it is MultiPartFormDataContent) {
+                            it
+                        } else {
+                            contentType(ContentType.Application.Json)
+                            it.toString()
+                        }
                     }
                 }
             }.receive<String>()

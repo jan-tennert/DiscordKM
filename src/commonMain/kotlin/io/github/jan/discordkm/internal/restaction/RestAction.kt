@@ -12,7 +12,7 @@ package io.github.jan.discordkm.internal.restaction
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.ktor.http.HttpMethod
 
-abstract class RestAction<T> internal constructor(private val action: Action, val client: Client) {
+abstract class RestAction<T> internal constructor(private val action: FormattedRoute, val client: Client) {
 
     @PublishedApi
     internal var check: () -> Unit = { }
@@ -33,21 +33,22 @@ abstract class RestAction<T> internal constructor(private val action: Action, va
     abstract fun transform(data: String) : T
 
     companion object {
-        fun get(endpoint: String) = Action(endpoint, HttpMethod.Get)
-        fun post(endpoint: String, body: Any? = null) = Action(endpoint, HttpMethod.Post, body?.toString())
-        fun delete(endpoint: String) = Action(endpoint, HttpMethod.Delete)
-        fun patch(endpoint: String, body: Any ? = null) = Action(endpoint, HttpMethod.Patch, body?.toString())
-        fun put(endpoint: String, body: Any? = null) = Action(endpoint, HttpMethod.Put, body?.toString())
+        fun get(endpoint: String) = FormattedRoute(endpoint, HttpMethod.Get)
+        fun post(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, HttpMethod.Post, body)
+        fun delete(endpoint: String) = FormattedRoute(endpoint, HttpMethod.Delete)
+        fun patch(endpoint: String, body: Any ? = null) = FormattedRoute(endpoint, HttpMethod.Patch, body)
+        fun put(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, HttpMethod.Put, body)
     }
 
 }
 
-data class Action internal constructor(val endpoint: String, val method: HttpMethod, val body: String? = null)
 typealias RestActionListener <T> = suspend (T) -> Unit
+
+class FormattedRoute internal constructor(val endpoint: String, val method: HttpMethod, val body: Any? = null)
 
 class RestActionBuilder<T>(val client: Client)  {
 
-    lateinit var action: Action
+    lateinit var route: FormattedRoute
     private lateinit var transform: (String) -> T
     @PublishedApi
     internal var check: () -> Unit = {  }
@@ -58,12 +59,11 @@ class RestActionBuilder<T>(val client: Client)  {
         this.transform = transform
     }
 
-
     fun onFinish(onFinish: RestActionListener<T>) { this.onFinish = onFinish }
 
     fun check(check: () -> Unit) { this.check = check }
 
-    fun build() = object : RestAction<T>(action, client) {
+    fun build() = object : RestAction<T>(route, client) {
         override fun transform(data: String): T = this@RestActionBuilder.transform(data)
     }
 

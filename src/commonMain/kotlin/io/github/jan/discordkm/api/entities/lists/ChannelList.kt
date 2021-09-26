@@ -21,8 +21,11 @@ import io.github.jan.discordkm.api.entities.guild.channels.TextChannel
 import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.GuildChannelModifier
+import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractChannel
@@ -41,7 +44,7 @@ sealed interface IChannelList : DiscordList<GuildChannel>, BaseEntity {
  * Retrieves a guild channel by its id
  */
 suspend inline fun IChannelList.retrieve(id: Snowflake) = client.buildRestAction<MessageChannel> {
-    action = RestAction.get("/channels/$id")
+    route = Route.Channel.GET_CHANNEL(id).get()
     transform { it.toJsonObject().extractChannel(client, client.guilds[it.toJsonObject().getOrNull<Snowflake>("guild_id") ?: Snowflake.empty()]) as MessageChannel }
     //onFinish { guild.channelCache[id] = it }
 }
@@ -55,7 +58,7 @@ class RetrievableChannelList(val guild: Guild, override val internalList: List<G
      */
 
     suspend fun retrieveChannels() = guild.client.buildRestAction<List<GuildChannel>> {
-        action = RestAction.get("/guilds/${guild.id}/channels")
+        route = RestAction.get("/guilds/${guild.id}/channels")
         transform { it.toJsonArray().map { json -> json.jsonObject.extractChannel(client, guild) as GuildChannel } }
         onFinish {
             (guild as GuildData).channelCache.internalMap.clear()
@@ -70,7 +73,7 @@ class RetrievableChannelList(val guild: Guild, override val internalList: List<G
      **/
 
     suspend inline fun <reified C: GuildChannel, M: GuildChannelModifier<C>, T : GuildChannelBuilder<C, M>> create(type: T, noinline builder: M.() -> Unit) : C = guild.client.buildRestAction<C> {
-        action = RestAction.post("/guilds/${guild.id}/channels", type.create(builder))
+        route = RestAction.post("/guilds/${guild.id}/channels", type.create(builder))
         transform { it.toJsonObject().extractChannel(client, guild) as C }
         onFinish { (guild as GuildData).channelCache[it.id] = it }
     }

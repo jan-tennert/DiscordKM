@@ -17,12 +17,13 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.valueOfIndexOrDefault
 import kotlinx.serialization.json.JsonObject
 
 class ApplicationCommand(override val client: Client, override val data: JsonObject) : SerializableEntity, SnowflakeEntity {
 
     val type: ApplicationCommandType
-        get() = ApplicationCommandType.values().firstOrNull { it.ordinal == data.getOrThrow<Int>("type") } ?: ApplicationCommandType.CHAT_INPUT
+        get() = valueOfIndexOrDefault(data.getOrThrow<Int>("type"), default = ApplicationCommandType.CHAT_INPUT)
 
     override val id: Snowflake
         get() = data.getId()

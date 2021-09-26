@@ -13,7 +13,10 @@ import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.VoiceChannelModifier
 import io.github.jan.discordkm.api.entities.lists.retrieve
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -30,7 +33,7 @@ interface StageChannel : VoiceChannel {
      * Creates a new stage instance in this [StageChannel]
      */
     suspend fun createInstance(topic: String, privacyLevel: StageInstance.PrivacyLevel = StageInstance.PrivacyLevel.GUILD_ONLY) = client.buildRestAction<StageInstance> {
-        action = RestAction.post("/stage-instances", buildJsonObject {
+        route = Route.StageInstance.CREATE_INSTANCE.post(buildJsonObject {
             put("channel_id", id.long)
             put("topic", topic)
             put("privacy_level", privacyLevel.ordinal)
@@ -40,7 +43,7 @@ interface StageChannel : VoiceChannel {
     }
 
     suspend fun retrieveInstance() = client.buildRestAction<StageInstance> {
-        action = RestAction.get("/stage-instances/$id")
+        route = Route.StageInstance.GET_INSTANCE(id).get()
         transform { StageInstance(guild, it.toJsonObject()) }
     }
 

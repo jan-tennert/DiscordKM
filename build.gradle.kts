@@ -139,6 +139,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-core:1.6.3")
                 implementation("com.github.ajalt.mordant:mordant:2.0.0-beta2")
                 implementation("co.touchlab:stately-iso-collections:1.1.4-a1")
+                implementation("io.ktor:ktor-client-serialization:1.6.3")
             }
         }
         val commonTest by getting {

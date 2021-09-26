@@ -1,9 +1,10 @@
 package io.github.jan.discordkm.api.entities
 
-import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.api.entities.misc.EnumList
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
+import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.DiscordImage
 import io.github.jan.discordkm.internal.utils.extractClientEntity
@@ -13,6 +14,7 @@ import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import io.github.jan.discordkm.internal.utils.valueOfIndexOrDefault
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.jvm.JvmName
@@ -88,14 +90,14 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
      * The type of nitro subscription on a user's account
      */
     val premiumType: PremiumType
-        get() = if(data.getOrNull<Int>("premium_type") != null) PremiumType.values().first { it.ordinal == data.getOrThrow("premium_type") } else PremiumType.NONE
+        get() = valueOfIndexOrDefault(data.getOrNull("premium_type"), default = PremiumType.NONE)
 
     /**
      * Creates a new [PrivateChannel]
      */
 
     suspend fun createPrivateChannel() = client.buildRestAction<PrivateChannel> {
-        action = RestAction.post("/users/@me/channels", buildJsonObject {
+        route = Route.User.CREATE_DM.post(buildJsonObject {
             put("recipient_id", id.long)
         })
 

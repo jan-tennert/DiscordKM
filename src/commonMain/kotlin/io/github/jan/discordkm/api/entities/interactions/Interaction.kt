@@ -24,6 +24,7 @@ import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.internal.entities.guilds.MemberData
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
@@ -39,7 +40,7 @@ open class Interaction(override val client: Client, override val data: JsonObjec
      * The [InteractionType]
      */
     val type: InteractionType
-        get() = InteractionType.values().first { it.ordinal == data.getOrThrow<Int>("type") }
+        get() = valueOfIndex(data.getOrThrow("type"))
 
     /**
      * The interaction id

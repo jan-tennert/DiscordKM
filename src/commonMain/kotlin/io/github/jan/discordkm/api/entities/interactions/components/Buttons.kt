@@ -4,6 +4,7 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.events.ButtonClickEvent
+import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
@@ -57,7 +58,7 @@ fun RowBuilder.secondaryButton(customId: String = "", label: String? = null, emo
 fun RowBuilder.linkButton(url: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(url = url, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.LINK).apply(builder).build() }
 
 object ButtonStyleSerializer : KSerializer<ButtonStyle> {
-    override fun deserialize(decoder: Decoder) = ButtonStyle.values().first { it.ordinal + 1 == decoder.decodeInt() }
+    override fun deserialize(decoder: Decoder) = valueOfIndex<ButtonStyle>(decoder.decodeInt(), 1)
 
     override val descriptor = PrimitiveSerialDescriptor("ButtonStyle", PrimitiveKind.INT)
 

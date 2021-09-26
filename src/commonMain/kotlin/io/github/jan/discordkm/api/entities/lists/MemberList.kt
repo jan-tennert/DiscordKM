@@ -13,11 +13,13 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Permission
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.exceptions.PermissionException
-
-import io.github.jan.discordkm.internal.restaction.RestAction
-import io.github.jan.discordkm.internal.restaction.buildQuery
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
 import io.github.jan.discordkm.internal.utils.putOptional
@@ -38,7 +40,7 @@ class RetrievableMemberList(val guild: Guild, override val internalList: List<Me
 
 
     suspend fun retrieve(id: Snowflake) = guild.client.buildRestAction<Member> {
-        action = RestAction.get("/guilds/${guild.id}/members/$id")
+        route = Route.Member.GET_MEMBER(guild.id, id).get()
         onFinish { (guild as GuildData).memberCache[it.id] = it }
         transform { it.toJsonObject().extractGuildEntity(guild) }
     }
@@ -51,8 +53,11 @@ class RetrievableMemberList(val guild: Guild, override val internalList: List<Me
      * @param after "The highest user id in the previous page"
      */
 
-    suspend fun retrieveMembers(limit: Int = 1, after: Long = 0) = guild.client.buildRestAction<List<Member>> {
-        action = RestAction.get("/guilds/${guild.id}/members?limit=$limit&after=$after")
+    suspend fun retrieveMembers(limit: Int = 1, after: Snowflake? = null) = guild.client.buildRestAction<List<Member>> {
+        route = Route.Member.GET_MEMBERS(guild.id).get {
+            put("limit", limit)
+            putOptional("after", after)
+        }
         transform { it.toJsonObject().extractGuildEntity(guild) }
         check {
             if(limit < 1 || limit > 1000) throw IllegalArgumentException("The member limit has to be between 1 and 1000")
@@ -70,10 +75,10 @@ class RetrievableMemberList(val guild: Guild, override val internalList: List<Me
      */
 
     suspend fun search(query: String, limit: Int = 1) = guild.client.buildRestAction<List<Member>> {
-        action = RestAction.get("/guilds/${guild.id}/members/search" + buildQuery {
+        route = Route.Member.SEARCH_MEMBERS(guild.id).get {
             put("query", query)
             put("limit", limit)
-        })
+        }
     }
 
     /**
@@ -83,7 +88,7 @@ class RetrievableMemberList(val guild: Guild, override val internalList: List<Me
      */
 
     suspend fun kick(memberId: Snowflake) = guild.client.buildRestAction<Unit> {
-        action = RestAction.delete("/guilds/${guild.id}/members/$memberId")
+        route = Route.Member.KICK_MEMBER(guild.id, memberId).delete()
         transform {}
         onFinish { (guild as GuildData).memberCache.remove(memberId) }
         check { if(Permission.KICK_MEMBERS !in guild.selfMember.permissions) throw PermissionException("You require the permission KICK_MEMBERS to kick members from a guild") }
@@ -96,7 +101,7 @@ class RetrievableMemberList(val guild: Guild, override val internalList: List<Me
      */
 
     suspend fun ban(userId: Snowflake, delDays: Int? = null) = guild.client.buildRestAction<Unit> {
-        action = RestAction.put("/guilds/${guild.id}/bans/$userId", buildJsonObject {
+        route = Route.Ban.CREATE_BAN(guild.id, userId).put(buildJsonObject {
             putOptional("delete_message_days", delDays)
         })
         transform {  }
@@ -116,7 +121,7 @@ class RetrievableMemberList(val guild: Guild, override val internalList: List<Me
      */
 
     suspend fun unban(userId: Snowflake) = guild.client.buildRestAction<Unit> {
-        action = RestAction.delete("/guilds/${guild.id}/bans/${userId}")
+        route = Route.Ban.REMOVE_BAN(guild.id, userId).delete()
         transform {  }
         check {
             check { if(Permission.BAN_MEMBERS !in guild.selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to ban members from a guild") }

@@ -9,9 +9,10 @@ import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.api.entities.guild.channels.TextChannel
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
+import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
-
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractChannel
 import io.github.jan.discordkm.internal.utils.getOrNull
@@ -36,7 +37,7 @@ interface IParent : SerializableEntity, GuildEntity, SnowflakeEntity {
 
 
     suspend fun retrieveParent() = client.buildRestAction<GuildChannel> {
-        action = RestAction.get("/channels/$parentId")
+        route = Route.Channel.GET_CHANNEL(parentId.toString()).get()
         transform {
             it.toJsonObject().extractChannel(client, guild) as GuildChannel
         }

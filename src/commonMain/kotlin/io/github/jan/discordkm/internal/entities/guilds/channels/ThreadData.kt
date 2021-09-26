@@ -7,8 +7,14 @@ import io.github.jan.discordkm.api.entities.guild.channels.modifier.ThreadModifi
 import io.github.jan.discordkm.api.entities.lists.ThreadMemberList
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
+import io.github.jan.discordkm.internal.post
+import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
 import io.github.jan.discordkm.internal.utils.extractMessageChannelEntity
@@ -27,24 +33,24 @@ class ThreadData(guild: Guild, data: JsonObject, members: List<Thread.ThreadMemb
         get() = ThreadMemberList(this, memberCache.values)
 
     override suspend fun join() = client.buildRestAction<Unit> {
-        action = RestAction.put("/channels/$id/thread-members/@me")
+        route = Route.Thread.JOIN_THREAD(id).put()
         transform {  }
         check { if(metadata.isArchived) throw UnsupportedOperationException("This thread is archived. You can't join anymore ") }
     }
 
     override suspend fun retrieveThreadMembers() = client.buildRestAction<List<Thread.ThreadMember>> {
-        action = RestAction.get("/channels/$id/thread-members")
+        route = Route.Thread.GET_THREAD_MEMBERS(id).get()
         transform { it.toJsonArray().map { json -> Thread.ThreadMember(guild, json.jsonObject) }}
         onFinish { memberCache.internalMap.clear(); memberCache.internalMap.putAll(it.associateBy { member -> member.id }) }
     }
 
     override suspend fun leave() = client.buildRestAction<Unit> {
-        action = RestAction.delete("/channels/$id/thread-members/@me")
+        route = Route.Thread.LEAVE_THREAD(id).delete()
         transform {  }
     }
 
     override suspend fun send(message: DataMessage) = client.buildRestAction<Message> {
-        action = RestAction.post("/channels/$id/messages", Json.encodeToString(message))
+        route = Route.Message.CREATE_MESSAGE(id).post(Json.encodeToString(message))
         transform {
             it.toJsonObject().extractMessageChannelEntity(this@ThreadData)
         }
@@ -52,7 +58,7 @@ class ThreadData(guild: Guild, data: JsonObject, members: List<Thread.ThreadMemb
     }
 
     override suspend fun modify(modifier: ThreadModifier.() -> Unit) = client.buildRestAction<Thread> {
-        action = RestAction.patch("/channels/${id}", ThreadModifier(this@ThreadData).apply(modifier).build())
+        route = Route.Channel.MODIFY_CHANNEL(id).patch(ThreadModifier(this@ThreadData).apply(modifier).build())
         transform { it.toJsonObject().extractGuildEntity(guild) }
         onFinish {
             (guild as GuildData).threadCache[id] = it

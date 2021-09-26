@@ -9,16 +9,16 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.utils.DiscordImage
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmName
@@ -50,12 +50,12 @@ class Sticker(override val data: JsonObject, override val client: Client) : Snow
     /**
      * [Type] of the sticker
      */
-    val type = StickerType.values().first { it.ordinal + 1 == data.getOrThrow("type") }
+    val type = valueOfIndex<StickerType>(data.getOrThrow("type"), 1)
 
     /**
      * [FormatType] of the sticker
      */
-    val formatType = FormatType.values().first { it.ordinal + 1 == data.getOrThrow("format_type") }
+    val formatType = valueOfIndex<FormatType>(data.getOrThrow("format_type"), 1)
 
     /**
      * The url of the sticker. This can be a png or a lottie
@@ -92,7 +92,7 @@ class Sticker(override val data: JsonObject, override val client: Client) : Snow
      */
     class Item(data: JsonObject) : SnowflakeEntity {
 
-        val formatType = FormatType.values().first { it.ordinal + 1 == data.getValue("format_type").jsonPrimitive.int }
+        val formatType = valueOfIndex<FormatType>(data.getOrThrow("format_type"), 1)
 
         val name = data.getOrThrow<String>("name")
 

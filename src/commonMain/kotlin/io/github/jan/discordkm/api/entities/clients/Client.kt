@@ -22,8 +22,9 @@ import io.github.jan.discordkm.api.entities.lists.MemberList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
 import io.github.jan.discordkm.api.entities.lists.UserList
 import io.github.jan.discordkm.api.entities.misc.Image
-import io.github.jan.discordkm.internal.entities.UserData
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.RestClient
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractClientEntity
@@ -55,10 +56,10 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
         get() = ThreadList(guilds.map { it.threads.internalList }.flatten())
 
 
-    suspend fun editSelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<UserData> {
+    suspend fun editSelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<User> {
         val edit = SelfUserEdit()
         edit.builder()
-        action = RestAction.patch("/users/@me", buildJsonObject {
+        route = Route.User.MODIFY_SELF_USER.patch(buildJsonObject {
             edit.username?.let { put("username", it) }
             edit.image?.let { put("image", it.url) }
         })
@@ -67,7 +68,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
     }
 
     suspend fun retrieveRTCRegions() = buildRestAction<String> {
-        action = RestAction.get("/voice/regions")
+        route = Route.Voice.GET_VOICE_REGIONS.get()
         transform { it }
     }
 

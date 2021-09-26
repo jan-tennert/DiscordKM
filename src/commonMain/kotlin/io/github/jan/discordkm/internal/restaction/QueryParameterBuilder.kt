@@ -5,6 +5,7 @@ class QueryParameterBuilder {
     private val map = hashMapOf<String, String>()
 
     fun build() : String {
+        if(map.isEmpty()) return ""
         var isFirst: Boolean = true
         var index = 1
         val query = buildString {

@@ -17,10 +17,12 @@ import io.github.jan.discordkm.api.entities.lists.RetrievableChannelList
 import io.github.jan.discordkm.api.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.api.entities.lists.RoleList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
+import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.entities.guilds.channels.ThreadData
 import io.github.jan.discordkm.internal.exceptions.PermissionException
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
 import io.github.jan.discordkm.internal.utils.getOrThrow
@@ -69,13 +71,13 @@ class GuildData(override val client: Client, override val data: JsonObject) : Gu
         get() = ThreadList(threadCache.values)
 
     override suspend fun retrieveActiveThreads() = client.buildRestAction<List<Thread>> {
-        action = RestAction.get("/guilds/${id}/threads/active")
+        route = Route.Thread.GET_ACTIVE_THREADS(id).get()
         transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> ThreadData(this@GuildData, thread.jsonObject, it.toJsonObject().jsonArray.map { Json.decodeFromString("members") }) }}
         onFinish { it.forEach { thread -> threadCache[thread.id] = thread } }
     }
 
     override suspend fun retrieveBans() = client.buildRestAction<List<Guild.Ban>> {
-        action = RestAction.get("/guilds/${id}/bans")
+        route = Route.Ban.GET_BANS(id).get()
         transform { it.toJsonArray().map { ban -> Guild.Ban(this@GuildData, ban.jsonObject) }}
         check { if(Permission.BAN_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to retrieve bans from a guild") }
     }

@@ -13,10 +13,11 @@ import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverride
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.lists.MessageList
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
-import io.github.jan.discordkm.internal.restaction.RestAction
-import io.github.jan.discordkm.internal.restaction.buildQuery
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.getEnums
 import io.github.jan.discordkm.internal.utils.getOrThrow
@@ -40,12 +41,6 @@ open class GuildChannelData(override val guild: Guild, final override val data: 
         PermissionOverride(holder, allow, deny)
     }?.toSet() ?: emptySet()
 
-    override suspend fun delete() = client.buildRestAction<Unit> {
-        action = RestAction.delete("/channels/$id")
-        transform {  }
-        onFinish { (guild as GuildData).channelCache.remove(id) }
-    }
-
 }
 
 
@@ -59,28 +54,28 @@ open class GuildTextChannelData(guild: Guild, data: JsonObject) : GuildChannelDa
     override fun toString() = "GuildChannel[name=$name, id=$id, type=${ type}]"
 
     override suspend fun retrieveJoinedPrivateArchivedThreads(limit: Int?, before: Snowflake?) = client.buildRestAction<List<Thread>> {
-        action = RestAction.get("/channels/${id}/users/@me/threads/archived/private" + buildQuery {
+        route = Route.Thread.GET_JOINED_PRIVATE_ARCHIVED_THREADS(id).get {
             putOptional("limit", limit)
             putOptional("before", before)
-        })
+        }
         transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> ThreadData(guild, thread.jsonObject, it.toJsonObject().jsonArray.map { Json.decodeFromString("members") }) }}
         onFinish { it.forEach { thread -> (guild as GuildData).threadCache[thread.id] = thread } }
     }
 
     override suspend fun retrievePublicArchivedThreads(limit: Int?, before: DateTimeTz?) = client.buildRestAction<List<Thread>> {
-        action = RestAction.get("/channels/${id}/threads/archived/public" + buildQuery {
+        route = Route.Thread.GET_PUBLIC_ARCHIVED_THREADS(id).get {
             putOptional("limit", limit)
             putOptional("before", before?.let { ISO8601.DATETIME_UTC_COMPLETE.format(before) })
-        })
+        }
         transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> ThreadData(guild, thread.jsonObject, it.toJsonObject().jsonArray.map { Json.decodeFromString("members") }) }}
         onFinish { it.forEach { thread -> (guild as GuildData).threadCache[thread.id] = thread } }
     }
 
     override suspend fun retrievePrivateArchivedThreads(limit: Int?, before: DateTimeTz?) = client.buildRestAction<List<Thread>> {
-        action = RestAction.get("/channels/${id}/threads/archived/private" + buildQuery {
+        route = Route.Thread.GET_PRIVATE_ARCHIVED_THREADS(id).get {
             putOptional("limit", limit)
             putOptional("before", before?.let { ISO8601.DATETIME_UTC_COMPLETE.format(before) })
-        })
+        }
         transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> ThreadData(guild, thread.jsonObject, it.toJsonObject().jsonArray.map { Json.decodeFromString("members") }) }}
         onFinish { it.forEach { thread -> (guild as GuildData).threadCache[thread.id] = thread } }
     }

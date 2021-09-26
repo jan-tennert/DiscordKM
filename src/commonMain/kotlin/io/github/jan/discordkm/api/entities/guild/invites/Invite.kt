@@ -19,6 +19,7 @@ import io.github.jan.discordkm.internal.utils.ISO8601Serializer
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.valueOfIndexOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -59,7 +60,7 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
     /**
      * The type of the invite
      */
-    val type = TargetType.values().firstOrNull { it.ordinal == data.getOrNull<Int>("type") }
+    val type = valueOfIndexOrNull<TargetType>(data.getOrNull<Int>("type"))
 
     /**
      * The target user for this invite, if this an invite to a stream

@@ -14,8 +14,10 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.interactions.Interaction
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
 
-import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.toJsonObject
 
@@ -29,9 +31,8 @@ sealed interface MessageEvent : Event {
 
     val channel: MessageChannel
 
-
     suspend fun retrieveMessage() = client.buildRestAction<Message> {
-        action = RestAction.get("/channels/${channelId}/messages/$messageId")
+        route = Route.Message.GET_MESSAGE(channelId, messageId).get()
         transform { Message(channel, it.toJsonObject()) }
     }
 
@@ -46,7 +47,6 @@ sealed interface InteractionCreateEvent : Event {
 sealed interface GuildEvent : Event {
 
     val guildId: Snowflake
-
 
     suspend fun retrieveGuild() = client.guilds.retrieve(guildId)
 

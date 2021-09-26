@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.api.entities.interactions.commands
 
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
+import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -49,7 +50,7 @@ data class CommandOption(
 
 object ChannelTypeSerializer : KSerializer<ChannelType> {
 
-    override fun deserialize(decoder: Decoder) = ChannelType.values().first { it.id == decoder.decodeInt() }
+    override fun deserialize(decoder: Decoder) = valueOfIndex<ChannelType>(decoder.decodeInt())
 
     override val descriptor = PrimitiveSerialDescriptor("ChannelType", PrimitiveKind.INT)
 
@@ -62,7 +63,7 @@ object ChannelTypeSerializer : KSerializer<ChannelType> {
 
 object OptionTypeSerializer: KSerializer<CommandOption.OptionType> {
 
-    override fun deserialize(decoder: Decoder) = CommandOption.OptionType.values().first { it.ordinal == decoder.decodeInt() }
+    override fun deserialize(decoder: Decoder) = valueOfIndex<CommandOption.OptionType>(decoder.decodeInt())
 
     override val descriptor = PrimitiveSerialDescriptor("OptionType", PrimitiveKind.INT)
 

@@ -23,8 +23,7 @@ open class CommandList(private val baseURL: String, val client: Client, override
     override fun get(name: String) = internalList.filter { it.name == name }
 
     suspend fun create(builder: ApplicationCommandBuilder) = client.buildRestAction<ApplicationCommand> {
-        println(builder.build())
-        action = RestAction.post(baseURL, builder.build())
+        route = RestAction.post(baseURL, builder.build())
         transform { ApplicationCommand(client, it.toJsonObject()) }
         //cache
     }
@@ -36,30 +35,30 @@ open class CommandList(private val baseURL: String, val client: Client, override
     suspend fun createUserCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(userCommand(builder))
 
     suspend fun retrieveCommands() = client.buildRestAction<List<ApplicationCommand>> {
-        action = RestAction.get(baseURL)
+        route = RestAction.get(baseURL)
         transform { it.toJsonArray().map { json -> ApplicationCommand(client, json.jsonObject)} }
         //cache
     }
 
     suspend fun retrieve(id: Snowflake) = client.buildRestAction<ApplicationCommand> {
-        action = RestAction.get("$baseURL/$id")
+        route = RestAction.get("$baseURL/$id")
         transform { ApplicationCommand(client, it.toJsonObject()) }
         //cache
     }
 
     suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = client.buildRestAction<ApplicationCommand> {
-        action = RestAction.patch("$baseURL/$id", builder.build())
+        route = RestAction.patch("$baseURL/$id", builder.build())
         transform { ApplicationCommand(client, it.toJsonObject()) }
         //cache
     }
 
     suspend fun delete(id: Snowflake) = client.buildRestAction<ApplicationCommand> {
-        action = RestAction.delete("$baseURL/$id")
+        route = RestAction.delete("$baseURL/$id")
         //cache
     }
 
     suspend fun overrideCommands(commands: CommandBulkOverride.() -> Unit) = client.buildRestAction<List<ApplicationCommand>> {
-        action = RestAction.put(baseURL, Json.encodeToJsonElement(CommandBulkOverride().apply(commands).commands.map { it.build() }))
+        route = RestAction.put(baseURL, Json.encodeToJsonElement(CommandBulkOverride().apply(commands).commands.map { it.build() }))
         transform { it.toJsonArray().map { json -> ApplicationCommand(client, json.jsonObject)} }
     }
 

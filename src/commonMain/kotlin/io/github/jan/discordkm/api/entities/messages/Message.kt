@@ -17,6 +17,7 @@ import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
@@ -29,15 +30,19 @@ import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
 import io.github.jan.discordkm.api.entities.lists.ReactionList
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.exceptions.PermissionException
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
+import io.github.jan.discordkm.internal.post
+import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.extract
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
 import io.github.jan.discordkm.internal.utils.extractMessageChannelEntity
@@ -46,6 +51,7 @@ import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -53,6 +59,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
@@ -65,10 +72,12 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
 
     val channelId = data.getOrNull<Snowflake>("channel_id")
 
+    val attachments = data.getValue("attachments").jsonArray.map { Json.decodeFromJsonElement<MessageAttachment>(it.jsonObject) }
+
     val actionRows = data["components"]?.let { json ->
         json.jsonArray.map { row ->
             val internalComponents = row.jsonObject.getValue("components").jsonArray.map { component ->
-                when (ComponentType.values().first { it.ordinal + 1 == component.jsonObject.getOrThrow<Int>("type") }) {
+                when (valueOfIndex<ComponentType>(component.jsonObject.getOrThrow("type"))) {
                     ComponentType.BUTTON -> componentJson.decodeFromJsonElement(
                         Button.serializer(),
                         component
@@ -97,7 +106,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Returns the [UserData] who sent the message
      */
-    val author = data.getValue("author").jsonObject.extractClientEntity<UserData>(client)
+    val author = data.getValue("author").jsonObject.extractClientEntity<User>(client)
 
     val member = guild?.members?.get(author.id)
 
@@ -146,9 +155,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Returns a list of embeds included in this message
      */
-    private val _embeds = data.getValue("embeds").jsonArray.map { it.jsonObject.extract<MessageEmbed>() }.toMutableList()
-    val embeds: List<MessageEmbed>
-        get() = _embeds
+    val embeds = data.getValue("embeds").jsonArray.map { Json { classDiscriminator = "#class" }.decodeFromJsonElement<MessageEmbed>(it.jsonObject) }
 
     //reactions
 
@@ -205,9 +212,8 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Crossposts this message if it was sent in a [NewsChannel]
      */
-
     suspend fun crosspost() = client.buildRestAction<Unit> {
-        action = RestAction.post("/channels/${channelId}/messages/${id}/crosspost", "")
+        route = Route.Message.CROSSPOST_MESSAGE(channelId.toString(), id).post()
         transform {  }
         check {
             when {
@@ -222,9 +228,8 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      * Deletes the message in the channel
      * Needs [Permission.MANAGE_MESSAGES] to delete other's messages
      */
-
     suspend fun delete() = client.buildRestAction<Unit> {
-        action = RestAction.delete("/channels/${channelId}/messages/$id")
+        route = Route.Message.DELETE_MESSAGE(channelId.toString(), id).delete()
         transform {  }
         check {
             if(channel.type == ChannelType.DM && author.id != client.selfUser.id) throw PermissionException("You can't delete others messages in a private channel")
@@ -235,7 +240,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
 
 
     suspend fun edit(message: DataMessage) = client.buildRestAction<Message> {
-        action = RestAction.patch("/channels/${channel.id}/messages/$id", Json.encodeToString(message))
+        route = Route.Message.EDIT_MESSAGE(channel.id, id).patch(Json.encodeToString(message))
         transform { it.toJsonObject().extractMessageChannelEntity(channel) }
         check {
             if(author.id != client.selfUser.id) throw UnsupportedOperationException("You can't edit other's messages!")
@@ -244,7 +249,6 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
 
 
     suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(message))
-
 
     suspend fun edit(content: String) = edit(buildMessage { this.content = content })
 
@@ -259,7 +263,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
 
     suspend fun createThread(name: String, autoArchiveDuration: Thread.ThreadDuration = (channel as GuildTextChannel).defaultAutoArchiveDuration) = client.buildRestAction<Thread> {
-        action = RestAction.post("/channels/${channel.id}/messages/$id/threads", buildJsonObject {
+        route = Route.Thread.START_THREAD_WITH_MESSAGE(channel.id, id).post(buildJsonObject {
             put("name", name)
             put("auto_archive_duration", autoArchiveDuration.duration.minutes.toInt())
         })
@@ -273,7 +277,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
 
     suspend fun pin() = client.buildRestAction<Unit> {
-        action = RestAction.put("/channels/${channel.id}/pins/$id")
+        route = Route.Message.PIN_MESSAGE(channel.id, id).put()
         transform {  }
         check { if(channel is PrivateChannel) throw UnsupportedOperationException("You can't pin a message in a private channel!"); if(isPinned) throw IllegalStateException("You can't pin a pinned message!'")}
     }
@@ -283,12 +287,20 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
 
     suspend fun unpin() = client.buildRestAction<Unit> {
-        action = RestAction.delete("/channels/${channel.id}/pins/$id")
+        route = Route.Message.UNPIN_MESSAGE(channel.id, id).delete()
         transform {  }
         check { if(channel is PrivateChannel) throw UnsupportedOperationException("You can't unpin a message in a private channel!"); if(!isPinned) throw IllegalStateException("You can't unpin an unpinned message!") }
     }
 
-    fun copy() = DataMessage(content, isTTS, embeds, components = actionRows, allowedMentions = AllowedMentions()) //files, allowed mentions?
+    fun copy() = DataMessage(
+        content,
+        isTTS,
+        embeds,
+        allowedMentions = AllowedMentions(),
+        actionRows = actionRows,
+        reference = reference,
+        stickerIds = stickerItems.map { it.id }
+    )
 
     @Serializable
     data class Reference(@SerialName("message_id") val messageId: Long? = null, @SerialName("guild_id") val guildId: Long? = null, @SerialName("channel_id") val channelId: Long? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)

@@ -6,8 +6,11 @@ import io.github.jan.discordkm.api.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.api.entities.guild.channels.TextChannel
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.TextChannelModifier
+import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
@@ -23,7 +26,7 @@ class TextChannelData(guild: Guild, data: JsonObject) : GuildTextChannelData(gui
         autoArchiveDuration: Thread.ThreadDuration,
         invitable: Boolean?
     ) = client.buildRestAction<Thread> {
-        action = RestAction.post("/channels/$id/threads", buildJsonObject {
+        route = Route.Thread.START_THREAD(id).post(buildJsonObject {
             put("name", name)
             put("auto_archive_duration", autoArchiveDuration.duration.minutes.toInt())
             put("type", ChannelType.GUILD_PRIVATE_THREAD.id)
@@ -46,7 +49,7 @@ suspend inline fun <reified T : GuildTextChannel> TextChannel.modify(modifier: T
         NewsChannel::class -> 5
         else -> throw IllegalStateException()
     }
-    action = RestAction.patch("/channels/$id", TextChannelModifier(type).apply(modifier).build())
+    route = RestAction.patch("/channels/$id", TextChannelModifier(type).apply(modifier).build())
     transform {
         when(type) {
             null -> it.toJsonObject().extractGuildEntity<TextChannel>(guild) as T

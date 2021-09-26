@@ -23,6 +23,7 @@ import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.guilds.RoleData
 import io.github.jan.discordkm.internal.utils.extractChannel
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -50,7 +51,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
 
     private fun extractMessageComponent(data: JsonObject) : InteractionCreateEvent {
         val interactionData = data.getValue("data").jsonObject
-        return when(ComponentType.values().first { it.ordinal + 1 == interactionData.getOrThrow<Int>("component_type") }) {
+        return when(valueOfIndex<ComponentType>(interactionData.getOrThrow("component_type"), 1)) {
             ComponentType.BUTTON -> ButtonClickEvent(client, ComponentInteraction(client, data), interactionData.getOrThrow("custom_id"))
             ComponentType.SELECTION_MENU -> SelectionMenuEvent(client, ComponentInteraction(client, data), interactionData.getValue("values").jsonArray.map { SelectOption(value = it.jsonPrimitive.content) }, interactionData.getOrThrow("custom_id"))
             else -> throw IllegalStateException("Component type not supported")
@@ -87,7 +88,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         val options = mutableListOf<Interaction.InteractionOption>()
         data.getValue("data").jsonObject.getValue("options").jsonArray.forEach { option ->
             option as JsonObject
-            when(CommandOption.OptionType.values().first { it.ordinal + 1 == option.getOrThrow<Int>("type") }) {
+            when(valueOfIndex<CommandOption.OptionType>(option.getOrThrow("type"), 1)) {
                 CommandOption.OptionType.SUB_COMMAND -> {
                     subCommand = option.jsonObject.getOrThrow<String>("name")
                     option["options"]?.jsonArray?.forEach {

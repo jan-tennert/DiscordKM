@@ -14,7 +14,7 @@ import kotlinx.serialization.json.put
 class ComponentInteraction(client: Client, data: JsonObject) : StandardInteraction(client, data) {
 
     suspend fun deferEdit() = client.buildRestAction<Unit> {
-        action = RestAction.post("/interactions/$id/$token/callback", buildJsonObject {
+        route = RestAction.post("/interactions/$id/$token/callback", buildJsonObject {
             put("type", 6) //defer edit
         })
         transform { }
@@ -22,7 +22,7 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
     }
 
     suspend fun edit(message: DataMessage) = client.buildRestAction<Unit> {
-        action = RestAction.post("/interactions/$id/$token/callback", buildJsonObject {
+        route = RestAction.post("/interactions/$id/$token/callback", buildJsonObject {
             put("type", 7) //edit
             put("data", buildJsonObject {
                 putJsonObject(message.build().toString().toJsonObject())
@@ -33,7 +33,7 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
     }
 
     suspend fun edit(message: MessageBuilder.() -> Unit) = client.buildRestAction<Unit> {
-        action = RestAction.post("/interactions/$id/$token/callback", buildJsonObject {
+        route = RestAction.post("/interactions/$id/$token/callback", buildJsonObject {
             put("type", 7) //edit
             put("data", buildJsonObject {
                 putJsonObject(MessageBuilder().apply(message).build().toString().toJsonObject())

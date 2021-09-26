@@ -21,19 +21,21 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
-data class MessageEmbed(val title: String?,
-                        val type: EmbedType = EmbedType.UNKNOWN,
-                        val description: String? = null,
-                        val url: String? = null,
-                        @Contextual val timestamp: DateTimeTz? = null,
-                        val color: Color? = null,
-                        val footer: Footer? = null,
-                        val image: Media? = null,
-                        val thumbnail: Media? = null,
-                        val video: Media? = null,
-                        val provider: Provider? = null,
-                        val author: Author? = null,
-                        val fields: List<Field> = emptyList()) {
+data class MessageEmbed(
+    val title: String?,
+    val type: EmbedType = EmbedType.UNKNOWN,
+    val description: String? = null,
+    val url: String? = null,
+    @Contextual val timestamp: DateTimeTz? = null,
+    val color: Color? = null,
+    val footer: Footer? = null,
+    val image: Media? = null,
+    val thumbnail: Media? = null,
+    val video: Media? = null,
+    val provider: Provider? = null,
+    val author: Author? = null,
+    val fields: List<Field> = emptyList()
+) {
 
     @Serializable
     data class Author(val name: String? = null, val url: String? = null, val iconUrl: String? = null, val proxyIconUrl: String? = null)
@@ -74,6 +76,7 @@ class EmbedBuilder @Deprecated("Use buildEmbed instead") constructor() {
     val fields: MutableList<Field> = mutableListOf()
 
     fun field(name: String = "", value: String = "", inline: Boolean = false, builder: Field.() -> Unit = {}) { fields += Field(name, value ?: "", inline).apply(builder) }
+
     fun footer(text: String = "", iconUrl: String? = null, builder: Footer.() -> Unit = {}) {
         footer = Footer(text, iconUrl).apply(builder)
     }
@@ -117,7 +120,7 @@ class EmbedBuilder @Deprecated("Use buildEmbed instead") constructor() {
 
 }
 
-@Serializable(with = EmbedType.Serializer::class)
+@Serializable(with = EmbedType.EmbedTypeSerializer::class)
 enum class EmbedType {
     UNKNOWN,
     RICH,
@@ -127,8 +130,15 @@ enum class EmbedType {
     ARTICLE,
     LINK;
 
-    object Serializer : KSerializer<EmbedType> {
-        override fun deserialize(decoder: Decoder) = values().first { it.name == decoder.decodeString().uppercase() }
+    object EmbedTypeSerializer : KSerializer<EmbedType> {
+
+        override fun deserialize(decoder: Decoder): EmbedType {
+            val type = decoder.decodeString()
+            return values()
+                .first{
+                    it.name == type.uppercase()
+                }
+        }
 
         override val descriptor = PrimitiveSerialDescriptor("EmbedType", PrimitiveKind.STRING)
 

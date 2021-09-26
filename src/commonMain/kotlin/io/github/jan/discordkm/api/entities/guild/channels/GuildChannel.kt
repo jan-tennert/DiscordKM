@@ -10,41 +10,28 @@
 package io.github.jan.discordkm.api.entities.guild.channels
 
 import com.soywiz.klock.DateTimeTz
-import com.soywiz.klock.ISO8601
 import com.soywiz.klock.minutes
-import io.github.jan.discordkm.Cache
-import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.GuildEntity
+import io.github.jan.discordkm.api.entities.lists.ThreadList
+import io.github.jan.discordkm.api.entities.lists.retrieve
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.entities.channels.Channel
 import io.github.jan.discordkm.internal.entities.channels.IParent
 import io.github.jan.discordkm.internal.entities.channels.Invitable
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.GuildEntity
-import io.github.jan.discordkm.api.entities.guild.Permission
-import io.github.jan.discordkm.api.entities.lists.ThreadList
-import io.github.jan.discordkm.api.entities.lists.retrieve
-import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.internal.entities.channels.Channel
-import io.github.jan.discordkm.internal.entities.guilds.GuildData
-import io.github.jan.discordkm.internal.restaction.RestAction
-import io.github.jan.discordkm.internal.restaction.buildQuery
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.getEnums
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
-import io.github.jan.discordkm.internal.utils.toJsonObject
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.putJsonArray
 import kotlin.jvm.JvmName
@@ -79,13 +66,6 @@ interface GuildChannel : Channel, Reference<GuildChannel>, GuildEntity {
      */
     val permissionOverrides: Set<PermissionOverride>
 
-    /**
-     * Deletes the channel.
-     * Requires [Permission.MANAGE_CHANNELS] for Guild Channels and [Permission.MANAGE_THREADS] for Threads
-     */
-
-    override suspend fun delete()
-
     override suspend fun retrieve() = guild.channels.retrieve(id) as GuildChannel
 
     //permission overrides
@@ -97,7 +77,7 @@ interface GuildMessageChannel : GuildChannel, MessageChannel {
      * Deletes multiple messages in this channel
      */
     suspend fun deleteMessages(ids: Iterable<Snowflake>) = client.buildRestAction<Unit> {
-        action = RestAction.post("/channels/$id/messages/bulk-delete", buildJsonObject {
+        route = Route.Message.BULK_DELETE(id.string).post(buildJsonObject {
             putJsonArray("messages") {
                 ids.forEach { add(it.long) }
             }

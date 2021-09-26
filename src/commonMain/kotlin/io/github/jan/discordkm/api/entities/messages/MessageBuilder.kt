@@ -19,6 +19,9 @@ import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.Component
 import io.github.jan.discordkm.api.entities.interactions.components.RowBuilder
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
+import io.github.jan.discordkm.internal.utils.putJsonObject
+import io.github.jan.discordkm.internal.utils.toJsonObject
+import io.ktor.client.request.forms.FormBuilder
 import io.ktor.client.request.forms.FormPart
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
@@ -48,14 +51,25 @@ class MessageBuilder {
 
     var content = ""
     var embeds = mutableListOf<MessageEmbed>()
-    //components
-    //files
     var stickerIds = mutableListOf<Snowflake>()
     var reference: Message.Reference? = null
     var allowedMentions = AllowedMentions()
     var tts = false
     var attachments: MutableList<Attachment> = mutableListOf()
     var actionRows = mutableListOf<ActionRow>()
+
+    fun import(message: DataMessage) {
+        content = message.content
+        embeds = message.embeds.toMutableList()
+        reference = message.reference
+        stickerIds = message.stickerIds.toMutableList()
+        allowedMentions = message.allowedMentions
+        tts = message.tts
+        attachments = message.attachments.toMutableList()
+        actionRows = message.actionRows.toMutableList()
+    }
+
+    fun import(message: Message) = import(message.copy())
 
     fun actionRow(builder: RowBuilder.() -> Unit) { actionRows += RowBuilder().apply(builder).build() }
 
@@ -75,7 +89,7 @@ class MessageBuilder {
 
     fun reference(message: Message) = reference(message.id)
 
-    fun build() = DataMessage(content, tts, embeds, allowedMentions, attachments, actionRows)
+    fun build() = DataMessage(content, tts, embeds, allowedMentions, attachments, actionRows, reference)
 
 }
 
@@ -122,58 +136,85 @@ class DataMessage @Deprecated("Use buildMessage method") constructor(
     val embeds: List<MessageEmbed> = emptyList(),
     val allowedMentions: AllowedMentions,
     val attachments: List<Attachment> = emptyList(), //ToDo
-    val components: List<ActionRow>
+    val actionRows: List<ActionRow>,
+    val reference: Message.Reference? = null,
+    val stickerIds: List<Snowflake> = emptyList()
 ) {
-
-    fun modify(builder: MessageBuilder.() -> Unit) = MessageBuilder().apply {
-        content = this@DataMessage.content
-        tts = this@DataMessage.tts
-        embeds = this@DataMessage.embeds.toMutableList()
-        allowedMentions = this@DataMessage.allowedMentions
-        //files
-        actionRows = this@DataMessage.components.toMutableList()
-    }.apply(builder).build()
 
     private fun buildJson() = buildJsonObject {
         put("content", content)
         put("tts", tts)
         put("embeds", Json.encodeToJsonElement(embeds).jsonArray)
         put("allowed_mentions", Json.encodeToJsonElement(allowedMentions).jsonObject)
-        put("components", componentJson.encodeToJsonElement(components))
+        put("components", componentJson.encodeToJsonElement(actionRows))
+        put("message_reference", Json.encodeToJsonElement(reference))
+        put("sticker_ids", Json.encodeToJsonElement(stickerIds))
     }.toString()
 
-    fun build(): Any = if(attachments.isEmpty()) {
-        buildJson()
+    fun build(ephemeral: Boolean = false): Any = if(attachments.isEmpty()) {
+        buildJsonObject {
+            putJsonObject(buildJson().toJsonObject())
+            if(ephemeral) put("flags", 1 shl 6)
+        }
     } else {
         MultiPartFormDataContent(
             formData {
-                attachments.forEach {
-                    this.appendInput(
-                        key = "",
-                        headers = Headers.build {
-                            append(
-                                HttpHeaders.ContentDisposition,
-                                "filename=${it.fileName}"
-                            )
-                        },
-                        size = it.bytes.size.toLong()
-                    ) { buildPacket { writeFully(it.bytes) } }
-                }
-                this.append(FormPart("payload_json", buildJsonObject {
-                    put("hi", "data")
+                addAttachments(attachments)
+                append(FormPart("payload_json", buildJsonObject {
+                    putJsonObject(buildJson().toJsonObject())
+                    if(ephemeral) put("flags", 1 shl 6)
                 }.toString(), headers = buildHeaders {
                     append(HttpHeaders.ContentType, "application/json")
                 }))
             })
     }
 
+    fun buildCallback(type: Int, ephemeral: Boolean = false): Any = if(attachments.isEmpty()) {
+        buildJsonObject {
+            put("type", type)
+            put("data", buildJson())
+        }.toString()
+    } else {
+        MultiPartFormDataContent(
+            formData {
+                addAttachments(attachments)
+                append(FormPart("payload_json", buildJsonObject {
+                    putJsonObject(buildJsonObject {
+                        put("type", type)
+                        put("data", buildJsonObject {
+                            putJsonObject(buildJson().toJsonObject())
+                            if(ephemeral) put("flags", 1 shl 6)
+                        })
+                    })
+                }.toString(), headers = buildHeaders {
+                    append(HttpHeaders.ContentType, "application/json")
+                }))
+            })
+    }
+
+    private fun FormBuilder.addAttachments(attachments: List<Attachment>) {
+        var index = 1
+        attachments.forEach {
+            val name = if(it.spoiler) "SPOILER_${it.fileName}" else it.fileName
+            appendInput(
+                key = "file$index",
+                headers = Headers.build {
+                    append(HttpHeaders.ContentDisposition,
+                        "form-data; filename=$name")
+                },
+                size = it.size
+            ) { buildPacket { writeFully(it.bytes) } }
+            index++
+        }
+    }
+
 }
 
-class Attachment(val bytes: ByteArray, val fileName: String) {
+class Attachment internal constructor(val bytes: ByteArray, val fileName: String, val size: Long, val spoiler: Boolean = false) {
 
     companion object {
 
-        suspend fun fromFile(file: VfsFile, fileName: String = file.baseName) = Attachment(file.readBytes(), fileName)
+        suspend fun fromFile(file: VfsFile, spoiler: Boolean = false, fileName: String = file.baseName) = Attachment(file.readBytes(), fileName, file.size(), spoiler)
 
     }
 

@@ -5,12 +5,17 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.guild.channels.StageChannel
 import io.github.jan.discordkm.api.entities.lists.getGuildChannel
-import io.github.jan.discordkm.internal.restaction.RestAction
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlin.jvm.JvmName
@@ -36,7 +41,7 @@ class StageInstance(override val guild: Guild, override val data: JsonObject) : 
     /**
      * The [PrivacyLevel] of the stage instance
      */
-    val privacyLevel = PrivacyLevel.values().first { (it.ordinal + 1 == data.getOrThrow<Int>("privacy_level")) }
+    val privacyLevel = valueOfIndex<PrivacyLevel>(data.getOrThrow("privacy_level"), 1)
 
     /**
      * Whether stage discovery is enabled
@@ -52,7 +57,7 @@ class StageInstance(override val guild: Guild, override val data: JsonObject) : 
      * Deletes this stage instance
      */
     suspend fun delete() = client.buildRestAction<Unit> {
-        action = RestAction.delete("/stage-instances/$stageChannelId")
+        route = Route.StageInstance.DELETE_INSTANCE(stageChannelId).delete()
         transform {  }
     }
 
@@ -60,7 +65,7 @@ class StageInstance(override val guild: Guild, override val data: JsonObject) : 
      * Modifies this stage instance. All fields are optional
      */
     suspend fun modify(topic: String? = null, privacyLevel: PrivacyLevel? = null) = client.buildRestAction<StageInstance> {
-        action = RestAction.patch("/stage-instances/$stageChannelId", buildJsonObject {
+        route = Route.StageInstance.MODIFY_INSTANCE(stageChannelId).patch(buildJsonObject {
             putOptional("topic", topic)
             putOptional("privacy_level", privacyLevel?.ordinal)
         })
@@ -68,7 +73,7 @@ class StageInstance(override val guild: Guild, override val data: JsonObject) : 
     }
 
     override suspend fun retrieve() = client.buildRestAction<StageInstance> {
-        action = RestAction.get("/stage-instances/$stageChannelId")
+        route = Route.StageInstance.GET_INSTANCE(stageChannelId).get()
         transform { StageInstance(guild, it.toJsonObject()) }
     }
 

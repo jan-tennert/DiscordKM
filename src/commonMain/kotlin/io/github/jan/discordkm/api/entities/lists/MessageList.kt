@@ -2,9 +2,12 @@ package io.github.jan.discordkm.api.entities.lists
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.internal.entities.channels.MessageChannelData
 import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildQuery
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -22,7 +25,7 @@ class MessageList(val channel: MessageChannel, override val internalList: List<M
      */
 
     suspend fun retrieve(id: Snowflake) = channel.client.buildRestAction<Message> {
-        action = RestAction.get("/channels/${channel.id}/messages/$id")
+        route = Route.Message.GET_MESSAGE(channel.id, id).get()
         transform { it.toJsonObject().extractMessageChannelEntity(channel) }
         onFinish { (channel as MessageChannelData).messageCache[it.id] = it }
     }
@@ -35,7 +38,7 @@ class MessageList(val channel: MessageChannel, override val internalList: List<M
      */
 
     suspend fun retrieveMessage(limit: Int? = null, before: Snowflake? = null, after: Snowflake? = null, around: Snowflake? = null) = channel.client.buildRestAction<List<Message>> {
-        action = RestAction.get("/channels/${channel.id}/messages" + buildQuery {
+        route = RestAction.get("/channels/${channel.id}/messages" + buildQuery {
             putOptional("limit", limit)
             if(before != null) put("before", before) else if(after != null) put("after", after) else if(around != null) put("around", around)
         })
@@ -47,7 +50,7 @@ class MessageList(val channel: MessageChannel, override val internalList: List<M
      */
 
     suspend fun retrievePinnedMessages() = if(channel is PrivateChannel) emptyList() else channel.client.buildRestAction<List<Message>> {
-        action = RestAction.get("/channels/$${channel.id}/pins")
+        route = RestAction.get("/channels/$${channel.id}/pins")
         transform {
             it.toJsonArray().map { Message(channel, it.jsonObject) }
         }

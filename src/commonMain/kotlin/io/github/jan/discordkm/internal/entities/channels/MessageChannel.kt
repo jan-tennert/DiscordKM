@@ -21,6 +21,9 @@ import io.github.jan.discordkm.api.entities.messages.MessageBuilder
 import io.github.jan.discordkm.api.entities.messages.MessageEmbed
 import io.github.jan.discordkm.api.entities.messages.buildEmbed
 import io.github.jan.discordkm.api.entities.messages.buildMessage
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.getOrNull
@@ -44,7 +47,7 @@ interface MessageChannel : Channel {
     val messages: MessageList
 
     suspend fun send(message: DataMessage) = client.buildRestAction<Message> {
-        action = RestAction.post("/channels/${id}/messages", message.build())
+        route = Route.Message.CREATE_MESSAGE(id).post(message.build())
         transform { Message(this@MessageChannel, it.toJsonObject()) }
     }
 
@@ -64,7 +67,7 @@ interface MessageChannel : Channel {
      */
 
     suspend fun sendTyping() = client.buildRestAction<Unit> {
-        action = RestAction.post("/channels/$id/typing")
+        route = RestAction.post("/channels/$id/typing")
         transform {  }
     }
 
