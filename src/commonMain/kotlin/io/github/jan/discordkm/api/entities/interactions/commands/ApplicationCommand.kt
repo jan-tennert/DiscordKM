@@ -18,9 +18,13 @@ import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.valueOfIndexOrDefault
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 
-class ApplicationCommand(override val client: Client, override val data: JsonObject) : SerializableEntity, SnowflakeEntity {
+open class ApplicationCommand(override val client: Client, override val data: JsonObject) : SerializableEntity, SnowflakeEntity {
 
     val type: ApplicationCommandType
         get() = valueOfIndexOrDefault(data.getOrThrow<Int>("type"), default = ApplicationCommandType.CHAT_INPUT)
@@ -47,6 +51,12 @@ class ApplicationCommand(override val client: Client, override val data: JsonObj
 
     val version: Snowflake
         get() = data.getOrThrow<Snowflake>("version")
+
+}
+
+class ChatInputCommand(client: Client, data: JsonObject) : ApplicationCommand(client, data) {
+
+    val options = data.getValue("options").jsonArray.map { Json.decodeFromJsonElement<CommandOption>(it.jsonObject) }
 
 }
 

@@ -27,6 +27,8 @@ import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteApplication
+import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
+import io.github.jan.discordkm.api.entities.interactions.commands.ChatInputCommand
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.api.entities.misc.EnumList
@@ -114,6 +116,11 @@ inline fun <reified T>JsonObject.extractGuildEntity(guild: Guild) = when(T::clas
     else -> {
         throw IllegalStateException()
     }
+}
+
+inline fun JsonObject.extractApplicationCommand(client: Client) = when((getOrNull<Int>("type") ?: 1)) {
+    1 -> ChatInputCommand(client, this)
+    else -> ApplicationCommand(client, this)
 }
 
 inline fun <reified T>JsonObject.extractClientEntity(client: Client) = when(T::class) {

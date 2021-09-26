@@ -11,6 +11,7 @@ import io.github.jan.discordkm.api.entities.interactions.commands.builders.messa
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.userCommand
 import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.utils.extractApplicationCommand
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.Json
@@ -23,7 +24,7 @@ open class CommandList(private val baseURL: String, val holder: CommandHolder, o
 
     suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.post(baseURL, builder.build())
-        transform { ApplicationCommand(client, it.toJsonObject()) }
+        transform { it.toJsonObject().extractApplicationCommand(client) }
         onFinish { holder.commandCache[it.id] = it }
     }
 
@@ -35,19 +36,19 @@ open class CommandList(private val baseURL: String, val holder: CommandHolder, o
 
     suspend fun retrieveCommands() = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.get(baseURL)
-        transform { it.toJsonArray().map { json -> ApplicationCommand(client, json.jsonObject)} }
+        transform { it.toJsonArray().map { json -> json.jsonObject.extractApplicationCommand(client) } }
         onFinish { holder.commandCache.internalMap.clear(); holder.commandCache.internalMap.putAll(it.associateBy { command -> command.id }) }
     }
 
     suspend fun retrieve(id: Snowflake) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.get("$baseURL/$id")
-        transform { ApplicationCommand(client, it.toJsonObject()) }
+        transform { it.toJsonObject().extractApplicationCommand(client) }
         onFinish { holder.commandCache[it.id] = it }
     }
 
     suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.patch("$baseURL/$id", builder.build())
-        transform { ApplicationCommand(client, it.toJsonObject()) }
+        transform { it.toJsonObject().extractApplicationCommand(client) }
         onFinish { holder.commandCache[it.id] = it }
     }
 
@@ -58,7 +59,7 @@ open class CommandList(private val baseURL: String, val holder: CommandHolder, o
 
     suspend fun overrideCommands(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.put(baseURL, Json.encodeToJsonElement(CommandBulkOverride().apply(commands).commands.map { it.build() }))
-        transform { it.toJsonArray().map { json -> ApplicationCommand(client, json.jsonObject)} }
+        transform { it.toJsonArray().map { json -> json.jsonObject.extractApplicationCommand(client) } }
         onFinish { holder.commandCache.internalMap.clear(); holder.commandCache.internalMap.putAll(it.associateBy { command -> command.id }) }
     }
 
