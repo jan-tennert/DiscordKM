@@ -63,7 +63,7 @@ import kotlinx.serialization.json.longOrNull
 import kotlinx.serialization.json.put
 
 fun JsonObject.getId(): Snowflake {
-    return Snowflake.fromId(getValue("id").jsonPrimitive.content)
+    return Snowflake.fromId(getOrThrow<String>("id"))
 }
 fun JsonObject.getColor(key: String) = Color(getValue(key).jsonPrimitive.int)
 fun <T : SerializableEnum<T>> JsonObject.getEnums(key: String, serializer: EnumSerializer<T>) = if(get(key)?.jsonPrimitive?.long != null) serializer.decode(get(key)?.jsonPrimitive?.long!!) else EnumList.empty()

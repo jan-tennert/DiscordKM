@@ -15,6 +15,7 @@ class MessageUpdateEventHandler(val client: Client) : InternalEventHandler<Messa
         val channel = (client.channels[channelId] ?: client.threads[channelId]) as MessageChannel
 
         val messageId = data.getOrThrow<Snowflake>("id")
+
         val message = Message(channel, data)
         channel.messageCache[message.id] = message
         return MessageUpdateEvent(client, message, messageId, channelId, channel)

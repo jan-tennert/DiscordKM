@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.messages
 
+import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import com.soywiz.klock.parse
 import io.github.jan.discordkm.api.entities.EnumSerializer
@@ -72,7 +73,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
 
     val channelId = data.getOrNull<Snowflake>("channel_id")
 
-    val attachments = data.getValue("attachments").jsonArray.map { Json.decodeFromJsonElement<MessageAttachment>(it.jsonObject) }
+    val attachments = data["attachments"]?.jsonArray?.map { Json.decodeFromJsonElement<MessageAttachment>(it.jsonObject) } ?: emptyList()
 
     val actionRows = data["components"]?.let { json ->
         json.jsonArray.map { row ->
@@ -106,20 +107,23 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Returns the [UserData] who sent the message
      */
-    val author = data.getValue("author").jsonObject.extractClientEntity<User>(client)
+    val author: User
+        get() = data["author"]?.jsonObject?.extractClientEntity<User>(client) ?: throw IllegalArgumentException("The message doesn't have an author")
 
-    val member = guild?.members?.get(author.id)
+    val member
+        get() = guild?.members?.get(author.id)
 
     /**
      * Returns the content of the message
      */
-    var content = data.getOrThrow<String>("content")
-        private set
+    val content: String
+        get() = data.getOrNull<String>("content") ?: throw IllegalStateException("This message doesn't have any content")
 
     /**
      * Returns the time the message was sent
      */
-    val messageSentTime = ISO8601.DATETIME_UTC_COMPLETE.parse(data.getOrThrow("timestamp"))
+    val messageSentTime: DateTimeTz
+        get() = ISO8601.DATETIME_UTC_COMPLETE.parse(data.getOrThrow("timestamp"))
 
     /**
      * Returns the time the message was edited
@@ -130,18 +134,21 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      * Whether this message is a text to speech message or not
      */
     @get:JvmName("isTTS")
-    val isTTS = data.getOrThrow<Boolean>("tts")
+    val isTTS: Boolean
+        get() = data.getOrThrow<Boolean>("tts")
 
     /**
      * Whether this message mentions everyone or not
      */
     @get:JvmName("mentionsEveryone")
-    val mentionsEveryone = data.getOrThrow<Boolean>("mention_everyone")
+    val mentionsEveryone: Boolean
+        get() = data.getOrThrow<Boolean>("mention_everyone")
 
     /**
      * Returns a list of mentioned users
      */
-    val mentionedUsers = data.getValue("mentions").jsonArray.map { it.jsonObject.extractClientEntity<UserData>(client) }
+    val mentionedUsers: List<UserData>
+        get() = data.getValue("mentions").jsonArray.map { it.jsonObject.extractClientEntity<UserData>(client) }
 
     /**
      * Returns a list of mentioned roles
@@ -151,34 +158,37 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     } ?: emptyList()
 
     //mentioned channels
-    //attachments
     /**
      * Returns a list of embeds included in this message
      */
-    val embeds = data.getValue("embeds").jsonArray.map { Json { classDiscriminator = "#class" }.decodeFromJsonElement<MessageEmbed>(it.jsonObject) }
+    val embeds: List<MessageEmbed>
+        get() = data.getValue("embeds").jsonArray.map { Json { classDiscriminator = "#class" }.decodeFromJsonElement<MessageEmbed>(it.jsonObject) }
 
     //reactions
 
     /**
      * This can be used to validate a message
      */
-    val nonce = data.getOrNull<String>("nonce")
+    val nonce
+        get() = data.getOrNull<String>("nonce")
 
     /**
      * If the message is pinned in the [channel]
      */
     @get:JvmName("isPinned")
-    val isPinned = data.getOrThrow<Boolean>("pinned")
+    val isPinned: Boolean
+        get() = data.getOrThrow<Boolean>("pinned")
 
     /**
      * If the message was sent by a webhook this is the id
      */
-    val webhookId = data.getOrNull<Long>("webhook_id")
+    val webhookId: Long?
+        get() = data.getOrNull<Long>("webhook_id")
 
     /**
      * The [Type] of the message
      */
-    val type = MessageType.values().first { it.id == data.getOrThrow<Int>("type") }
+    val type = MessageType.values().firstOrNull { it.id == data.getOrNull<Int>("type") } ?: MessageType.DEFAULT
 
     //activity
     //application

@@ -20,8 +20,6 @@ import io.github.jan.discordkm.internal.utils.extractGuildEntity
 import io.github.jan.discordkm.internal.utils.extractMessageChannelEntity
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
@@ -50,7 +48,7 @@ class ThreadData(guild: Guild, data: JsonObject, members: List<Thread.ThreadMemb
     }
 
     override suspend fun send(message: DataMessage) = client.buildRestAction<Message> {
-        route = Route.Message.CREATE_MESSAGE(id).post(Json.encodeToString(message))
+        route = Route.Message.CREATE_MESSAGE(id).post(message.build())
         transform {
             it.toJsonObject().extractMessageChannelEntity(this@ThreadData)
         }

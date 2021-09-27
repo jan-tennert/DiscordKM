@@ -21,10 +21,14 @@ import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
 import io.github.jan.discordkm.internal.events.internal.BanEventHandler
 import io.github.jan.discordkm.internal.events.internal.ChannelCreateEventHandler
 import io.github.jan.discordkm.internal.events.internal.ChannelDeleteEventHandler
+import io.github.jan.discordkm.internal.events.internal.ChannelPinUpdateEventHandler
 import io.github.jan.discordkm.internal.events.internal.ChannelUpdateEventHandler
 import io.github.jan.discordkm.internal.events.internal.GuildCreateEventHandler
 import io.github.jan.discordkm.internal.events.internal.GuildDeleteEventHandler
 import io.github.jan.discordkm.internal.events.internal.GuildEmojisUpdateEventHandler
+import io.github.jan.discordkm.internal.events.internal.GuildMemberAddEventHandler
+import io.github.jan.discordkm.internal.events.internal.GuildMemberRemoveEventHandler
+import io.github.jan.discordkm.internal.events.internal.GuildMemberUpdateEventHandler
 import io.github.jan.discordkm.internal.events.internal.GuildStickersUpdateEventHandler
 import io.github.jan.discordkm.internal.events.internal.GuildUpdateEventHandler
 import io.github.jan.discordkm.internal.events.internal.InteractionCreateEventHandler
@@ -37,6 +41,10 @@ import io.github.jan.discordkm.internal.events.internal.MessageReactionRemoveAll
 import io.github.jan.discordkm.internal.events.internal.MessageReactionRemoveEventHandler
 import io.github.jan.discordkm.internal.events.internal.MessageUpdateEventHandler
 import io.github.jan.discordkm.internal.events.internal.ReadyEventHandler
+import io.github.jan.discordkm.internal.events.internal.ThreadCreateEventHandler
+import io.github.jan.discordkm.internal.events.internal.ThreadDeleteEventHandler
+import io.github.jan.discordkm.internal.events.internal.ThreadMembersUpdateEventHandler
+import io.github.jan.discordkm.internal.events.internal.ThreadUpdateEventHandler
 import io.github.jan.discordkm.internal.events.internal.VoiceStateUpdateEventHandler
 import io.github.jan.discordkm.internal.serialization.IdentifyPayload
 import io.github.jan.discordkm.internal.serialization.Payload
@@ -206,6 +214,18 @@ class DiscordGateway(
                 "CHANNEL_CREATE" -> ChannelCreateEventHandler(client).handle(payload.eventData!!)
                 "CHANNEL_UPDATE" -> ChannelUpdateEventHandler(client).handle(payload.eventData!!)
                 "CHANNEL_DELETE" -> ChannelDeleteEventHandler(client).handle(payload.eventData!!)
+                "CHANNEL_PINS_UPDATE" -> ChannelPinUpdateEventHandler(client).handle(payload.eventData!!)
+
+                //members
+                "GUILD_MEMBER_ADD" -> GuildMemberAddEventHandler(client).handle(payload.eventData!!)
+                "GUILD_MEMBER_UPDATE" -> GuildMemberUpdateEventHandler(client).handle(payload.eventData!!)
+                "GUILD_MEMBER_REMOVE" -> GuildMemberRemoveEventHandler(client).handle(payload.eventData!!)
+
+                //threads
+                "THREAD_CREATE" -> ThreadCreateEventHandler(client).handle(payload.eventData!!)
+                "THREAD_UPDATE" -> ThreadUpdateEventHandler(client).handle(payload.eventData!!)
+                "THREAD_DELETE" -> ThreadDeleteEventHandler(client).handle(payload.eventData!!)
+                "THREAD_MEMBERS_UPDATE" -> ThreadMembersUpdateEventHandler(client).handle(payload.eventData!!)
 
                 //message events
                 "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(payload.eventData!!)

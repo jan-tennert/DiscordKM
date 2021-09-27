@@ -10,38 +10,31 @@
 package io.github.jan.discordkm.api.entities.guild.channels
 
 import com.soywiz.klock.DateTimeTz
+import com.soywiz.klock.ISO8601
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.days
 import com.soywiz.klock.hours
+import com.soywiz.klock.parse
 import com.soywiz.klock.weeks
-import io.github.jan.discordkm.Cache
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.internal.entities.channels.IParent
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.ThreadModifier
 import io.github.jan.discordkm.api.entities.lists.ThreadMemberList
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.Message
-
-import io.github.jan.discordkm.internal.restaction.RestAction
-import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.entities.channels.IParent
 import io.github.jan.discordkm.internal.utils.ISO8601Serializer
 import io.github.jan.discordkm.internal.utils.ThreadDurationSerializer
-import io.github.jan.discordkm.internal.utils.extractGuildEntity
-import io.github.jan.discordkm.internal.utils.extractMessageChannelEntity
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrThrow
-import io.github.jan.discordkm.internal.utils.toJsonArray
-import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 import kotlin.jvm.JvmInline
 
 //maybe cache threads?
@@ -103,12 +96,22 @@ interface Thread : GuildTextChannel, IParent {
 
     data class ThreadMember(val guild: Guild, override val data: JsonObject) : SerializableEntity, SnowflakeEntity {
 
+        /**
+         * Important: This is the id of the thread!
+         */
         override val id = data.getId()
+
+        val userId = data.getOrThrow<Snowflake>("user_id")
+
         override val client = guild.client
 
-        val user = client.users[id]!!
+        val user: User
+            get() = client.users[userId]!!
 
-        val joinedAt = Json.decodeFromString(ISO8601Serializer, data.getOrThrow("join_timestamp"))
+        /**
+         * The date when the member joined this thead.
+         */
+        val joinedAt = ISO8601.DATETIME_UTC_COMPLETE.parse(data.getOrThrow<String>("join_timestamp"))
 
     }
 

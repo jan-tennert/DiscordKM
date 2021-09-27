@@ -16,20 +16,27 @@ class ThreadMemberList(private val thread: Thread, override val internalList: Li
 
     override fun get(name: String) = internalList.filter { it.user.name == name }
 
-
+    /**
+     * Retrieves all [ThreadMembers] from this [thread]
+     */
     suspend fun retrieveMembers() = thread.client.buildRestAction<List<Thread.ThreadMember>> {
         route = Route.Thread.GET_THREAD_MEMBERS(thread.id).get()
         transform { it.toJsonObject().extractGuildEntity(thread.guild) }
         onFinish { (thread as ThreadData).memberCache.internalMap.clear(); thread.memberCache.internalMap.putAll( it.associateBy { member -> member.id }) }
     }
 
-
+    /**
+     * Adds a member to this thread
+     */
     suspend fun add(member: Member) = thread.client.buildRestAction<Unit> {
         route = Route.Thread.ADD_THREAD_MEMBER(thread.id, member.id).put()
         transform { }
     }
 
 
+    /**
+     * Removes a member from this thread
+     */
     suspend fun remove(member: Member) = thread.client.buildRestAction<Unit> {
         route = Route.Thread.REMOVE_THREAD_MEMBER(thread.id, member.id).delete()
         transform { }

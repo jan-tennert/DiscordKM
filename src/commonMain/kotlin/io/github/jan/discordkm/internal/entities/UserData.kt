@@ -11,10 +11,16 @@ package io.github.jan.discordkm.internal.entities
 
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import kotlinx.serialization.json.JsonObject
 
 class UserData(override val client: Client, override val data: JsonObject) : User {
+
+
+
     override fun toString() = "User[id=$id,name=$name]"
+    override var privateChannel: PrivateChannel? = null
+
     override fun equals(other: Any?): Boolean {
         if(other !is UserData) return false
         return other.id == id

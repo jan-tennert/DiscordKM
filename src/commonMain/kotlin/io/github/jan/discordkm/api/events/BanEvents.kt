@@ -1,14 +1,12 @@
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Intent
-import io.github.jan.discordkm.internal.entities.UserData
+import io.github.jan.discordkm.api.entities.guild.Guild
 
 sealed interface BanEvent : GuildEvent {
 
-    override val guildId: Snowflake
-    val user: UserData
+    val user: User
 
 }
 
@@ -17,7 +15,7 @@ sealed interface BanEvent : GuildEvent {
  *
  * Requires the intent [Intent.GUILD_BANS]
  */
-class GuildBanAddEvent(override val client: Client, override val guildId: Snowflake, override val user: UserData) :
+class GuildBanAddEvent(override val guild: Guild, override val user: User) :
     BanEvent
 
 /**
@@ -25,5 +23,5 @@ class GuildBanAddEvent(override val client: Client, override val guildId: Snowfl
  *
  * Requires the intent [Intent.GUILD_BANS]
  */
-class GuildBanRemoveEvent(override val client: Client, override val guildId: Snowflake, override val user: UserData) :
+class GuildBanRemoveEvent(override val guild: Guild, override val user: User) :
     BanEvent

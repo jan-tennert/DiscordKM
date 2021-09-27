@@ -1,7 +1,7 @@
 package io.github.jan.discordkm.internal.events.internal
 
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.events.GuildEmojisUpdateEvent
 import io.github.jan.discordkm.internal.utils.getOrThrow
@@ -13,8 +13,8 @@ class GuildEmojisUpdateEventHandler(val client: Client) : InternalEventHandler<G
 
     override fun handle(data: JsonObject): GuildEmojisUpdateEvent {
         val emotes = data.getValue("emojis").jsonArray.map { Emoji.Emote(it.jsonObject, client) }
-        val guildId = data.getOrThrow<Snowflake>("guild_id")
-        return GuildEmojisUpdateEvent(client, guildId, emotes)
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        return GuildEmojisUpdateEvent(guild, emotes)
     }
 
 }

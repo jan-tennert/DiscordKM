@@ -3,6 +3,7 @@ package io.github.jan.discordkm.api.entities
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -26,6 +27,8 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
         get() = data.getId()
     override val asMention: String
         get() = "<@$id>"
+
+    val privateChannel: PrivateChannel?
 
     /**
      * The name of the user
@@ -106,7 +109,13 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
         }
 
         transform { it.toJsonObject().extractClientEntity(client) }
+
+        onFinish {
+            (this@User as UserData).privateChannel = it
+        }
     }
+
+    suspend fun getOrCreatePrivateChannel() = privateChannel ?: createPrivateChannel()
 
     enum class PremiumType {
         NONE,

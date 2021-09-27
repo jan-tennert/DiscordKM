@@ -12,4 +12,7 @@ package io.github.jan.discordkm.api.events
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 
+/**
+ * Sent when the bot is ready
+ */
 class ReadyEvent(val unavailableGuilds: List<Guild.Unavailable>, override val client: Client) : Event

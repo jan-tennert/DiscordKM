@@ -26,7 +26,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.jvm.JvmName
 
-class DiscordClient(
+class DiscordClient internal constructor(
     token: String,
     encoding: Encoding,
     compression: Compression,
@@ -82,8 +82,7 @@ class DiscordClientBuilder @Deprecated("Use the method buildClient") constructor
 
     fun activity(builder: ActivityModifier.() -> Unit) { activity = ActivityModifier().apply(builder) }
 
-    @PublishedApi
-    internal fun build() = DiscordClient(token, encoding, compression, EnumList(Intent, intents), loggingLevel, activity?.status ?: PresenceStatus.ONLINE, activity?.activity, reconnectDelay)
+    fun build() = DiscordClient(token, encoding, compression, EnumList(Intent, intents), loggingLevel, activity.status, activity.activity, reconnectDelay)
 
 }
 

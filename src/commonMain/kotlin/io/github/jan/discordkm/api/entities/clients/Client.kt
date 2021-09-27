@@ -62,8 +62,10 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
         get() = GuildList(this, guildCache.values.toList())
     val channels: ChannelList
         get() = ChannelList(this, guilds.map { it.channels.internalList }.flatten())
-    val members: MemberList
+
+    private val members: MemberList
         get() = MemberList(guilds.map { it.members.internalList }.flatten())
+
     internal val userCache
         get() = Cache(IsoMutableMap { members.map { it.user }.associateBy { it.id }.toMutableMap()})
     val users: UserList
@@ -91,6 +93,14 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
         })
         transform { it.toJsonObject().extractClientEntity(this@Client) }
         onFinish { selfUser = it }
+    }
+
+    /**
+     * Edits the bot's user
+     */
+    suspend fun editSelfUser(username: String, image: Image? = null) = editSelfUser {
+        this.username = username
+        this.image = image
     }
 
     suspend fun retrieveRTCRegions() = buildRestAction<String> {
