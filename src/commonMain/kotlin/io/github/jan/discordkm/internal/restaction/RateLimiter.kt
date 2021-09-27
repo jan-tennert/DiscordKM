@@ -22,13 +22,14 @@ import io.ktor.http.HttpMessage
 import io.ktor.util.StringValues
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Runnable
 import kotlin.coroutines.CoroutineContext
 
 class RateLimiter(loggingLevel: Logger.Level) {
 
-    val buckets = IsoMutableMap<String, RestClient.Bucket>()
-    val tasks = IsoMutableSet<Task>()
+    private val buckets = IsoMutableMap<String, RestClient.Bucket>()
+    private val tasks = IsoMutableSet<Deferred<HttpResponse>>()
     private val dispatcher = object : CoroutineDispatcher() {
         override fun dispatch(context: CoroutineContext, block: Runnable) {
             block.run()
@@ -43,7 +44,8 @@ class RateLimiter(loggingLevel: Logger.Level) {
     }
 
     suspend fun queue(endpoint: String, task: suspend () -> HttpResponse): HttpResponse {
-        return scope.async {
+        while(tasks.isNotEmpty());
+        val job = scope.async {
             if (endpoint in buckets) {
                 val bucket = buckets[endpoint]!!
                 if (bucket.remaining == 0) {
@@ -56,7 +58,12 @@ class RateLimiter(loggingLevel: Logger.Level) {
             } else {
                 send(endpoint, task)
             }
-        }.await()
+        }
+        tasks += job
+        job.invokeOnCompletion {
+            tasks -= job
+        }
+        return job.await()
     }
 
     private suspend fun send(endpoint: String, task: suspend () -> HttpResponse): HttpResponse {

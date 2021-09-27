@@ -9,8 +9,6 @@
  */
 package io.github.jan.discordkm.api.entities.messages
 
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.baseName
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
@@ -19,6 +17,7 @@ import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.Component
 import io.github.jan.discordkm.api.entities.interactions.components.RowBuilder
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
+import io.github.jan.discordkm.internal.media.Attachment
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.ktor.client.request.forms.FormBuilder
@@ -210,15 +209,7 @@ class DataMessage @Deprecated("Use buildMessage method") constructor(
 
 }
 
-class Attachment internal constructor(val bytes: ByteArray, val fileName: String, val size: Long, val spoiler: Boolean = false) {
 
-    companion object {
-
-        suspend fun fromFile(file: VfsFile, spoiler: Boolean = false, fileName: String = file.baseName) = Attachment(file.readBytes(), fileName, file.size(), spoiler)
-
-    }
-
-}
 
 /*
 Missing:

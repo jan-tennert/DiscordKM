@@ -11,7 +11,6 @@ import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverride
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
-import io.github.jan.discordkm.api.entities.lists.MessageList
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
@@ -47,9 +46,7 @@ open class GuildChannelData(override val guild: Guild, final override val data: 
 
 open class GuildTextChannelData(guild: Guild, data: JsonObject) : GuildChannelData(guild, data), GuildTextChannel, MessageChannel {
 
-    val messageCache: Cache<Message> = Cache.fromSnowflakeEntityList(emptyList())
-    override val messages: MessageList
-        get() = MessageList(this, messageCache.values)
+    override val messageCache: Cache<Message> = Cache.fromSnowflakeEntityList(emptyList())
 
     override fun toString() = "GuildChannel[name=$name, id=$id, type=${ type}]"
 

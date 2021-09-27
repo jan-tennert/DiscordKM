@@ -17,24 +17,19 @@ import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
+import io.github.jan.discordkm.api.entities.guild.invites.Invite
+import io.github.jan.discordkm.api.entities.guild.invites.InviteBuilder
+import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.lists.CommandList
 import io.github.jan.discordkm.api.entities.lists.RetrievableChannelList
 import io.github.jan.discordkm.api.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.api.entities.lists.RoleList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
 import io.github.jan.discordkm.api.entities.misc.EnumList
-import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.VoiceStateData
-import io.github.jan.discordkm.internal.exceptions.PermissionException
-import io.github.jan.discordkm.internal.get
-import io.github.jan.discordkm.internal.invoke
-import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
 import io.github.jan.discordkm.internal.utils.DiscordImage
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
@@ -303,18 +298,21 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
     /**
      * Leaves the guild
      */
+    suspend fun leave()
 
-    suspend fun leave() = client.buildRestAction<Unit> {
-        route = Route.User.LEAVE_GUILD(id).delete()
-        onFinish {
-            client.guildCache.remove(id)
-        }
-    }
+    /**
+     * Deletes the guild. The bot must be the owner of this guild
+     */
+    suspend fun delete()
+
+    /**
+     * Creates an invite for this channel
+     */
+    suspend fun createInvite(channelId: Snowflake, builder: InviteBuilder.() -> Unit): Invite
 
     /**
      * Retrieves all active threads
      */
-
     suspend fun retrieveActiveThreads() : List<Thread>
 
     /**
@@ -329,17 +327,22 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      *
      * Requires the permission [Permission.BAN_MEMBERS]
      */
-    suspend fun retrieveBan(userId: Snowflake) = client.buildRestAction<Ban> {
-        route = Route.Ban.GET_BAN(id, userId).get()
-        transform { Ban(this@Guild, it.toJsonObject()) }
-        check { if(Permission.BAN_MEMBERS !in selfMember.permissions) throw PermissionException("You require the permission BAN_MEMBERS to retrieve bans from a guild") }
-    }
+    suspend fun retrieveBan(userId: Snowflake): Ban
 
-    suspend fun leaveVoiceChannel() = if(client is DiscordClient) {
-        (client as DiscordClient).gateway.send(UpdateVoiceStatePayload(id, null, selfMember.isMuted, selfMember.isDeafened))
-    } else {
-        throw UnsupportedOperationException("You can't leave a voice channel without having a gateway connection!")
-    }
+    /**
+     * Leaves the current voice channel, if the bot is in a voice channel
+     */
+    suspend fun leaveVoiceChannel()
+
+    /**
+     * Retrieves all guild templates for this guild
+     */
+    suspend fun retrieveTemplates(): List<GuildTemplate>
+
+    /**
+     * Creates a guild template from this guild
+     */
+    suspend fun createTemplate(name: String, description: String? = null) : GuildTemplate
 
     data class Unavailable(val id: Long)
 

@@ -16,6 +16,18 @@ object Route {
 
     }
 
+    object Template {
+
+        const val DELETE_GUILD_TEMPLATE = "/guilds/%s/templates/%s"
+        const val MODIFY_GUILD_TEMPLATE = "/guilds/%s/templates/%s"
+        const val SYNC_GUILD_TEMPLATE = "/guilds/%s/templates/%s"
+        const val CREATE_GUILD_TEMPLATE = "/guilds/%s/templates"
+        const val GET_GUILD_TEMPLATES = "/guilds/%s/templates"
+        const val CREATE_GUILD_FROM_TEMPLATE = "/guilds/templates/%s"
+        const val GET_GUILD_TEMPLATE = "/guilds/templates/%s"
+
+    }
+
     object User {
 
         const val GET_USER = "/users/%s"

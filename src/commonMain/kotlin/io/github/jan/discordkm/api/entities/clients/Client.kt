@@ -15,8 +15,11 @@ import io.github.jan.discordkm.Cache
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.EnumSerializer
 import io.github.jan.discordkm.api.entities.SerializableEnum
+import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.invites.Invite
+import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
 import io.github.jan.discordkm.api.entities.lists.ChannelList
@@ -25,9 +28,11 @@ import io.github.jan.discordkm.api.entities.lists.GuildList
 import io.github.jan.discordkm.api.entities.lists.MemberList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
 import io.github.jan.discordkm.api.entities.lists.UserList
-import io.github.jan.discordkm.api.entities.misc.Image
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
 import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.media.Image
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.RestClient
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -66,13 +71,23 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
     val threads: ThreadList
         get() = ThreadList(guilds.map { it.threads.internalList }.flatten())
 
+    /**
+     * Retrieves a guild template
+     */
+    suspend fun retrieveGuildTemplate(id: Snowflake) = buildRestAction<GuildTemplate> {
+        route = Route.Template.GET_GUILD_TEMPLATE(id).get()
+        transform { GuildTemplateData(this@Client, it.toJsonObject()) }
+    }
 
+    /**
+     * Edits the bot's user
+     */
     suspend fun editSelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<User> {
         val edit = SelfUserEdit()
         edit.builder()
         route = Route.User.MODIFY_SELF_USER.patch(buildJsonObject {
             edit.username?.let { put("username", it) }
-            edit.image?.let { put("image", it.url) }
+            edit.image?.let { put("image", it.encodedData) }
         })
         transform { it.toJsonObject().extractClientEntity(this@Client) }
         onFinish { selfUser = it }
@@ -81,6 +96,11 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
     suspend fun retrieveRTCRegions() = buildRestAction<String> {
         route = Route.Voice.GET_VOICE_REGIONS.get()
         transform { it }
+    }
+
+    suspend fun retrieveInvite(code: String) = client.buildRestAction<Invite> {
+        route = Route.Invite.GET_INVITE(code).get()
+        transform { Invite(client, it.toJsonObject()) }
     }
 
     data class SelfUserEdit(var username: String? = null, var image: Image? = null)

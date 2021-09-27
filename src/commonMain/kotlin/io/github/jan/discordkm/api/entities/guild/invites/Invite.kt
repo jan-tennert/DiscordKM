@@ -13,8 +13,12 @@ import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.internal.entities.UserData
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.ISO8601Serializer
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.getOrNull
@@ -55,7 +59,7 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
     /**
      * The inviter who created this invite
      */
-    val inviter = data["inviter"]?.jsonObject?.extractClientEntity<UserData>(client)
+    val inviter = data["inviter"]?.jsonObject?.extractClientEntity<User>(client)
 
     /**
      * The type of the invite
@@ -65,7 +69,7 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
     /**
      * The target user for this invite, if this an invite to a stream
      */
-    val targetUser = data["target_user"]?.jsonObject?.extractClientEntity<UserData>(client)
+    val targetUser = data["target_user"]?.jsonObject?.extractClientEntity<User>(client)
 
     //TODO: add remaining parameters
     val application = data["target_application"]?.jsonObject?.extractClientEntity<InviteApplication>(client)
@@ -81,6 +85,11 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
     val metadata = if(data.getOrNull<Int>("uses") != null) Json {
         ignoreUnknownKeys = true
     }.decodeFromString<Metadata>(data.toString()) else null
+
+    suspend fun delete() = client.buildRestAction<Unit> {
+        route = Route.Invite.DELETE_INVITE(code).delete()
+        transform {  }
+    }
 
     //stage instance object
 

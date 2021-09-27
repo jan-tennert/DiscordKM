@@ -12,12 +12,18 @@ package io.github.jan.discordkm.api.entities.lists
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.media.Image
+import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class GuildList(val client: Client, override val internalList: List<Guild>) : DiscordList<Guild> {
 
@@ -27,6 +33,16 @@ class GuildList(val client: Client, override val internalList: List<Guild>) : Di
         route = Route.Guild.GET_GUILD(id).get()
         transform { it.toJsonObject().extractClientEntity(client) }
     }
+
+    suspend fun create(templateCode: String, name: String, icon: Image? = null) = client.buildRestAction<Guild> {
+        route = Route.Template.CREATE_GUILD_FROM_TEMPLATE(templateCode).post(buildJsonObject {
+            put("name", name)
+            put("icon", icon?.encodedData)
+        })
+        transform { GuildData(client, it.toJsonObject()) }
+    }
+
+    suspend fun create(template: GuildTemplate, name: String, icon: Image? = null) = create(template.code, name, icon)
 
 }
 

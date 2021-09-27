@@ -19,6 +19,9 @@ import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
 import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
 import io.github.jan.discordkm.internal.events.internal.BanEventHandler
+import io.github.jan.discordkm.internal.events.internal.ChannelCreateEventHandler
+import io.github.jan.discordkm.internal.events.internal.ChannelDeleteEventHandler
+import io.github.jan.discordkm.internal.events.internal.ChannelUpdateEventHandler
 import io.github.jan.discordkm.internal.events.internal.GuildCreateEventHandler
 import io.github.jan.discordkm.internal.events.internal.GuildDeleteEventHandler
 import io.github.jan.discordkm.internal.events.internal.GuildEmojisUpdateEventHandler
@@ -75,6 +78,7 @@ class DiscordGateway(
     }
 
     suspend fun start() {
+        LOGGER.info { "Connecting to gateway..." }
         closed = false
         if(sessionId != null) com.soywiz.korio.async.delay(reconnectDelay)
         ws = WebSocketClient(generateWebsocketURL(encoding, compression))
@@ -95,7 +99,8 @@ class DiscordGateway(
         ws.onOpen { LOGGER.info { "Connected to gateway!" } }
         ws.onError {
             if(it.toString().contains("StandaloneCoroutine was cancelled")) return@onError
-            LOGGER.error { "Gateway error: $it" }
+            LOGGER.error { "Disconnected due to an error: ${it.message}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
+            client.launch { start() }
         }
         ws.onClose {
             if(it.message != null) {
@@ -171,7 +176,6 @@ class DiscordGateway(
         }.toString())
     }
 
-    //make executer for this
     suspend fun send(payload: Payload) {
         ws.send(payload)
     }
@@ -197,6 +201,11 @@ class DiscordGateway(
 
                 //interactions
                 "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(payload.eventData!!)
+
+                //channels
+                "CHANNEL_CREATE" -> ChannelCreateEventHandler(client).handle(payload.eventData!!)
+                "CHANNEL_UPDATE" -> ChannelUpdateEventHandler(client).handle(payload.eventData!!)
+                "CHANNEL_DELETE" -> ChannelDeleteEventHandler(client).handle(payload.eventData!!)
 
                 //message events
                 "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(payload.eventData!!)
