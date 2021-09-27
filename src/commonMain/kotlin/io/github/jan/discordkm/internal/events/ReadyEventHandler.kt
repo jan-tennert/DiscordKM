@@ -7,7 +7,7 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.internal.events.internal
+package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.DiscordClient

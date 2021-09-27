@@ -1,4 +1,4 @@
-package io.github.jan.discordkm.internal.events.internal
+package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild

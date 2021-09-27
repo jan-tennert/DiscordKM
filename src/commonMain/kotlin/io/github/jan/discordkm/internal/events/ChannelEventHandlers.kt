@@ -1,4 +1,4 @@
-package io.github.jan.discordkm.internal.events.internal
+package io.github.jan.discordkm.internal.events
 
 import com.soywiz.klock.ISO8601
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -15,7 +15,8 @@ import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import kotlinx.serialization.json.JsonObject
 
-class ChannelCreateEventHandler(val client: Client) : InternalEventHandler<ChannelCreateEvent> {
+class ChannelCreateEventHandler(val client: Client) :
+    InternalEventHandler<ChannelCreateEvent> {
 
     override fun handle(data: JsonObject): ChannelCreateEvent {
         val guild = client.guilds[data.getOrNull<Snowflake>("guild_id") ?: Snowflake.empty()]
@@ -26,7 +27,8 @@ class ChannelCreateEventHandler(val client: Client) : InternalEventHandler<Chann
 
 }
 
-class ChannelDeleteEventHandler(val client: Client) : InternalEventHandler<ChannelDeleteEvent> {
+class ChannelDeleteEventHandler(val client: Client) :
+    InternalEventHandler<ChannelDeleteEvent> {
 
     override fun handle(data: JsonObject): ChannelDeleteEvent {
         val guild = client.guilds[data.getOrNull<Snowflake>("guild_id") ?: Snowflake.empty()]
@@ -37,7 +39,8 @@ class ChannelDeleteEventHandler(val client: Client) : InternalEventHandler<Chann
 
 }
 
-class ChannelUpdateEventHandler(val client: Client) : InternalEventHandler<ChannelUpdateEvent> {
+class ChannelUpdateEventHandler(val client: Client) :
+    InternalEventHandler<ChannelUpdateEvent> {
 
     override fun handle(data: JsonObject): ChannelUpdateEvent {
         val guild = client.guilds[data.getOrNull<Snowflake>("guild_id") ?: Snowflake.empty()]
@@ -48,7 +51,8 @@ class ChannelUpdateEventHandler(val client: Client) : InternalEventHandler<Chann
 
 }
 
-class ChannelPinUpdateEventHandler(val client: Client) : InternalEventHandler<ChannelPinUpdateEvent> {
+class ChannelPinUpdateEventHandler(val client: Client) :
+    InternalEventHandler<ChannelPinUpdateEvent> {
 
     override fun handle(data: JsonObject): ChannelPinUpdateEvent {
         val channel = client.channels[data.getOrThrow<Snowflake>("channel_id")]!! as GuildTextChannel

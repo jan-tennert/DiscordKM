@@ -7,7 +7,7 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.internal.events.internal
+package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
@@ -15,7 +15,8 @@ import io.github.jan.discordkm.api.events.GuildCreateEvent
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import kotlinx.serialization.json.JsonObject
 
-internal class GuildCreateEventHandler(val client: Client) : InternalEventHandler<GuildCreateEvent> {
+internal class GuildCreateEventHandler(val client: Client) :
+    InternalEventHandler<GuildCreateEvent> {
 
     override fun handle(data: JsonObject): GuildCreateEvent {
         val guild = data.extractClientEntity<Guild>(client)

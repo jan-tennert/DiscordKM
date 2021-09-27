@@ -1,4 +1,4 @@
-package io.github.jan.discordkm.internal.events.internal
+package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
