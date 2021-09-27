@@ -96,17 +96,14 @@ interface Thread : GuildTextChannel, IParent {
 
     data class ThreadMember(val guild: Guild, override val data: JsonObject) : SerializableEntity, SnowflakeEntity {
 
-        /**
-         * Important: This is the id of the thread!
-         */
-        override val id = data.getId()
+        override val id = data.getOrThrow<Snowflake>("user_id")
 
-        val userId = data.getOrThrow<Snowflake>("user_id")
+        val threadId = data.getId()
 
         override val client = guild.client
 
         val user: User
-            get() = client.users[userId]!!
+            get() = client.users[id]!!
 
         /**
          * The date when the member joined this thead.
