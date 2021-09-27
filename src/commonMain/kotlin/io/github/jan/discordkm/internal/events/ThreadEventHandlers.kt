@@ -65,7 +65,7 @@ class ThreadMembersUpdateEventHandler(val client: Client) : InternalEventHandler
         val addedMembers = data["added_members"]?.jsonArray?.map { json -> Thread.ThreadMember(thread.guild, json.jsonObject) } ?: emptyList()
         val removedMembers = data["removed_member_ids"]?.jsonArray?.map { Snowflake.fromId(it.jsonPrimitive.content) } ?: emptyList()
         addedMembers.forEach {
-            (thread as ThreadData).memberCache[it.userId] = it
+            (thread as ThreadData).memberCache[it.id] = it
         }
         removedMembers.forEach {
             (thread as ThreadData).memberCache.remove(it)
