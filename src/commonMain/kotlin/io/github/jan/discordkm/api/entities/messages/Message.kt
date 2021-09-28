@@ -147,8 +147,8 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Returns a list of mentioned users
      */
-    val mentionedUsers: List<UserData>
-        get() = data.getValue("mentions").jsonArray.map { it.jsonObject.extractClientEntity<UserData>(client) }
+    val mentionedUsers: List<User>
+        get() = data.getValue("mentions").jsonArray.map { it.jsonObject.extractClientEntity(client) }
 
     /**
      * Returns a list of mentioned roles

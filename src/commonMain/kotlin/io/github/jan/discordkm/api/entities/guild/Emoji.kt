@@ -62,5 +62,3 @@ class Emoji(
     override val asMention = if(id != null) "$id:$name" else name
 
 }
-
-class Reaction(val emoji: Emoji, val user: UserData)

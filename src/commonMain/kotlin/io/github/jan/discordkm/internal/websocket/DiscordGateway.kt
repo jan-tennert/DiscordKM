@@ -11,6 +11,9 @@ package io.github.jan.discordkm.internal.websocket
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klogger.Logger
+import com.soywiz.korio.compression.CompressionMethod
+import com.soywiz.korio.compression.deflate.ZLib
+import com.soywiz.korio.compression.uncompress
 import com.soywiz.korio.net.ws.WebSocketClient
 import com.soywiz.korio.net.ws.WsCloseInfo
 import io.github.jan.discordkm.api.entities.activity.DiscordActivity
@@ -96,24 +99,16 @@ class DiscordGateway(
         if(sessionId != null) com.soywiz.korio.async.delay(reconnectDelay)
         ws = WebSocketClient(generateWebsocketURL(encoding, compression))
         ws.onStringMessage {
-            val json = Json.parseToJsonElement(it).jsonObject
-            var data = json["d"]
-            if(data is JsonNull) data = null
-            if(data.toString() == "false") data = null
-            client.launch {
-                onEvent(Payload(
-                    json.getValue("op").jsonPrimitive.int,
-                    data?.jsonObject,
-                    json["s"]?.jsonPrimitive?.intOrNull,
-                    json["t"]?.jsonPrimitive?.content
-                ))
-            }
+            onMessage(it)
         }
         ws.onOpen { LOGGER.info { "Connected to gateway!" } }
         ws.onError {
             if(it.toString().contains("StandaloneCoroutine was cancelled")) return@onError
             LOGGER.error { "Disconnected due to an error: ${it.message}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
             client.launch { start() }
+        }
+        ws.onBinaryMessage {
+            //zlib and eft
         }
         ws.onClose {
             if(it.message != null) {
@@ -123,6 +118,21 @@ class DiscordGateway(
                 LOGGER.info { "Connection closed!" }
                 closed = true
             }
+        }
+    }
+
+    private fun onMessage(message: String) {
+        val json = Json.parseToJsonElement(message).jsonObject
+        var data = json["d"]
+        if(data is JsonNull) data = null
+        if(data.toString() == "false") data = null
+        client.launch {
+            onEvent(Payload(
+                json.getValue("op").jsonPrimitive.int,
+                data?.jsonObject,
+                json["s"]?.jsonPrimitive?.intOrNull,
+                json["t"]?.jsonPrimitive?.content
+            ))
         }
     }
 

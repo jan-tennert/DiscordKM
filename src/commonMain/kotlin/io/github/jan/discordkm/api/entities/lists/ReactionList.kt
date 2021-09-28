@@ -37,7 +37,7 @@ class ReactionList(val message: Message) {
     }
 
 
-    suspend fun retrieveReactions(emoji: Emoji) = message.client.buildRestAction<List<UserData>> {
+    suspend fun retrieveReactions(emoji: Emoji) = message.client.buildRestAction<List<User>> {
         route = Route.Message.GET_REACTIONS(message.channel.id, message.id, emoji.asMention).get()
         transform { it.toJsonObject().extractClientEntity(message.client) }
     }

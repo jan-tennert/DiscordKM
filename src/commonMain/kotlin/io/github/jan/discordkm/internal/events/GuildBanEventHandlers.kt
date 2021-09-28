@@ -1,6 +1,7 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.events.BanEvent
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
@@ -15,7 +16,7 @@ class BanEventHandler(val client: Client) {
 
     inline fun <reified C : BanEvent> handle(data: JsonObject): C {
         val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
-        val user = data.getOrThrow<String>("user").toJsonObject().extractClientEntity<UserData>(client)
+        val user = data.getOrThrow<String>("user").toJsonObject().extractClientEntity<User>(client)
         return when(C::class) {
             GuildBanAddEvent::class -> GuildBanAddEvent(guild, user) as C
             GuildBanRemoveEvent::class -> GuildBanRemoveEvent(guild, user) as C

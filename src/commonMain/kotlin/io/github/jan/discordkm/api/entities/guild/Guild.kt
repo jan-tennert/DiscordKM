@@ -17,6 +17,7 @@ import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteBuilder
@@ -417,7 +418,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
 
         val reason = data.getOrNull<String>("reason")
 
-        val user = data.getOrThrow<String>("user").toJsonObject().extractClientEntity<UserData>(client)
+        val user = data.getOrThrow<String>("user").toJsonObject().extractClientEntity<User>(client)
 
     }
 

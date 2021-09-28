@@ -12,6 +12,7 @@ package io.github.jan.discordkm.api.entities.interactions
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Role
@@ -75,7 +76,7 @@ open class Interaction(override val client: Client, override val data: JsonObjec
     /**
      * The user, if this interaction was sent in a private channel
      */
-    val user: UserData?
+    val user: User?
         get() = data["user"]?.let { UserData(client, it.jsonObject) }
 
     val channel: MessageChannel?
@@ -97,8 +98,8 @@ open class Interaction(override val client: Client, override val data: JsonObjec
 
     class InteractionOption(val name: String, val type: CommandOption.OptionType, val value: Any) {
 
-        val user: UserData
-            get() = value as UserData
+        val user: User
+            get() = value as User
 
         val int: Int
             get() = value as Int
