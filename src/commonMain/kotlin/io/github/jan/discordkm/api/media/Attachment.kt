@@ -1,4 +1,4 @@
-package io.github.jan.discordkm.internal.media
+package io.github.jan.discordkm.api.media
 
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName

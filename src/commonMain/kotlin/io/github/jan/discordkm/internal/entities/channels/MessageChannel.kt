@@ -11,7 +11,7 @@ package io.github.jan.discordkm.internal.entities.channels
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import io.github.jan.discordkm.Cache
+import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.lists.MessageList

@@ -1,4 +1,4 @@
-package io.github.jan.discordkm.webhooks
+package io.github.jan.discordkm.api.webhooks
 
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake

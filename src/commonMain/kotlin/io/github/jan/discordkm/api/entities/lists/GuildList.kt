@@ -17,7 +17,7 @@ import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
-import io.github.jan.discordkm.internal.media.Image
+import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractClientEntity

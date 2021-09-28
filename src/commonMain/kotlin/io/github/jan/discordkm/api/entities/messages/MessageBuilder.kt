@@ -17,7 +17,7 @@ import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.Component
 import io.github.jan.discordkm.api.entities.interactions.components.RowBuilder
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
-import io.github.jan.discordkm.internal.media.Attachment
+import io.github.jan.discordkm.api.media.Attachment
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.ktor.client.request.forms.FormBuilder

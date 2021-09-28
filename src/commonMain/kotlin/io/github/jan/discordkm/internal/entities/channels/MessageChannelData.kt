@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.internal.entities.channels
 
-import io.github.jan.discordkm.Cache
+import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.messages.Message
 import kotlinx.serialization.json.JsonObject

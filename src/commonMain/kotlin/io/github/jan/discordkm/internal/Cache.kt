@@ -7,7 +7,7 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm
+package io.github.jan.discordkm.internal
 
 import co.touchlab.stately.collections.IsoMutableMap
 import io.github.jan.discordkm.api.entities.Snowflake

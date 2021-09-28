@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.entities.clients
 
 import co.touchlab.stately.collections.IsoMutableMap
 import com.soywiz.klogger.Logger
-import io.github.jan.discordkm.Cache
+import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.EnumSerializer
 import io.github.jan.discordkm.api.entities.SerializableEnum
@@ -32,7 +32,8 @@ import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
-import io.github.jan.discordkm.internal.media.Image
+import io.github.jan.discordkm.api.media.Image
+import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.RestClient
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -46,7 +47,8 @@ import kotlin.coroutines.CoroutineContext
 
 sealed class Client(val token: String, val loggingLevel: Logger.Level) : CoroutineScope, CommandHolder, BaseEntity {
 
-    internal var guildCache = Cache<Guild>()
+    internal val guildCache = Cache<Guild>()
+    internal val privateChannelCache = Cache<PrivateChannel>()
     val rest = RestClient(this)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client = this

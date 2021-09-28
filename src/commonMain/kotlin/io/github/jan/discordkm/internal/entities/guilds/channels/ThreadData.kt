@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.internal.entities.guilds.channels
 
-import io.github.jan.discordkm.Cache
+import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.ThreadModifier

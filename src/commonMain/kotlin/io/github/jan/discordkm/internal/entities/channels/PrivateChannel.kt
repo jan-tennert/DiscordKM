@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.internal.entities.channels
 
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import kotlinx.serialization.json.jsonArray
@@ -19,7 +20,7 @@ interface PrivateChannel : MessageChannel {
     override val type: ChannelType
         get() = ChannelType.DM
 
-    val recipients: List<UserData>
-        get() = data.getValue("recipients").jsonArray.map { it.jsonObject.extractClientEntity<UserData>(client) }
+    val user: User
+        get() = data.getValue("recipients").jsonArray.map { it.jsonObject.extractClientEntity<User>(client) }[0]
 
 }

@@ -19,9 +19,9 @@ import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
-import io.github.jan.discordkm.websocket.Compression
-import io.github.jan.discordkm.websocket.DiscordGateway
-import io.github.jan.discordkm.websocket.Encoding
+import io.github.jan.discordkm.internal.websocket.Compression
+import io.github.jan.discordkm.internal.websocket.DiscordGateway
+import io.github.jan.discordkm.internal.websocket.Encoding
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.jvm.JvmName
@@ -71,7 +71,7 @@ class DiscordClient internal constructor(
 
 }
 
-class DiscordClientBuilder @Deprecated("Use the method buildClient") constructor(var token: String) {
+class DiscordClientBuilder @Deprecated("Use the method buildClient", replaceWith = ReplaceWith("buildClient()", "io.github.jan.discordkm.api.entities.clients.buildClient")) constructor(var token: String) {
 
     var encoding = Encoding.JSON
     var compression = Compression.NONE

@@ -12,7 +12,7 @@ class MessageCreateEventHandler(val client: Client) : InternalEventHandler<Messa
 
     override fun handle(data: JsonObject): MessageCreateEvent {
         val channelId = data.getOrThrow<Snowflake>("channel_id")
-        val channel = (client.channels[channelId] ?: client.threads[channelId]) as MessageChannel
+        val channel = (client.channels[channelId] ?: client.threads[channelId] ?: client.privateChannelCache.values.first { it.id == channelId }) as MessageChannel
         val message = Message(channel, data)
         channel.messageCache[message.id] = message
         return MessageCreateEvent(client, message, message.id, channelId, channel)

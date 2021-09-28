@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.internal.entities.guilds
 
-import io.github.jan.discordkm.Cache
+import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordClient

@@ -28,8 +28,6 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
     override val asMention: String
         get() = "<@$id>"
 
-    val privateChannel: PrivateChannel?
-
     /**
      * The name of the user
      */
@@ -111,11 +109,11 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
         transform { it.toJsonObject().extractClientEntity(client) }
 
         onFinish {
-            (this@User as UserData).privateChannel = it
+            client.privateChannelCache[it.id] = it
         }
     }
 
-    suspend fun getOrCreatePrivateChannel() = privateChannel ?: createPrivateChannel()
+    suspend fun getOrCreatePrivateChannel() = client.privateChannelCache.values.firstOrNull { it.user.id == id } ?: createPrivateChannel()
 
     enum class PremiumType {
         NONE,

@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.internal.utils
 
-import io.github.jan.discordkm.internal.media.Attachment
+import io.github.jan.discordkm.api.media.Attachment
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.fileSize

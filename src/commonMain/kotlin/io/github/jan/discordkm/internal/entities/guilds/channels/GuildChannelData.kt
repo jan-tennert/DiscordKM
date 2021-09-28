@@ -2,7 +2,7 @@ package io.github.jan.discordkm.internal.entities.guilds.channels
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
-import io.github.jan.discordkm.Cache
+import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Guild

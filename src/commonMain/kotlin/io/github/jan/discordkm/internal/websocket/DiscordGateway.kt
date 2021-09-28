@@ -7,7 +7,7 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.websocket
+package io.github.jan.discordkm.internal.websocket
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klogger.Logger
@@ -32,6 +32,8 @@ import io.github.jan.discordkm.internal.events.GuildMemberUpdateEventHandler
 import io.github.jan.discordkm.internal.events.GuildStickersUpdateEventHandler
 import io.github.jan.discordkm.internal.events.GuildUpdateEventHandler
 import io.github.jan.discordkm.internal.events.InteractionCreateEventHandler
+import io.github.jan.discordkm.internal.events.InviteCreateEventHandler
+import io.github.jan.discordkm.internal.events.InviteDeleteEventHandler
 import io.github.jan.discordkm.internal.events.MessageBulkDeleteEventHandler
 import io.github.jan.discordkm.internal.events.MessageCreateEventHandler
 import io.github.jan.discordkm.internal.events.MessageDeleteEventHandler
@@ -41,6 +43,9 @@ import io.github.jan.discordkm.internal.events.MessageReactionRemoveAllEventHand
 import io.github.jan.discordkm.internal.events.MessageReactionRemoveEventHandler
 import io.github.jan.discordkm.internal.events.MessageUpdateEventHandler
 import io.github.jan.discordkm.internal.events.ReadyEventHandler
+import io.github.jan.discordkm.internal.events.RoleCreateEventHandler
+import io.github.jan.discordkm.internal.events.RoleDeleteEventHandler
+import io.github.jan.discordkm.internal.events.RoleUpdateEventHandler
 import io.github.jan.discordkm.internal.events.ThreadCreateEventHandler
 import io.github.jan.discordkm.internal.events.ThreadDeleteEventHandler
 import io.github.jan.discordkm.internal.events.ThreadMembersUpdateEventHandler
@@ -206,6 +211,15 @@ class DiscordGateway(
                 "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(payload.eventData!!)
                 "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(payload.eventData!!)
                 "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(payload.eventData!!)
+
+                //roles
+                "GUILD_ROLE_CREATE" -> RoleCreateEventHandler(client).handle(payload.eventData!!)
+                "GUILD_ROLE_UPDATE" -> RoleUpdateEventHandler(client).handle(payload.eventData!!)
+                "GUILD_ROLE_DELETE" -> RoleDeleteEventHandler(client).handle(payload.eventData!!)
+
+                //invites
+                "INVITE_CREATE" -> InviteCreateEventHandler(client).handle(payload.eventData!!)
+                "INVITE_DELETE" -> InviteDeleteEventHandler(client).handle(payload.eventData!!)
 
                 //interactions
                 "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(payload.eventData!!)
