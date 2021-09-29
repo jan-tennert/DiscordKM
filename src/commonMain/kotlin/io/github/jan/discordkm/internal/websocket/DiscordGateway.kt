@@ -11,14 +11,10 @@ package io.github.jan.discordkm.internal.websocket
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klogger.Logger
-import com.soywiz.korio.compression.CompressionMethod
-import com.soywiz.korio.compression.deflate.ZLib
-import com.soywiz.korio.compression.uncompress
 import com.soywiz.korio.net.ws.WebSocketClient
 import com.soywiz.korio.net.ws.WsCloseInfo
-import io.github.jan.discordkm.api.entities.activity.DiscordActivity
+import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
-import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
 import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
 import io.github.jan.discordkm.internal.events.BanEventHandler
@@ -45,14 +41,20 @@ import io.github.jan.discordkm.internal.events.MessageReactionEmojiRemoveEventHa
 import io.github.jan.discordkm.internal.events.MessageReactionRemoveAllEventHandler
 import io.github.jan.discordkm.internal.events.MessageReactionRemoveEventHandler
 import io.github.jan.discordkm.internal.events.MessageUpdateEventHandler
+import io.github.jan.discordkm.internal.events.PresenceUpdateEventHandler
 import io.github.jan.discordkm.internal.events.ReadyEventHandler
 import io.github.jan.discordkm.internal.events.RoleCreateEventHandler
 import io.github.jan.discordkm.internal.events.RoleDeleteEventHandler
 import io.github.jan.discordkm.internal.events.RoleUpdateEventHandler
+import io.github.jan.discordkm.internal.events.SelfUserUpdateEventHandler
+import io.github.jan.discordkm.internal.events.StageInstanceCreateEventHandler
+import io.github.jan.discordkm.internal.events.StageInstanceDeleteEventHandler
+import io.github.jan.discordkm.internal.events.StageInstanceUpdateEventHandler
 import io.github.jan.discordkm.internal.events.ThreadCreateEventHandler
 import io.github.jan.discordkm.internal.events.ThreadDeleteEventHandler
 import io.github.jan.discordkm.internal.events.ThreadMembersUpdateEventHandler
 import io.github.jan.discordkm.internal.events.ThreadUpdateEventHandler
+import io.github.jan.discordkm.internal.events.TypingStartEventHandler
 import io.github.jan.discordkm.internal.events.VoiceStateUpdateEventHandler
 import io.github.jan.discordkm.internal.serialization.IdentifyPayload
 import io.github.jan.discordkm.internal.serialization.Payload
@@ -75,9 +77,9 @@ import kotlinx.serialization.json.put
 class DiscordGateway(
     val encoding: Encoding,
     val compression: Compression,
-    val client: DiscordClient,
+    val client: io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient,
     val status: PresenceStatus,
-    val activity: DiscordActivity?,
+    val activity: Presence?,
     val reconnectDelay: TimeSpan,
 ) {
 
@@ -221,6 +223,16 @@ class DiscordGateway(
                 "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(payload.eventData!!)
                 "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(payload.eventData!!)
                 "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(payload.eventData!!)
+
+                //stage instances
+                "STAGE_INSTANCE_CREATE" -> StageInstanceCreateEventHandler(client).handle(payload.eventData!!)
+                "STAGE_INSTANCE_UPDATE" -> StageInstanceUpdateEventHandler(client).handle(payload.eventData!!)
+                "STAGE_INSTANCE_DELETE" -> StageInstanceDeleteEventHandler(client).handle(payload.eventData!!)
+
+                //misc
+                "TYPING_START" -> TypingStartEventHandler(client).handle(payload.eventData!!)
+                "USER_UPDATE" -> SelfUserUpdateEventHandler(client).handle(payload.eventData!!)
+                "PRESENCE_UPDATE" -> PresenceUpdateEventHandler(client).handle(payload.eventData!!)
 
                 //roles
                 "GUILD_ROLE_CREATE" -> RoleCreateEventHandler(client).handle(payload.eventData!!)

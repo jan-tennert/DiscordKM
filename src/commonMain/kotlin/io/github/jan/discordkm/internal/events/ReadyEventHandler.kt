@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.ReadyEvent
 import io.github.jan.discordkm.internal.utils.extractClientEntity
@@ -20,7 +20,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
-internal class ReadyEventHandler(val client: DiscordClient) : InternalEventHandler<ReadyEvent> {
+internal class ReadyEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ReadyEvent> {
     override fun handle(data: JsonObject): ReadyEvent {
         client.gateway.sessionId = data.getValue("session_id").jsonPrimitive.content
         val guilds = mutableListOf<Guild.Unavailable>()

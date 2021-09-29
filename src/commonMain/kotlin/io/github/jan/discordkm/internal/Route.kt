@@ -145,6 +145,7 @@ object Route {
 
     object Voice {
 
+        const val MODIFY_VOICE_STATE = "/guilds/%s/voice-states/%s"
         const val GET_VOICE_REGIONS = "/voice/regions"
 
     }

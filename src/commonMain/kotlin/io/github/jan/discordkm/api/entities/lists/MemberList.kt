@@ -26,18 +26,9 @@ import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.buildJsonObject
 
-sealed interface IMemberList : DiscordList<Member> {
+class MemberList(override val internalMap: Map<Snowflake, Member>) : NameableSnowflakeList<Member>
 
-    override fun get(name: String) = internalList.filter { it.user.name == name }
-
-}
-
-class MemberList(override val internalList: List<Member>) : IMemberList
-
-class RetrievableMemberList(val guild: Guild, override val internalList: List<Member>) : IMemberList {
-
-    override fun get(name: String) = internalList.filter { it.user.name == name }
-
+class RetrievableMemberList(val guild: Guild, override val internalMap: Map<Snowflake, Member>) : NameableSnowflakeList<Member> {
 
     suspend fun retrieve(id: Snowflake) = guild.client.buildRestAction<Member> {
         route = Route.Member.GET_MEMBER(guild.id, id).get()

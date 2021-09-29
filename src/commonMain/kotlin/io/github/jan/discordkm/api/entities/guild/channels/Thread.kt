@@ -16,6 +16,7 @@ import com.soywiz.klock.days
 import com.soywiz.klock.hours
 import com.soywiz.klock.parse
 import com.soywiz.klock.weeks
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
@@ -94,7 +95,7 @@ interface Thread : GuildTextChannel, IParent {
         val isInvitable: Boolean? = null
     )
 
-    data class ThreadMember(val guild: Guild, override val data: JsonObject) : SerializableEntity, SnowflakeEntity {
+    data class ThreadMember(val guild: Guild, override val data: JsonObject) : SerializableEntity, SnowflakeEntity, Nameable {
 
         override val id = data.getOrThrow<Snowflake>("user_id")
 
@@ -104,6 +105,9 @@ interface Thread : GuildTextChannel, IParent {
 
         val user: User
             get() = client.users[id]!!
+
+        override val name: String
+            get() = user.name
 
         /**
          * The date when the member joined this thead.

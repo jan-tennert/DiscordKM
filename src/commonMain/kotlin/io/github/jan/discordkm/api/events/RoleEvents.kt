@@ -15,6 +15,6 @@ interface RoleEvent : GuildEvent {
 
 class RoleCreateEvent(override val role: Role) : RoleEvent
 
-class RoleUpdateEvent(override val role: Role) : RoleEvent
+class RoleUpdateEvent(override val role: Role, val oldRole: Role?) : RoleEvent
 
 class RoleDeleteEvent(override val client: Client, val roleId: Snowflake) : Event

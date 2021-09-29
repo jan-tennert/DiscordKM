@@ -11,7 +11,6 @@ package io.github.jan.discordkm.api.entities.clients
 
 import co.touchlab.stately.collections.IsoMutableMap
 import com.soywiz.klogger.Logger
-import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.EnumSerializer
 import io.github.jan.discordkm.api.entities.SerializableEnum
@@ -28,12 +27,12 @@ import io.github.jan.discordkm.api.entities.lists.GuildList
 import io.github.jan.discordkm.api.entities.lists.MemberList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
 import io.github.jan.discordkm.api.entities.lists.UserList
+import io.github.jan.discordkm.api.media.Image
+import io.github.jan.discordkm.internal.EntityCache
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
-import io.github.jan.discordkm.api.media.Image
-import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.RestClient
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -47,33 +46,32 @@ import kotlin.coroutines.CoroutineContext
 
 sealed class Client(val token: String, val loggingLevel: Logger.Level) : CoroutineScope, CommandHolder, BaseEntity {
 
-    internal val guildCache = Cache<Guild>()
-    internal val privateChannelCache = Cache<PrivateChannel>()
+    internal val guildCache = EntityCache<Snowflake, Guild>()
     val rest = RestClient(this)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client = this
 
-    override val commandCache = Cache<ApplicationCommand>()
+    override val commandCache = EntityCache<Snowflake, ApplicationCommand>()
 
     override val commands: CommandList
-        get() = CommandList("/applications/${selfUser.id}/commands", this, commandCache.values)
+        get() = CommandList("/applications/${selfUser.id}/commands", this, commandCache.values.associateBy { it.id })
 
     lateinit var selfUser: User
         internal set
     val guilds: GuildList
-        get() = GuildList(this, guildCache.values.toList())
+        get() = GuildList(this, guildCache.values.associateBy { it.id })
     val channels: ChannelList
-        get() = ChannelList(this, guilds.map { it.channels.internalList }.flatten())
+        get() = ChannelList(this, guilds.map { it.channels.toList() }.flatten().associateBy { it.id })
 
     private val members: MemberList
-        get() = MemberList(guilds.map { it.members.internalList }.flatten())
+        get() = MemberList(guilds.map { it.members.toList() }.flatten().associateBy { it.id })
 
     internal val userCache
-        get() = Cache(IsoMutableMap { members.map { it.user }.associateBy { it.id }.toMutableMap()})
+        get() = EntityCache(IsoMutableMap { members.map { it.user }.associateBy { it.id }.toMutableMap()})
     val users: UserList
-        get() = UserList(this, userCache.values.toList())
+        get() = UserList(this, userCache.values.associateBy { it.id })
     val threads: ThreadList
-        get() = ThreadList(guilds.map { it.threads.internalList }.flatten())
+        get() = ThreadList(guilds.map { it.threads.toList() }.flatten().associateBy { it.id })
 
     /**
      * Retrieves a guild template

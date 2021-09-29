@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.Client
@@ -23,7 +24,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmName
 
-class Sticker(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity {
+class Sticker(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity, Nameable {
 
     override val id = data.getId()
 
@@ -35,7 +36,7 @@ class Sticker(override val data: JsonObject, override val client: Client) : Snow
     /**
      * The name of the sticker
      */
-    val name = data.getOrThrow<String>("name")
+    override val name = data.getOrThrow<String>("name")
 
     /**
      * The description of the sticker

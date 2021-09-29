@@ -11,6 +11,7 @@ package io.github.jan.discordkm.api.entities.guild.channels
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.minutes
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
@@ -37,7 +38,7 @@ import kotlinx.serialization.json.putJsonArray
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-interface GuildChannel : Channel, Reference<GuildChannel>, GuildEntity {
+interface GuildChannel : Channel, Reference<GuildChannel>, GuildEntity, Nameable {
 
     override fun getValue(ref: Any?, property: KProperty<*>) = guild.channels[id]!!
 
@@ -57,7 +58,7 @@ interface GuildChannel : Channel, Reference<GuildChannel>, GuildEntity {
     /**
      * The name of the channel
      */
-    val name: String
+    override val name: String
         get() = data.getOrThrow<String>("name")
 
 
@@ -113,7 +114,7 @@ interface GuildTextChannel : GuildMessageChannel, Invitable, IParent {
      * Returns a list of all [Thread]s in this channel
      */
     val threads
-        get() = ThreadList(guild.threads.filter { it.parentId == id })
+        get() = ThreadList(guild.threads.filter { it.parentId == id }.associateBy { it.id })
 
     /**
      * Retrieves all public achieved threads

@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform") version "1.5.31"
-    kotlin("plugin.serialization") version "1.5.30"
+    kotlin("plugin.serialization") version "1.5.31"
     id("maven-publish")
     signing
     id("org.jetbrains.dokka") version "1.4.20"
@@ -132,7 +132,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
                 implementation("com.soywiz.korlibs.klock:klock:2.2.2")
                 implementation("com.soywiz.korlibs.korio:korio:2.2.1")
                 implementation("com.soywiz.korlibs.klogger:klogger:2.2.0")

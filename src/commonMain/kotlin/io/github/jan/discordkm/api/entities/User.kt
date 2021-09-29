@@ -21,17 +21,19 @@ import kotlinx.serialization.json.put
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEntity {
+interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEntity, Nameable {
 
     override val id: Snowflake
         get() = data.getId()
     override val asMention: String
         get() = "<@$id>"
 
+    val privateChannel: PrivateChannel?
+
     /**
      * The name of the user
      */
-    val name: String
+    override val name: String
         get() = data.getOrThrow<String>("username")
 
     /**
@@ -109,11 +111,11 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
         transform { it.toJsonObject().extractClientEntity(client) }
 
         onFinish {
-            client.privateChannelCache[it.id] = it
+            (this@User as UserData).privateChannel = it
         }
     }
 
-    suspend fun getOrCreatePrivateChannel() = client.privateChannelCache.values.firstOrNull { it.user.id == id } ?: createPrivateChannel()
+    suspend fun getOrCreatePrivateChannel() = privateChannel ?: createPrivateChannel()
 
     enum class PremiumType {
         NONE,

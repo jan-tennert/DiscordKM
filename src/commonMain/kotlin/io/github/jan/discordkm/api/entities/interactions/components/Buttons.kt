@@ -1,7 +1,7 @@
 package io.github.jan.discordkm.api.entities.interactions.components
 
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.events.ButtonClickEvent
 import io.github.jan.discordkm.internal.utils.valueOfIndex
@@ -31,7 +31,7 @@ data class Button(
 class ButtonBuilder(var customId: String? = null, var isDisabled: Boolean, val style: ButtonStyle, var label: String? = null, var emoji: Emoji? = null, var url: String? = null) {
 
     fun onClick(client: Client, action: ButtonClick) {
-        if(client is DiscordClient) {
+        if(client is DiscordWebSocketClient) {
             client.on<ButtonClickEvent>(predicate = { it.componentId == customId}) { action(this) }
         }
     }

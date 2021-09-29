@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.api.entities.interactions
 
 import io.github.jan.discordkm.api.entities.Mentionable
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
@@ -96,7 +97,7 @@ open class Interaction(override val client: Client, override val data: JsonObjec
 
     suspend fun retrieveChannel() = client.channels.retrieve(channelId)
 
-    class InteractionOption(val name: String, val type: CommandOption.OptionType, val value: Any) {
+    class InteractionOption(override val name: String, val type: CommandOption.OptionType, val value: Any) : Nameable {
 
         val user: User
             get() = value as User

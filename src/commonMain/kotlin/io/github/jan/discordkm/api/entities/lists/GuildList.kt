@@ -13,11 +13,11 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
+import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
-import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractClientEntity
@@ -25,10 +25,8 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class GuildList(val client: Client, override val internalList: List<Guild>) : DiscordList<Guild> {
+class GuildList(val client: Client, override val internalMap: Map<Snowflake, Guild>) : NameableSnowflakeList<Guild> {
 
-    override fun get(name: String) = internalList.filter { it.name == name }
-    
     suspend fun retrieve(id: Snowflake) = client.buildRestAction<Guild> {
         route = Route.Guild.GET_GUILD(id).get()
         transform { it.toJsonObject().extractClientEntity(client) }

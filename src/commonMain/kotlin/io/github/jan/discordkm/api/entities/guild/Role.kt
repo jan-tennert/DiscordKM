@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.api.entities.guild
 
 import io.github.jan.discordkm.api.entities.Mentionable
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -29,7 +30,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-interface Role : Mentionable, Reference<Role>, SnowflakeEntity, GuildEntity, PermissionHolder {
+interface Role : Mentionable, Reference<Role>, SnowflakeEntity, GuildEntity, PermissionHolder, Nameable {
 
     override val id: Snowflake
         get() = data.getId()
@@ -37,7 +38,7 @@ interface Role : Mentionable, Reference<Role>, SnowflakeEntity, GuildEntity, Per
     /**
      * Returns the name of the role
      */
-    val name: String
+    override val name: String
         get() = data.getOrThrow<String>("name")
 
     /**

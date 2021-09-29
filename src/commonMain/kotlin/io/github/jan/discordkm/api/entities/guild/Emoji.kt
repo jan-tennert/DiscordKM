@@ -10,11 +10,11 @@
 package io.github.jan.discordkm.api.entities.guild
 
 import io.github.jan.discordkm.api.entities.Mentionable
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import kotlinx.serialization.SerialName
@@ -30,9 +30,9 @@ class Emoji(
     val isAnimated: Boolean = false
 ) : Mentionable {
 
-    class Emote @PublishedApi internal constructor(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity {
+    class Emote @PublishedApi internal constructor(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity, Nameable {
         override val id = data.getId()
-        val name = data.getOrThrow<String>("name")
+        override val name = data.getOrThrow<String>("name")
 
         @get:JvmName("isAnimated")
         val isAnimated = data.getOrThrow<Boolean>("animated")

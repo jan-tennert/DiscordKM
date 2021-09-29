@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.commands
 
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
@@ -24,7 +25,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-open class ApplicationCommand(override val client: Client, override val data: JsonObject) : SerializableEntity, SnowflakeEntity {
+open class ApplicationCommand(override val client: Client, override val data: JsonObject) : SerializableEntity, SnowflakeEntity, Nameable {
 
     val type: ApplicationCommandType
         get() = valueOfIndexOrDefault(data.getOrThrow<Int>("type"), default = ApplicationCommandType.CHAT_INPUT)
@@ -41,7 +42,7 @@ open class ApplicationCommand(override val client: Client, override val data: Js
     val guild: Guild?
         get() = client.guilds[guildId ?: Snowflake.empty()]
 
-    val name: String
+    override val name: String
         get() = data.getOrThrow<String>("name")
 
     val description: String

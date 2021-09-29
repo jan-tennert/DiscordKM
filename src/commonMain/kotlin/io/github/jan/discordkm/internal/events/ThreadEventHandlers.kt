@@ -2,12 +2,14 @@ package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.events.ThreadCreateEvent
 import io.github.jan.discordkm.api.events.ThreadDeleteEvent
 import io.github.jan.discordkm.api.events.ThreadMembersUpdateEvent
 import io.github.jan.discordkm.api.events.ThreadUpdateEvent
+import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.channels.ThreadData
 import io.github.jan.discordkm.internal.utils.getId
@@ -17,29 +19,30 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-class ThreadCreateEventHandler(val client: Client) : InternalEventHandler<ThreadCreateEvent> {
+class ThreadCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadCreateEvent> {
 
     override fun handle(data: JsonObject): ThreadCreateEvent {
         val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
         val thread = ThreadData(guild, data)
-        (guild as GuildData).threadCache[thread.id] = thread
+        if(Cache.THREADS in client.enabledCache) (guild as GuildData).threadCache[thread.id] = thread
         return ThreadCreateEvent(thread)
     }
 
 }
 
-class ThreadUpdateEventHandler(val client: Client) : InternalEventHandler<ThreadUpdateEvent> {
+class ThreadUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadUpdateEvent> {
 
     override fun handle(data: JsonObject): ThreadUpdateEvent {
         val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
         val thread = ThreadData(guild, data)
-        (guild as GuildData).threadCache[thread.id] = thread
-        return ThreadUpdateEvent(thread)
+        val oldThread = guild.threads[thread.id]
+        if(Cache.THREADS in client.enabledCache) (guild as GuildData).threadCache[thread.id] = thread
+        return ThreadUpdateEvent(thread, oldThread)
     }
 
 }
 
-class ThreadDeleteEventHandler(val client: Client) : InternalEventHandler<ThreadDeleteEvent> {
+class ThreadDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadDeleteEvent> {
 
     override fun handle(data: JsonObject): ThreadDeleteEvent {
         val guildId = data.getOrThrow<Snowflake>("guild_id")
@@ -50,7 +53,7 @@ class ThreadDeleteEventHandler(val client: Client) : InternalEventHandler<Thread
         val channel = guild.channels[channelId]!! as GuildTextChannel
         val memberIds = audience.getValue("member_ids").jsonArray.map { Snowflake.fromId(it.jsonPrimitive.content) }
         val members = memberIds.map { guild.members[it]!! }
-        (guild as GuildData).threadCache.remove(id)
+        if(Cache.THREADS in client.enabledCache) (guild as GuildData).threadCache.remove(channelId)
         return ThreadDeleteEvent(client, id, guildId, guild, channelId, channel, memberIds, members)
     }
 

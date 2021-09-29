@@ -34,11 +34,7 @@ import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.jsonObject
 
-sealed interface IChannelList : DiscordList<GuildChannel>, BaseEntity {
-
-    override fun get(name: String) = internalList.filter { it.name == name }
-
-}
+sealed interface IChannelList : NameableSnowflakeList<GuildChannel>, BaseEntity
 
 /**
  * Retrieves a guild channel by its id
@@ -49,9 +45,7 @@ suspend inline fun IChannelList.retrieve(id: Snowflake) = client.buildRestAction
     //onFinish { guild.channelCache[id] = it }
 }
 
-class RetrievableChannelList(val guild: Guild, override val internalList: List<GuildChannel>) : IChannelList {
-
-
+class RetrievableChannelList(val guild: Guild, override val internalMap: Map<Snowflake, GuildChannel>) : IChannelList {
 
     /**
      * Returns all guild channels in this guild
@@ -81,7 +75,7 @@ class RetrievableChannelList(val guild: Guild, override val internalList: List<G
     override val client = guild.client
 }
 
-class ChannelList(override val client: Client, override val internalList: List<GuildChannel>) : IChannelList
+class ChannelList(override val client: Client, override val internalMap: Map<Snowflake, GuildChannel>) : IChannelList
 
 inline fun <reified C : GuildChannel> IChannelList.getGuildChannel(id: Snowflake) : C {
     return when(C::class) {

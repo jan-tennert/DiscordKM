@@ -9,27 +9,32 @@
  */
 package io.github.jan.discordkm.api.entities.lists
 
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.SnowflakeEntity
 
-sealed interface DiscordList <T : SnowflakeEntity> : Iterable<T> {
+sealed interface DiscordList <K, V> : Iterable<V> {
 
-    val internalList: List<T>
+    val internalMap: Map<K, V>
     val size: Int
-        get() = internalList.size
+        get() = internalMap.size
 
-    operator fun contains(other: Snowflake) = internalList.any { it.id == other }
+    operator fun contains(other: K) = other in internalMap
 
     /**
      * Gets this object from the cache
      */
-    operator fun get(id: Snowflake) = internalList.firstOrNull { it.id == id }
+    operator fun get(key: K) = internalMap[key]
 
-    /**
-     * Searches for the object in the cache and returns a list of matching objects
-     */
-    operator fun get(name: String) : List<T>
-
-    override operator fun iterator() = internalList.iterator()
+    override operator fun iterator() = internalMap.values.iterator()
 
 }
+
+sealed interface SnowflakeList <V> : DiscordList<Snowflake, V>
+
+sealed interface NameList <K, V : Nameable> : DiscordList<K, V> {
+
+    operator fun get(name: String) = internalMap.filter { it.value.name == name }.values
+
+}
+
+sealed interface NameableSnowflakeList <V : Nameable> : SnowflakeList<V>, NameList<Snowflake, V>

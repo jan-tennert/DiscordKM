@@ -16,7 +16,7 @@ interface ChannelEvent : Event {
 
 class ChannelCreateEvent(override val channel: GuildChannel) : ChannelEvent
 
-class ChannelUpdateEvent(override val channel: GuildChannel) : ChannelEvent
+class ChannelUpdateEvent(override val channel: GuildChannel, val oldChannel: GuildChannel?) : ChannelEvent
 
 class ChannelDeleteEvent(override val channel: GuildChannel) : ChannelEvent
 

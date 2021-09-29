@@ -1,7 +1,7 @@
 package io.github.jan.discordkm.api.entities.interactions.components
 
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.events.SelectionMenuEvent
 import kotlinx.serialization.Required
@@ -35,7 +35,7 @@ class SelectionMenuBuilder(var customId: String, var minValues: Int, var maxValu
         }
 
     fun onSelected(client: Client, action: OnSelected) {
-        if(client is DiscordClient) {
+        if(client is DiscordWebSocketClient) {
             client.on<SelectionMenuEvent>(predicate = { it.componentId == customId }) { action(this) }
         }
     }

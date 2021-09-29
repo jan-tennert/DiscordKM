@@ -6,4 +6,4 @@ import io.github.jan.discordkm.api.entities.guild.VoiceState
 /**
  * Sent when a member joins, leaves or moves to a voice channel
  */
-class VoiceStateUpdateEvent(override val client: Client, val voiceState: VoiceState) : Event
+class VoiceStateUpdateEvent(override val client: Client, val voiceState: VoiceState, val oldVoiceState: VoiceState?) : Event

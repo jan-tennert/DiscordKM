@@ -18,6 +18,8 @@ class UserData(override val client: Client, override val data: JsonObject) : Use
 
     override fun toString() = "User[id=$id,name=$name]"
 
+    override var privateChannel: PrivateChannel? = null
+
     override fun equals(other: Any?): Boolean {
         if(other !is UserData) return false
         return other.id == id

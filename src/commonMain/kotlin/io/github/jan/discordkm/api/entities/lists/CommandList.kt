@@ -18,9 +18,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 
-open class CommandList(private val baseURL: String, val holder: CommandHolder, override val internalList: List<ApplicationCommand>) : DiscordList<ApplicationCommand> {
-
-    override fun get(name: String) = internalList.filter { it.name == name }
+open class CommandList(private val baseURL: String, val holder: CommandHolder, override val internalMap: Map<Snowflake, ApplicationCommand>) : NameableSnowflakeList<ApplicationCommand> {
 
     suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.post(baseURL, builder.build())

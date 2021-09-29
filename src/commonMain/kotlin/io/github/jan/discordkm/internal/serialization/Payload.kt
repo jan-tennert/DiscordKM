@@ -12,8 +12,8 @@ package io.github.jan.discordkm.internal.serialization
 import com.soywiz.korio.net.ws.WebSocketClient
 import com.soywiz.korio.util.OS
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.activity.ActivityModifier
-import io.github.jan.discordkm.api.entities.activity.DiscordActivity
+import io.github.jan.discordkm.api.entities.activity.Presence
+import io.github.jan.discordkm.api.entities.activity.PresenceModifier
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
@@ -39,7 +39,7 @@ data class Payload(
     val eventName: String? = null
 )
 
-fun IdentifyPayload(token: String, intents: Long, status: PresenceStatus, activity: DiscordActivity?) = Payload(2, eventData = buildJsonObject {
+fun IdentifyPayload(token: String, intents: Long, status: PresenceStatus, activity: Presence?) = Payload(2, eventData = buildJsonObject {
     put("token", token)
     put("intents", intents)
     put("properties", buildJsonObject {
@@ -65,6 +65,6 @@ fun UpdateVoiceStatePayload(guildId: Snowflake, channelId: Snowflake?, selfMute:
     put("self_deaf", selfDeaf)
 })
 
-fun UpdatePresencePayload(modifier: ActivityModifier) = Payload(3, eventData = modifier.build())
+fun UpdatePresencePayload(modifier: PresenceModifier) = Payload(3, eventData = modifier.build())
 
 suspend fun WebSocketClient.send(payload: Payload) = send(Json.encodeToString(payload))

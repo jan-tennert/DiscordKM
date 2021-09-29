@@ -16,7 +16,7 @@ interface ThreadEvent : Event {
 }
 
 class ThreadCreateEvent(override val thread: Thread) : ThreadEvent
-class ThreadUpdateEvent(override val thread: Thread) : ThreadEvent
+class ThreadUpdateEvent(override val thread: Thread, val oldThread: Thread?) : ThreadEvent
 class ThreadDeleteEvent(
     override val client: Client,
     val threadId: Snowflake,

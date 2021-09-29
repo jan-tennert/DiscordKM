@@ -11,7 +11,6 @@ package io.github.jan.discordkm.internal.entities.channels
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.lists.MessageList
@@ -22,6 +21,7 @@ import io.github.jan.discordkm.api.entities.messages.MessageBuilder
 import io.github.jan.discordkm.api.entities.messages.MessageEmbed
 import io.github.jan.discordkm.api.entities.messages.buildEmbed
 import io.github.jan.discordkm.api.entities.messages.buildMessage
+import io.github.jan.discordkm.internal.EntityCache
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
@@ -44,10 +44,10 @@ interface MessageChannel : Channel {
     val slowModeTime: TimeSpan?
         get() = data.getOrNull<Int>("rate_limit_per_user")?.seconds
 
-    val messageCache: Cache<Message>
+    val messageCache: EntityCache<Snowflake, Message>
 
     val messages: MessageList
-        get() = MessageList(this, messageCache.values)
+        get() = MessageList(this, messageCache.values.associateBy { it.id })
 
     suspend fun send(message: DataMessage) = client.buildRestAction<Message> {
         route = Route.Message.CREATE_MESSAGE(id).post(message.build())

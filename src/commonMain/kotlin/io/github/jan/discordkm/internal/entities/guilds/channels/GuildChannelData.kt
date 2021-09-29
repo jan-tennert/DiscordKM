@@ -2,7 +2,6 @@ package io.github.jan.discordkm.internal.entities.guilds.channels
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
-import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Guild
@@ -12,6 +11,7 @@ import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverride
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.internal.EntityCache
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
@@ -46,7 +46,7 @@ open class GuildChannelData(override val guild: Guild, final override val data: 
 
 open class GuildTextChannelData(guild: Guild, data: JsonObject) : GuildChannelData(guild, data), GuildTextChannel, MessageChannel {
 
-    override val messageCache: Cache<Message> = Cache.fromSnowflakeEntityList(emptyList())
+    override val messageCache: EntityCache<Snowflake, Message> = EntityCache.fromSnowflakeEntityList(emptyList())
 
     override fun toString() = "GuildChannel[name=$name, id=$id, type=${ type}]"
 

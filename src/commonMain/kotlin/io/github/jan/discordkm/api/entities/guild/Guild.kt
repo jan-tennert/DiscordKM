@@ -10,45 +10,43 @@
 package io.github.jan.discordkm.api.entities.guild
 
 import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
 import io.github.jan.discordkm.api.entities.EnumSerializer
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.activity.Activity
+import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteBuilder
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.lists.CommandList
+import io.github.jan.discordkm.api.entities.lists.EmojiList
+import io.github.jan.discordkm.api.entities.lists.PresenceList
 import io.github.jan.discordkm.api.entities.lists.RetrievableChannelList
 import io.github.jan.discordkm.api.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.api.entities.lists.RoleList
+import io.github.jan.discordkm.api.entities.lists.StickerList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
 import io.github.jan.discordkm.api.entities.misc.EnumList
-import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
-import io.github.jan.discordkm.internal.entities.guilds.VoiceStateData
-import io.github.jan.discordkm.internal.utils.DiscordImage
 import io.github.jan.discordkm.internal.utils.extractClientEntity
-import io.github.jan.discordkm.internal.utils.extractGuildEntity
-import io.github.jan.discordkm.internal.utils.getEnums
 import io.github.jan.discordkm.internal.utils.getId
-import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.toJsonObject
-import io.github.jan.discordkm.internal.utils.valueOfIndex
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
+interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameable {
 
     override val id: Snowflake
         get() = data.getId()
@@ -57,43 +55,36 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * The id owner the guild's owner
      */
     val ownerId: Snowflake
-        get() = Snowflake.fromId(data.getOrThrow<Long>("owner_id"))
 
     /**
      * Name of the guild
      */
-    val name: String
-        get() = data.getOrThrow<String>("name")
+    override val name: String
 
     /**
      * Icon Url of the guild
      */
     val iconUrl: String?
-        get() = data.getOrNull<String>("icon")?.let { DiscordImage.guildIcon(id, it) }
 
     /**
      * Icon hash; returned when in the guild template
      */
     val iconHash: String?
-        get() = data.getOrNull<String>("icon_hash")
 
     /**
      * All voice states for this server
      */
     val voiceStates: List<VoiceState>
-        get() = data.getValue("voice_states").jsonArray.map { VoiceStateData(client, it.jsonObject) }
 
     /**
      * Splash hash
      */
     val splash: String?
-        get() = data.getOrNull<String>("splash")?.let { DiscordImage.guildSplash(id, it) }
 
     /**
      * Discovery splash is only available if the guild has the [Feature] feature
      */
     val discoverySplash: String?
-        get() = data.getOrNull<String>("discovery_splash")?.let { DiscordImage.guildDiscoverySplash(id, it) }
 
     //val permissions only sent when you check for the bot's guilds
     //region deprecated
@@ -107,14 +98,11 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * Afk timeout
      */
     val afkTimeout: TimeSpan
-        get() = data.getOrThrow<Int>("afk_timeout").seconds
 
     /**
      * If widgets are enabled on the server or not
      */
     val widgetsEnabled: Boolean
-        @get:JvmName("widgetsEnabled")
-        get() = data.getOrDefault("widget_enabled", false)
 
     /**
      * The channel that the widget will generate an invite to
@@ -125,19 +113,16 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * The [VerificationLevel] required for the guild
      */
     val verificationLevel: VerificationLevel
-        get() = valueOfIndex(data.getOrThrow("verification_level"))
 
     /**
      * The default [NotificationLevel] for the guild
      */
     val defaultMessageNotificationLevel: NotificationLevel
-        get() = valueOfIndex(data.getOrThrow("default_message_notifications"))
 
     /**
      * The [ExplicitContentFilter] level for the guild
      */
     val explicitContentFilter: ExplicitContentFilter
-        get() = valueOfIndex(data.getOrThrow<Int>("explicit_content_filter"))
 
     /**
      * Returns the [Role]s in the guild
@@ -165,31 +150,27 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * Gets the owner of the guild from the cache
      */
     val owner: Member?
-        get() = members.firstOrNull { it.id == ownerId }
+        get() = members[ownerId]
 
 
     /**
      * The custom guild [Emoji]s
      */
-    val emojis: List<Emoji.Emote>
-        get() = data.getValue("emojis").jsonArray.map { it.jsonObject.extractClientEntity<Emoji.Emote>(client) }
+    val emojis: EmojiList
 
     /**
      * Enabled guild [Feature]s
      */
     val features: List<Feature>
-        get() = data.getValue("features").jsonArray.map { Feature.valueOf(it.jsonPrimitive.content) }
 
     /**
      * Required [MfaLevel] for the guild
      */
     val mfaLevel: MfaLevel
-        get() = valueOfIndex(data.getOrThrow<Int>("mfa_level"))
     /**
      * Application id of the guild creator if the guild is bot created
      */
-    val applicationId: Long?
-        get() = data.getOrNull<Long>("application_id")
+    val applicationId: Snowflake?
 
     /**
      * The system channel where system messages will be sent to
@@ -200,7 +181,6 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * The [SystemChannelFlag]s
      */
     val systemChannelFlags: EnumList<SystemChannelFlag>
-        get() = data.getEnums("system_channel_flags", SystemChannelFlag)
 
     //val rulesChannel
 
@@ -210,21 +190,16 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * If this guild is considered as large
      */
     val isLarge: Boolean
-        @get:JvmName("isLarge")
-        get() = data.getOrDefault("large", false)
 
     /**
      * If this guild is unavailable due to an outage
      */
     val isUnavailable: Boolean
-        @get:JvmName("isUnavailable")
-        get() = data.getOrDefault("unavailable", false)
 
     /**
      * Total number of members in this guild
      */
     val memberCount: Int?
-        get() = data.getOrNull<Int>("member_count")
 
     val channels: RetrievableChannelList
 
@@ -236,39 +211,33 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * The vanity url code for this guild if it has one
      */
     val vanityUrlCode: String?
-        get() = data.getOrNull<String>("vanity_url_code")
 
     /**
      * The description of a community guild
      */
     val description: String?
-        get() = data.getOrNull<String>("description")
 
     /**
      * The banner of this guild
      */
     val bannerUrl: String?
-        get() = data.getOrNull<String>("banner")?.let { DiscordImage.guildBanner(id, it) }
 
     /**
      * The [PremiumTier] of the guild (server boost level)
      */
     val premiumTier: PremiumTier
-        get() = valueOfIndex(data.getOrThrow("premium_tier"))
 
     /**
      * The amount of server boosts
      */
     val premiumSubscriptionCount: Int
-        get() = data.getOrDefault("premium_subscription_count", 0)
 
     /**
      * The preferredLocale of the community guild
      */
     val preferredLocale: String
-        get() = data.getOrThrow<String>("preferred_locale")
 
-    //public updates channels
+    val publicUpdatesChannelId: Snowflake?
 
     //max vid users?
 
@@ -276,25 +245,34 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
      * The [WelcomeScreen] of the guild if available
      */
     val welcomeScreen: WelcomeScreen?
-        get() = data["welcome_screen"]?.jsonObject?.extractGuildEntity<WelcomeScreen>(this)
 
     /**
      * The [NSFWLevel] of the guild
      */
     val nsfwLevel: NSFWLevel
-        get() = valueOfIndex(data.getOrThrow("nsfw_level"))
+
+    val widgetChannelId: Snowflake?
+
+    val systemChannelId: Snowflake?
 
     /**
      * All [StageInstance]s in this guild
      */
     val stageInstances: List<StageInstance>
-        get() = data.getValue("stage_instances").jsonArray.map { StageInstance(this, it.jsonObject) }
+
+    /**
+     * All [GuildPresence]s in this guild
+     */
+    val presences: PresenceList
 
     /**
      * The [Sticker]s of the guild
      */
-    val stickers: List<Sticker>
-        get() = data["stickers"]?.jsonArray?.map { Sticker(it.jsonObject, client) } ?: emptyList()
+    val stickers: StickerList
+
+    val rulesChannelId: Snowflake?
+
+    val afkChannelId: Snowflake?
 
     /**
      * Leaves the guild
@@ -431,6 +409,16 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity {
         companion object : EnumSerializer<SystemChannelFlag> {
             override val values = values().toList()
         }
+    }
+
+    class GuildPresence(override val guild: Guild, override val data: JsonObject) : GuildEntity {
+
+        val member = guild.members[data.getValue("user").jsonObject.getOrThrow<Snowflake>("id")]!!
+
+        val status = PresenceStatus.values().first { it.status == data.getOrNull<String>("status") }
+
+        val activities = data.getValue("activities").jsonArray.map { Json { ignoreUnknownKeys = true }.decodeFromJsonElement<Activity>(it.jsonObject) }
+
     }
 
     class WelcomeScreen(val guild: Guild, data: JsonObject) {

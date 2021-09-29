@@ -34,13 +34,7 @@ import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.jsonObject
 
-interface IRoleList : DiscordList<Role> {
-
-    override fun get(name: String) = internalList.filter { it.name == name }
-
-}
-
-class RoleList(val guild: Guild, override val internalList: List<Role>) : IRoleList {
+class RoleList(val guild: Guild, override val internalMap: Map<Snowflake, Role>) : NameableSnowflakeList<Role> {
 
 
     suspend fun retrieveRoles()  = guild.client.buildRestAction<List<Role>> {
@@ -69,7 +63,7 @@ class RoleList(val guild: Guild, override val internalList: List<Role>) : IRoleL
 
 }
 
-class RetrievableRoleList(val member: Member, override val internalList: List<Role>) : IRoleList {
+class RetrievableRoleList(val member: Member, override val internalMap: Map<Snowflake, Role>) : NameableSnowflakeList<Role> {
 
 
     suspend fun add(role: Role) = add(role.id)
@@ -106,10 +100,7 @@ class RetrievableRoleList(val member: Member, override val internalList: List<Ro
 
 }
 
-class UserList(val client: Client, override val internalList: List<User>) : DiscordList<User> {
-
-    override fun get(name: String) = internalList.filter { it.name == name }
-
+class UserList(val client: Client, override val internalMap: Map<Snowflake, User>) : NameableSnowflakeList<User> {
 
     suspend fun retrieve(id: Snowflake) = client.buildRestAction<User> {
         route = Route.User.GET_USER(id).get()

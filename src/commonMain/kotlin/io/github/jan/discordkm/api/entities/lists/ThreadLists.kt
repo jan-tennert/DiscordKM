@@ -1,5 +1,6 @@
 package io.github.jan.discordkm.api.entities.lists
 
+import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.internal.Route
@@ -12,9 +13,7 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
 import io.github.jan.discordkm.internal.utils.toJsonObject
 
-class ThreadMemberList(private val thread: Thread, override val internalList: List<Thread.ThreadMember>) : DiscordList<Thread.ThreadMember> {
-
-    override fun get(name: String) = internalList.filter { it.user.name == name }
+class ThreadMemberList(private val thread: Thread, override val internalMap: Map<Snowflake, Thread.ThreadMember>) : NameableSnowflakeList<Thread.ThreadMember> {
 
     /**
      * Retrieves all [ThreadMembers] from this [thread]
@@ -51,8 +50,4 @@ class ThreadMemberList(private val thread: Thread, override val internalList: Li
 
 }
 
-class ThreadList(override val internalList: List<Thread>) : DiscordList<Thread> {
-
-    override fun get(name: String) = internalList.filter { it.name == name }
-
-}
+class ThreadList(override val internalMap: Map<Snowflake, Thread>) : NameableSnowflakeList<Thread>

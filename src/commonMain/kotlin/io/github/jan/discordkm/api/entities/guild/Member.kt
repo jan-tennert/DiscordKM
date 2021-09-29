@@ -12,12 +12,15 @@ package io.github.jan.discordkm.api.entities.guild
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import com.soywiz.klock.parse
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.activity.Activity
+import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
@@ -44,7 +47,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHolder {
+interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHolder, Nameable {
 
     /**
      * Returns the [UserData] of this member
@@ -54,6 +57,10 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
 
     val voiceState: VoiceState?
         get() = guild.voiceStates.firstOrNull { it.userId == id }
+
+    val status: PresenceStatus
+
+    val activities: List<Activity>
 
     override val client: Client
         get() = guild.client
@@ -97,6 +104,9 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
      */
     val nickname: String
         get() = data.getOrDefault("nick", user.name)
+
+    override val name: String
+        get() = nickname
 
     /**
      * Returns the roles of the member
@@ -239,9 +249,24 @@ interface VoiceState : SerializableEntity {
         get() = channelId != null
 
     /**
-     * The time at which the user requested to speak. Only if the user is in a [StageChannel]
+     * The time at which the user requested to speak or was invited to speak. Only if the user is in a [StageChannel]
      */
     val requestToSpeakTimestamp: DateTimeTz?
         get() = ISO8601.DATETIME_UTC_COMPLETE.tryParse(data.getOrNull<String>("request_to_speak_timestamp") ?: "")
+
+    /**
+     * Invites this [member] to speak in a [StageChannel]
+     */
+    suspend fun inviteToSpeak()
+
+    /**
+     * Accepts the speak request from this [member] if he has one
+     */
+    suspend fun acceptSpeakRequest()
+
+    /**
+     * Declines the speak request from this [member] if he has one
+     */
+    suspend fun declineSpeakRequest()
 
 }

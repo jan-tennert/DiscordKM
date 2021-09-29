@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.guild.channels
 
-import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.VoiceChannelModifier
 import io.github.jan.discordkm.api.entities.lists.retrieve
@@ -33,8 +33,8 @@ interface VoiceChannel : GuildChannel, Invitable, IParent {
     val videoQualityMode: VideoQualityMode
         get() = if(data.getOrNull<Int>("video_quality_mode") != null) VideoQualityMode.values().first { it.ordinal == data.getOrNull<Int>("video_quality_mode") } else VideoQualityMode.AUTO
 
-    suspend fun join() = if(client is DiscordClient) {
-        (client as DiscordClient).gateway.send(UpdateVoiceStatePayload(guild.id, id, guild.selfMember.isMuted, guild.selfMember.isDeafened))
+    suspend fun join() = if(client is DiscordWebSocketClient) {
+        (client as DiscordWebSocketClient).gateway.send(UpdateVoiceStatePayload(guild.id, id, guild.selfMember.isMuted, guild.selfMember.isDeafened))
     } else {
         throw UnsupportedOperationException("You can't join a voice channel without having a gateway connection!")
     }

@@ -1,12 +1,12 @@
 package io.github.jan.discordkm.internal.entities.guilds.channels
 
-import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.guild.channels.modifier.ThreadModifier
 import io.github.jan.discordkm.api.entities.lists.ThreadMemberList
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.internal.EntityCache
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
@@ -25,10 +25,10 @@ import kotlinx.serialization.json.jsonObject
 
 class ThreadData(guild: Guild, data: JsonObject, members: List<Thread.ThreadMember> = emptyList()) : GuildTextChannelData(guild, data), Thread {
 
-    val memberCache = Cache.fromSnowflakeEntityList(members)
+    val memberCache = EntityCache.fromSnowflakeEntityList(members)
 
     override val members: ThreadMemberList
-        get() = ThreadMemberList(this, memberCache.values)
+        get() = ThreadMemberList(this, memberCache.values.associateBy { it.id })
 
     override suspend fun join() = client.buildRestAction<Unit> {
         route = Route.Thread.JOIN_THREAD(id).put()

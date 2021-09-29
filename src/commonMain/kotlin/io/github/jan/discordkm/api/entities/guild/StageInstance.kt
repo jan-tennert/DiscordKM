@@ -1,12 +1,15 @@
 package io.github.jan.discordkm.api.entities.guild
 
 import io.github.jan.discordkm.api.entities.Reference
+import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.channels.StageChannel
 import io.github.jan.discordkm.api.entities.lists.getGuildChannel
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
+import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
@@ -21,10 +24,12 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-class StageInstance(override val guild: Guild, override val data: JsonObject) : GuildEntity, Reference<StageInstance>, SnowflakeEntity {
+class StageInstance(override val client: Client, override val data: JsonObject) : SerializableEntity, Reference<StageInstance>, SnowflakeEntity {
 
     override val id = data.getId()
     val guildId = data.getOrThrow<Snowflake>("guild_id")
+    val guild: Guild
+        get() = client.guilds[guildId]!!
 
     /**
      * The stage channel where the stage instance is in
@@ -59,6 +64,7 @@ class StageInstance(override val guild: Guild, override val data: JsonObject) : 
     suspend fun delete() = client.buildRestAction<Unit> {
         route = Route.StageInstance.DELETE_INSTANCE(stageChannelId).delete()
         transform {  }
+        onFinish { (guild as GuildData).stageInstanceCache.remove(id) }
     }
 
     /**
@@ -69,12 +75,14 @@ class StageInstance(override val guild: Guild, override val data: JsonObject) : 
             putOptional("topic", topic)
             putOptional("privacy_level", privacyLevel?.ordinal)
         })
-        transform { StageInstance(guild, it.toJsonObject()) }
+        transform { StageInstance(client, it.toJsonObject()) }
+        onFinish { (guild as GuildData).stageInstanceCache[id] = it }
     }
 
     override suspend fun retrieve() = client.buildRestAction<StageInstance> {
         route = Route.StageInstance.GET_INSTANCE(stageChannelId).get()
-        transform { StageInstance(guild, it.toJsonObject()) }
+        transform { StageInstance(client, it.toJsonObject()) }
+        onFinish { (guild as GuildData).stageInstanceCache[id] = it }
     }
 
     enum class PrivacyLevel {

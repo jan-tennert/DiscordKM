@@ -16,9 +16,7 @@ import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.jsonObject
 
-class MessageList(val channel: MessageChannel, override val internalList: List<Message>) : DiscordList<Message> {
-
-    override fun get(content: String) = internalList.filter { it.content == content }
+class MessageList(val channel: MessageChannel, override val internalMap: Map<Snowflake, Message>) : SnowflakeList<Message> {
 
     /**
      * Retrieves a message from its id

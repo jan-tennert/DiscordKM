@@ -12,12 +12,13 @@ package io.github.jan.discordkm.api.entities.clients
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
-import io.github.jan.discordkm.api.entities.activity.ActivityModifier
-import io.github.jan.discordkm.api.entities.activity.DiscordActivity
+import io.github.jan.discordkm.api.entities.activity.Presence
+import io.github.jan.discordkm.api.entities.activity.PresenceModifier
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
+import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
@@ -26,15 +27,16 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.jvm.JvmName
 
-class DiscordClient internal constructor(
+class DiscordWebSocketClient internal constructor(
     token: String,
     encoding: Encoding,
     compression: Compression,
     val intents: EnumList<Intent>,
     loggingLevel: Logger.Level,
     status: PresenceStatus,
-    activity: DiscordActivity?,
-    reconnectDelay: TimeSpan = 5.seconds
+    activity: Presence?,
+    reconnectDelay: TimeSpan = 5.seconds,
+    internal val enabledCache: List<Cache>
 ) : Client(token, loggingLevel) {
 
     internal val gateway = DiscordGateway(encoding, compression, this, status, activity, reconnectDelay)
@@ -53,7 +55,7 @@ class DiscordClient internal constructor(
         }
     }
 
-    suspend fun modifyActivity(modifier: ActivityModifier.() -> Unit) = gateway.send(UpdatePresencePayload(ActivityModifier().apply(modifier)))
+    suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) = gateway.send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
 
     suspend fun login() {
         if(loggedIn) throw UnsupportedOperationException("Discord Client already connected to the discord gateway")
@@ -71,19 +73,20 @@ class DiscordClient internal constructor(
 
 }
 
-class DiscordClientBuilder @Deprecated("Use the method buildClient", replaceWith = ReplaceWith("buildClient()", "io.github.jan.discordkm.api.entities.clients.buildClient")) constructor(var token: String) {
+class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", replaceWith = ReplaceWith("buildClient()", "io.github.jan.discordkm.api.entities.clients.buildClient")) constructor(var token: String) {
 
     var encoding = Encoding.JSON
     var compression = Compression.NONE
     var intents = mutableListOf<Intent>()
     var loggingLevel = Logger.Level.DEBUG
-    private var activity = ActivityModifier()
+    private var activity = PresenceModifier()
     var reconnectDelay: TimeSpan = 5.seconds
+    var enabledCache = Cache.STANDARD.toMutableList()
 
-    fun activity(builder: ActivityModifier.() -> Unit) { activity = ActivityModifier().apply(builder) }
+    fun activity(builder: PresenceModifier.() -> Unit) { activity = PresenceModifier().apply(builder) }
 
-    fun build() = DiscordClient(token, encoding, compression, EnumList(Intent, intents), loggingLevel, activity.status, activity.activity, reconnectDelay)
+    fun build() = DiscordWebSocketClient(token, encoding, compression, EnumList(Intent, intents), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache)
 
 }
 
-inline fun buildClient(token: String, builder: DiscordClientBuilder.() -> Unit = {}) = DiscordClientBuilder(token).apply(builder).build()
+inline fun buildClient(token: String, builder: DiscordWebSocketClientBuilder.() -> Unit = {}) = DiscordWebSocketClientBuilder(token).apply(builder).build()

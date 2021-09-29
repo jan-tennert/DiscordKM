@@ -31,20 +31,23 @@ interface StageChannel : VoiceChannel {
 
     /**
      * Creates a new stage instance in this [StageChannel]
+     *
+     * @param topic The topic of this stage instance
+     * @param public Whether this stage instance will be available in Stage Discovery or not
      */
-    suspend fun createInstance(topic: String, privacyLevel: StageInstance.PrivacyLevel = StageInstance.PrivacyLevel.GUILD_ONLY) = client.buildRestAction<StageInstance> {
+    suspend fun createInstance(topic: String, public: Boolean = false) = client.buildRestAction<StageInstance> {
         route = Route.StageInstance.CREATE_INSTANCE.post(buildJsonObject {
             put("channel_id", id.long)
             put("topic", topic)
-            put("privacy_level", privacyLevel.ordinal)
+            put("privacy_level", if(public) StageInstance.PrivacyLevel.PUBLIC.ordinal else StageInstance.PrivacyLevel.GUILD_ONLY.ordinal)
         })
-        transform { StageInstance(guild, it.toJsonObject()) }
+        transform { StageInstance(client, it.toJsonObject()) }
         onFinish {  }
     }
 
     suspend fun retrieveInstance() = client.buildRestAction<StageInstance> {
         route = Route.StageInstance.GET_INSTANCE(id).get()
-        transform { StageInstance(guild, it.toJsonObject()) }
+        transform { StageInstance(client, it.toJsonObject()) }
     }
 
     companion object : GuildChannelBuilder<VoiceChannel, VoiceChannelModifier> {

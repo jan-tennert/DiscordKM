@@ -13,24 +13,44 @@ import co.touchlab.stately.collections.IsoMutableMap
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 
-class Cache<T>(internal var internalMap: IsoMutableMap<Snowflake, T> = IsoMutableMap()) {
+class EntityCache<K, T>(internal var internalMap: IsoMutableMap<K, T> = IsoMutableMap()) {
 
     val values: List<T>
         get() = internalMap.values.toList()
 
     @PublishedApi
-    internal operator fun set(id: Snowflake, value: T) {
+    internal operator fun set(id: K, value: T) {
         internalMap[id] = value
     }
 
     @PublishedApi
-    internal fun remove(id: Snowflake) {
+    internal fun remove(id: K) {
         internalMap.remove(id)
     }
 
     companion object {
 
-        fun <S : SnowflakeEntity> fromSnowflakeEntityList(list: List<S>) = Cache(IsoMutableMap { mutableMapOf<Snowflake, S>().apply { putAll(list.associateBy { it.id }) } })
+        fun <S : SnowflakeEntity> fromSnowflakeEntityList(list: List<S>) = EntityCache(IsoMutableMap { mutableMapOf<Snowflake, S>().apply { putAll(list.associateBy { it.id }) } })
+
+    }
+
+}
+
+enum class Cache {
+    STICKERS,
+    EMOJIS,
+    MEMBERS,
+    CHANNELS,
+    PRESENCES,
+    MESSAGES,
+    ROLES,
+    STAGE_INSTANCES,
+    THREADS,
+    VOICE_STATES;
+
+    companion object {
+
+        val STANDARD = listOf(MEMBERS, CHANNELS)
 
     }
 
