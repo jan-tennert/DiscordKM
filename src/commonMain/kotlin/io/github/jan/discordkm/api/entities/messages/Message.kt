@@ -19,6 +19,7 @@ import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
@@ -26,6 +27,7 @@ import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
 import io.github.jan.discordkm.api.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
+import io.github.jan.discordkm.api.entities.interactions.Interaction
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
@@ -179,6 +181,9 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     val isPinned: Boolean
         get() = data.getOrThrow<Boolean>("pinned")
 
+    val referencedMessage: Message?
+        get() = data["referenced_message"]?.let { Message(channel, it.jsonObject) }
+
     /**
      * If the message was sent by a webhook this is the id
      */
@@ -207,10 +212,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
     val flags = data.getEnums("flags", Flag)
 
-    //referenced_messages?
-    //interaction
-    //thread
-    //components
+    val interaction = data["interaction"]?.let { MessageInteraction(this@Message, it.jsonObject) }
 
     /**
      * Returns the [Sticker.Item]s containing the message
@@ -311,6 +313,18 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
         reference = reference,
         stickerIds = stickerItems.map { it.id }
     )
+
+    class MessageInteraction(val message: Message, override val data: JsonObject) : SerializableEntity {
+
+        override val client: Client
+            get() = message.client
+
+        val interactionId = data.getOrThrow<Snowflake>("id")
+        val type = valueOfIndex<Interaction.InteractionType>(data.getOrThrow("type"), 1)
+        val commandName = data.getOrThrow<String>("name")
+        val user: User = UserData(client, data.getValue("user").jsonObject)
+
+    }
 
     @Serializable
     data class Reference(@SerialName("message_id") val messageId: Long? = null, @SerialName("guild_id") val guildId: Long? = null, @SerialName("channel_id") val channelId: Long? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)

@@ -9,24 +9,31 @@
  */
 package io.github.jan.discordkm.internal.utils
 
-import com.github.ajalt.mordant.rendering.TextColors
-import com.github.ajalt.mordant.terminal.Terminal
 import com.soywiz.klogger.Logger
 
 object LoggerOutput : Logger.Output {
 
-    private val terminal = Terminal()
-
     override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
         val message = when(level) {
             Logger.Level.NONE -> msg.toString()
-            Logger.Level.FATAL -> TextColors.brightRed(msg.toString())
-            Logger.Level.ERROR -> TextColors.red(msg.toString())
-            Logger.Level.WARN -> TextColors.yellow(msg.toString())
+            Logger.Level.FATAL -> ConsoleColors.RED_BRIGHT + msg.toString() + ConsoleColors.RESET
+            Logger.Level.ERROR -> ConsoleColors.RED + msg.toString() + ConsoleColors.RESET
+            Logger.Level.WARN -> ConsoleColors.YELLOW + msg.toString() + ConsoleColors.RESET
             Logger.Level.INFO -> msg.toString()
             Logger.Level.DEBUG -> msg.toString()
             Logger.Level.TRACE -> msg.toString()
         }
-        terminal.println("${TextColors.brightBlue("[${level.name}]")} ${TextColors.brightGreen("(${logger.name})")} $message")
+        println("${ConsoleColors.BLUE_BRIGHT + ("[${level.name}]") + ConsoleColors.RESET} ${ConsoleColors.GREEN_BRIGHT + ("(${logger.name})") + ConsoleColors.RESET} $message")
     }
+}
+
+object ConsoleColors {
+
+    const val RED = "\u001b[0;31m"
+    const val RED_BRIGHT = "\u001b[0;91m"
+    const val YELLOW = "\u001b[0;33m"
+    const val BLUE_BRIGHT = "\u001b[0;94m"
+    const val GREEN_BRIGHT = "\u001b[0;92m"
+    const val RESET = "\u001b[0m"
+
 }

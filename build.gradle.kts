@@ -1,17 +1,23 @@
-plugins {
-    kotlin("multiplatform") version "1.5.31"
-    kotlin("plugin.serialization") version "1.5.31"
-    id("maven-publish")
-    signing
-    id("org.jetbrains.dokka") version "1.4.20"
-}
-
-group = "io.github.jan-tennert.discordkm"
-version = "0.0.2"
-
 val repositoryId: String? = System.getenv("SONATYPE_REPOSITORY_ID")
 val sonatypeUsername: String? = System.getenv("SONATYPE_USERNAME")
 val sonatypePassword: String? = System.getenv("SONATYPE_PASSWORD")
+
+val ktorVersion: String by project
+val korlibsVersion: String by project
+val mordantVersion: String by project
+
+plugins {
+    val kotlinVersion = "1.5.31"
+
+    kotlin("multiplatform") version kotlinVersion
+    kotlin("plugin.serialization") version kotlinVersion
+    id("maven-publish")
+    signing
+    id("org.jetbrains.dokka") version "1.5.30"
+}
+
+group = "io.github.jan-tennert.discordkm"
+version = "0.0.3"
 
 repositories {
     mavenCentral()
@@ -124,9 +130,18 @@ kotlin {
         }
         nodejs()
     }
-    macosX64("macosX64")
-    linuxX64("linuxX64")
-    mingwX64("mingwX64")
+    macosX64()
+    iosArm32()
+    iosArm64()
+    iosX64()
+    watchosArm32()
+    watchosArm64()
+    watchosX86()
+    tvosArm64()
+    tvosX64()
+    mingwX64()
+    linuxX64()
+
     addPublishing()
 
     sourceSets {
@@ -136,10 +151,8 @@ kotlin {
                 implementation("com.soywiz.korlibs.klock:klock:2.2.2")
                 implementation("com.soywiz.korlibs.korio:korio:2.2.1")
                 implementation("com.soywiz.korlibs.klogger:klogger:2.2.0")
-                implementation("io.ktor:ktor-client-core:1.6.3")
-                implementation("com.github.ajalt.mordant:mordant:2.0.0-beta2")
-                implementation("co.touchlab:stately-iso-collections:1.1.4-a1")
-                implementation("io.ktor:ktor-client-serialization:1.6.3")
+                implementation("io.ktor:ktor-client-core:$ktorVersion")
+                implementation("co.touchlab:stately-iso-collections:1.1.10-a1")
             }
         }
         val commonTest by getting {
@@ -159,19 +172,9 @@ kotlin {
             }
         }
         val jsTest by getting
-        val nativeMain = create("native") {
-            dependencies {
-                implementation("io.ktor:ktor-client-curl:1.6.3")
-            }
-        }
-        val macosX64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val linuxX64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val mingwX64Main by getting {
-            dependsOn(nativeMain)
+        val nativeMain by creating { dependsOn(commonMain) }
+        listOf("macosX64", "linuxX64", "mingwX64").forEach { target ->
+            getByName(target + "Main").dependsOn(nativeMain)
         }
     }
 }

@@ -19,7 +19,6 @@ import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.lists.retrieve
-import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.channels.Channel
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
@@ -42,7 +41,7 @@ open class Interaction(override val client: Client, override val data: JsonObjec
      * The [InteractionType]
      */
     val type: InteractionType
-        get() = valueOfIndex(data.getOrThrow("type"))
+        get() = valueOfIndex(data.getOrThrow("type"), 1)
 
     /**
      * The interaction id
@@ -82,12 +81,6 @@ open class Interaction(override val client: Client, override val data: JsonObjec
 
     val channel: MessageChannel?
         get() = client.channels[channelId] as? MessageChannel
-
-    /**
-     * The message, if this is a ComponentInteraction
-     */
-    val message: Message?
-        get() = data["message"]?.let { Message(channel!!, it.jsonObject) }
 
     /**
      * Whether this interaction was already acknowledged

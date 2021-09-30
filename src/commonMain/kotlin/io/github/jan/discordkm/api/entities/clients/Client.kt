@@ -138,6 +138,8 @@ enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
 
     companion object : EnumSerializer<Intent> {
         override val values = values().toList()
+
+        val ALL_INTENTS = values
     }
 
 }
