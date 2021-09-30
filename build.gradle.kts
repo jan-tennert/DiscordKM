@@ -153,6 +153,7 @@ kotlin {
                 implementation("com.soywiz.korlibs.klogger:klogger:2.2.0")
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("co.touchlab:stately-iso-collections:1.1.10-a1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
             }
         }
         val commonTest by getting {
