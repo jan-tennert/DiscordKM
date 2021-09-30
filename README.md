@@ -9,7 +9,7 @@ You can use this [trello board](https://trello.com/b/EQqz7hAY/discordkm) to see 
 You can create a client easily by just using buildClient:
 
 ```kotlin
- val client = buildClient("ODAwODIyMjg0ODg1NTU3MjQ5.YAXt3w.paVdHrZgj2VVAOUASlz5ikgSXsI") {
+ val client = buildClient("TOKEN") {
     intents = mutableListOf( //set intents
         Intent.GUILD_MEMBERS,
         Intent.GUILD_PRESENCES,
