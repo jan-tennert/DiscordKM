@@ -1,9 +1,11 @@
 # DiscordKM
 
-A Kotlin Multiplatform Discord API
+A Kotlin Multiplatform Discord API 
 Wrapper ![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.jan-tennert.discordkm/DiscordKM/badge.svg?style=plastic?gav=true)
 
 You can use this [trello board](https://trello.com/b/EQqz7hAY/discordkm) to see my progress
+
+#### Warning: This project is in Alpha and can change without notice
 
 # Introduction
 
