@@ -5,6 +5,8 @@ Wrapper ![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.git
 
 You can use this [trello board](https://trello.com/b/EQqz7hAY/discordkm) to see my progress
 
+Discord: [Click here](https://discord.gg/mxRqJa4pHe)
+
 #### Warning: This project is in Alpha and can change without notice
 
 # Introduction

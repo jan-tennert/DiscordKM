@@ -41,8 +41,6 @@ class DiscordWebSocketClient internal constructor(
 
     internal val gateway = DiscordGateway(encoding, compression, this, status, activity, reconnectDelay)
     @get:JvmName("isClosed")
-    var isDisconnected = false
-        private set
     var loggedIn = false
         private set
     val eventListeners = mutableListOf<EventListener>()
@@ -64,9 +62,9 @@ class DiscordWebSocketClient internal constructor(
     }
 
     fun disconnect() {
-        if(isDisconnected) throw UnsupportedOperationException("Discord Client is already disconnected from the discord gateway")
+        if(!loggedIn) throw UnsupportedOperationException("Discord Client is already disconnected from the discord gateway")
         gateway.close()
-        isDisconnected = true
+        loggedIn = false
     }
 
     internal suspend fun handleEvent(event: Event) = coroutineScope { eventListeners.forEach { launch { it(event) } } }

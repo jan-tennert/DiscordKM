@@ -12,7 +12,9 @@ class Image internal constructor(private val base64Data: String, private val con
 
     companion object {
 
-        suspend fun fromFile(file: VfsFile) = Image(Base64.encode(file.readBytes()), when(file.extension) {
+        suspend fun fromFile(file: VfsFile) = fromBytes(file.readBytes(), file.extension)
+
+        fun fromBytes(bytes: ByteArray, extension: String) = Image(Base64.encode(bytes), when(extension) {
             "jpg" -> ContentType.Image.JPEG
             "gif" -> ContentType.Image.GIF
             "png" -> ContentType.Image.PNG
