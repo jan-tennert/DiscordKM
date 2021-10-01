@@ -1,7 +1,7 @@
 # DiscordKM
 
 A Kotlin Multiplatform Discord API 
-Wrapper ![Maven Central](https://img.shields.io/maven-central/v/io.github.jan-tennert.discordkm/DiscordKM)
+Wrapper [![Maven Central](https://img.shields.io/maven-central/v/io.github.jan-tennert.discordkm/DiscordKM)](https://search.maven.org/artifact/io.github.jan-tennert.discordkm/DiscordKM)
 
 You can use this [trello board](https://trello.com/b/EQqz7hAY/discordkm) to see my progress
 
