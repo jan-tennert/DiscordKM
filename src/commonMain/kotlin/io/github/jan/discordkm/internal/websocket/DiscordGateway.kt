@@ -95,10 +95,10 @@ class DiscordGateway(
         LOGGER.output = LoggerOutput
     }
 
-    suspend fun start() {
-        LOGGER.info { "Connecting to gateway..." }
+    suspend fun start(normalStart: Boolean = true) {
         closed = false
-        if(sessionId != null) com.soywiz.korio.async.delay(reconnectDelay)
+        if(sessionId != null || !normalStart) com.soywiz.korio.async.delay(reconnectDelay)
+        LOGGER.info { "Connecting to gateway..." }
         ws = WebSocketClient(generateWebsocketURL(encoding, compression))
         ws.onStringMessage {
             onMessage(it)
@@ -107,7 +107,7 @@ class DiscordGateway(
         ws.onError {
             if(it.toString().contains("StandaloneCoroutine was cancelled")) return@onError
             LOGGER.error { "Disconnected due to an error: ${it.message}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
-            client.launch { start() }
+            client.launch { start(false) }
         }
         ws.onBinaryMessage {
             //zlib and eft
@@ -115,7 +115,7 @@ class DiscordGateway(
         ws.onClose {
             if(it.message != null) {
                 LOGGER.error { "Disconnected from gateway. Reason: ${it.message}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
-                client.launch { start() }
+                client.launch { start(false) }
             } else {
                 LOGGER.info { "Connection closed!" }
                 closed = true

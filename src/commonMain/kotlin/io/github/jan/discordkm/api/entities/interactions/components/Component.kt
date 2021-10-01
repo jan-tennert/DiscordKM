@@ -10,6 +10,9 @@ import kotlinx.serialization.encoding.Encoder
 
 interface Component {
 
+    /**
+     * The type of the component
+     */
     val type: ComponentType
 
 }

@@ -30,6 +30,9 @@ data class Button(
 
 class ButtonBuilder(var customId: String? = null, var isDisabled: Boolean, val style: ButtonStyle, var label: String? = null, var emoji: Emoji? = null, var url: String? = null) {
 
+    /**
+     * This will be called, if this specific button with this [customId] is pressed
+     */
     fun onClick(client: Client, action: ButtonClick) {
         if(client is DiscordWebSocketClient) {
             client.on<ButtonClickEvent>(predicate = { it.componentId == customId}) { action(this) }
@@ -51,10 +54,29 @@ enum class ButtonStyle {
     LINK
 }
 
+/**
+ * A blue button
+ */
 fun RowBuilder.primaryButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.PRIMARY).apply(builder).build() }
+
+/**
+ * A red button
+ */
 fun RowBuilder.dangerButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.DANGER).apply(builder).build() }
+
+/**
+ * A green button
+ */
 fun RowBuilder.successButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.SUCCESS).apply(builder).build() }
+
+/**
+ * A grey button
+ */
 fun RowBuilder.secondaryButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.SECONDARY).apply(builder).build() }
+
+/**
+ * A button used for opening urls
+ */
 fun RowBuilder.linkButton(url: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(url = url, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.LINK).apply(builder).build() }
 
 object ButtonStyleSerializer : KSerializer<ButtonStyle> {

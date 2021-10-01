@@ -22,6 +22,9 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
     val message: Message
         get() = Message(channel!!, data.getValue("message").jsonObject)
 
+    /**
+     * Responds to this interaction with no changes. Use this if you don't want to reply or anything
+     */
     suspend fun deferEdit() = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
             put("type", 6) //defer edit
@@ -30,6 +33,9 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
         onFinish { isAcknowledged = true }
     }
 
+    /**
+     * Edits the original message as callback
+     */
     suspend fun edit(message: DataMessage) = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
             put("type", 7) //edit
@@ -39,6 +45,9 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
         onFinish { isAcknowledged = true }
     }
 
+    /**
+     * Edits the original message as callback
+     */
     suspend fun edit(message: MessageBuilder.() -> Unit) = edit(MessageBuilder().apply(message).build())
 
 }

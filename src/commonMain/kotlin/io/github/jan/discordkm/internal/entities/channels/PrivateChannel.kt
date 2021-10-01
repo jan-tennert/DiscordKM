@@ -9,14 +9,10 @@
  */
 package io.github.jan.discordkm.internal.entities.channels
 
-import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.utils.extractClientEntity
-import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.put
 
 interface PrivateChannel : MessageChannel {
 
@@ -25,11 +21,5 @@ interface PrivateChannel : MessageChannel {
 
     val user: User?
         get() = data["recipients"]?.jsonArray?.map { it.jsonObject.extractClientEntity<User>(client) }?.get(0)
-
-    companion object {
-
-        fun fromId(client: Client, id: Snowflake) = PrivateChannelData(client, buildJsonObject { put("id", id.string) })
-
-    }
 
 }

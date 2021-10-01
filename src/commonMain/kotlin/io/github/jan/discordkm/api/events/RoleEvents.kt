@@ -13,8 +13,17 @@ interface RoleEvent : GuildEvent {
 
 }
 
+/**
+ * Sent when a role was created
+ */
 class RoleCreateEvent(override val role: Role) : RoleEvent
 
+/**
+ * Sent when a role was updated
+ */
 class RoleUpdateEvent(override val role: Role, val oldRole: Role?) : RoleEvent
 
+/**
+ * Sent when a role was deleted
+ */
 class RoleDeleteEvent(override val client: Client, val roleId: Snowflake) : Event

@@ -33,7 +33,7 @@ class RestClient(val client: Client) {
     private val http = HttpClient {
         defaultRequest {
             header("Authorization", "Bot ${client.token}")
-            header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.3)")
+            header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.1.1)")
         }
     }
     private val rateLimiter = RateLimiter(client.loggingLevel)

@@ -22,6 +22,7 @@ import io.github.jan.discordkm.api.entities.lists.retrieve
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.channels.Channel
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
+import io.github.jan.discordkm.internal.entities.channels.MessageChannelData
 import io.github.jan.discordkm.internal.entities.guilds.MemberData
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
@@ -70,8 +71,8 @@ open class Interaction(override val client: Client, override val data: JsonObjec
     /**
      * The channel id, if this interaction was sent in a channel
      */
-    val channelId: Snowflake
-        get() = data.getOrThrow("channel_id")
+    val channelId: Snowflake?
+        get() = data.getOrNull("channel_id")
 
     /**
      * The user, if this interaction was sent in a private channel
@@ -79,16 +80,18 @@ open class Interaction(override val client: Client, override val data: JsonObjec
     val user: User?
         get() = data["user"]?.let { UserData(client, it.jsonObject) }
 
+    /**
+     * The channel, if this interaction was sent in a channel. The channel will be loaded from the cache
+     */
     val channel: MessageChannel?
-        get() = client.channels[channelId] as? MessageChannel
+        get() = channelId?.let { (client.channels[it] ?: client.threads[it] ?: MessageChannelData.fromId(client, it)) as MessageChannel }
+
 
     /**
      * Whether this interaction was already acknowledged
      */
     var isAcknowledged: Boolean = false
         internal set
-
-    suspend fun retrieveChannel() = client.channels.retrieve(channelId)
 
     class InteractionOption(override val name: String, val type: CommandOption.OptionType, val value: Any) : Nameable {
 

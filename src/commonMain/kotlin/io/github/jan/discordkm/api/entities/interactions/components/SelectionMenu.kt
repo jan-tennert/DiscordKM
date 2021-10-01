@@ -9,6 +9,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
+/**
+ * @param customId The id of the selection menu. Used for the [SelectionMenuEvent]
+ * @param minValues The minimum amount of values the user has to select
+ * @param maxValues The maximum amount of values the user can select
+ * @param isDisabled Whether the user can interact with this selection menu
+ */
 @Serializable
 class SelectionMenu(
     @Required
@@ -34,6 +40,9 @@ class SelectionMenuBuilder(var customId: String, var minValues: Int, var maxValu
             maxValues = value.second
         }
 
+    /**
+     * This will be called, if this specific selection menu with this [customId] selected
+     */
     fun onSelected(client: Client, action: OnSelected) {
         if(client is DiscordWebSocketClient) {
             client.on<SelectionMenuEvent>(predicate = { it.componentId == customId }) { action(this) }
@@ -57,6 +66,9 @@ class SelectionMenuBuilder(var customId: String, var minValues: Int, var maxValu
 
 typealias OnSelected = suspend SelectionMenuEvent.() -> Unit
 
+/**
+ * A selection menu
+ */
 fun RowBuilder.selectionMenu(customId: String = "", label: String = "", minValues: Int = 1, maxValues: Int = 1, disabled: Boolean = false, options: List<SelectOption> = emptyList(), builder: SelectionMenuBuilder.() -> Unit) { components += SelectionMenuBuilder(minValues = minValues, maxValues = maxValues, options = options.toMutableList(), isDisabled = disabled, customId = customId).apply(builder).build()}
 
 @Serializable

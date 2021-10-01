@@ -11,6 +11,17 @@ interface StageInstanceEvent : Event {
 
 }
 
+/**
+ * Sent when a stage instance was created
+ */
 class StageInstanceCreateEvent(override val stageInstance: StageInstance) : StageInstanceEvent
+
+/**
+ * Sent when a stage instance was updated
+ */
 class StageInstanceDeleteEvent(override val stageInstance: StageInstance) : StageInstanceEvent
+
+/**
+ * Sent when a stage instance was deleted
+ */
 class StageInstanceUpdateEvent(override val stageInstance: StageInstance, val oldStageInstance: StageInstance?) : StageInstanceEvent

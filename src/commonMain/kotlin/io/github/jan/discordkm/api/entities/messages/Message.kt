@@ -73,10 +73,19 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
 
     override val id = data.getId()
 
-    val channelId = data.getOrNull<Snowflake>("channel_id")
+    /**
+     * The id of the channel where this message was sent
+     */
+    val channelId = data.getOrThrow<Snowflake>("channel_id")
 
+    /**
+     * The attachments this message contains
+     */
     val attachments = data["attachments"]?.jsonArray?.map { Json.decodeFromJsonElement<MessageAttachment>(it.jsonObject) } ?: emptyList()
 
+    /**
+     * The action rows this message contains
+     */
     val actionRows = data["components"]?.let { json ->
         json.jsonArray.map { row ->
             val internalComponents = row.jsonObject.getValue("components").jsonArray.map { component ->
@@ -166,8 +175,6 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     val embeds: List<MessageEmbed>
         get() = data.getValue("embeds").jsonArray.map { Json { classDiscriminator = "#class" }.decodeFromJsonElement<MessageEmbed>(it.jsonObject) }
 
-    //reactions
-
     /**
      * This can be used to validate a message
      */
@@ -195,8 +202,6 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
     val type = MessageType.values().firstOrNull { it.id == data.getOrNull<Int>("type") } ?: MessageType.DEFAULT
 
-    //activity
-    //application
     /**
      * If the message was a response to an interaction, this is the id of the interaction's application
      */
@@ -212,6 +217,9 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
     val flags = data.getEnums("flags", Flag)
 
+    /**
+     * The [MessageInteraction] object of this message, if this message was sent by an interaction
+     */
     val interaction = data["interaction"]?.let { MessageInteraction(this@Message, it.jsonObject) }
 
     /**
@@ -219,6 +227,9 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
     val stickerItems = data["sticker_items"]?.jsonArray?.map { Sticker.Item(it.jsonObject) } ?: emptyList()
 
+    /**
+     * The reaction list
+     */
     val reactions = ReactionList(this)
 
     /**
@@ -251,6 +262,9 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     }
 
 
+    /**
+     * Edits this message
+     */
     suspend fun edit(message: DataMessage) = client.buildRestAction<Message> {
         route = Route.Message.EDIT_MESSAGE(channel.id, id).patch(Json.encodeToString(message))
         transform { it.toJsonObject().extractMessageChannelEntity(channel) }
@@ -259,14 +273,16 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
         }
     }
 
-
+    /**
+     * Edits this message
+     */
     suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(message))
-
+    /**
+     * Edits this message
+     */
     suspend fun edit(content: String) = edit(buildMessage { this.content = content })
 
-    override fun getValue(ref: Any?, property: KProperty<*>): Message {
-        TODO("Not yet implemented")
-    }
+    override fun getValue(ref: Any?, property: KProperty<*>) = channel.messages[id]!!
 
     /**
      * Creates a thread from this message
@@ -297,7 +313,6 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Unpins this message in this channel
      */
-
     suspend fun unpin() = client.buildRestAction<Unit> {
         route = Route.Message.UNPIN_MESSAGE(channel.id, id).delete()
         transform {  }

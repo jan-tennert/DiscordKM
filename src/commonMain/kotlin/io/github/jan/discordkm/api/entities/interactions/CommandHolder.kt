@@ -9,6 +9,10 @@ import io.github.jan.discordkm.internal.EntityCache
 interface CommandHolder : BaseEntity {
 
     val commandCache: EntityCache<Snowflake, ApplicationCommand>
+
+    /**
+     * Returns the command list of this command holder
+     */
     val commands: CommandList
 
 }

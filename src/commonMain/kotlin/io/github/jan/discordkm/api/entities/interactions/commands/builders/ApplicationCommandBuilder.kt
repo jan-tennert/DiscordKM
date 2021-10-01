@@ -1,9 +1,12 @@
 package io.github.jan.discordkm.api.entities.interactions.commands.builders
 
+import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.commands.OptionChoice
+import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import kotlinx.serialization.json.Json
@@ -24,6 +27,14 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name:
 
 class ChatInputCommandBuilder(name: String, description: String, internal val options: MutableList<CommandOption>) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT, name, description) {
 
+    private var action = {}
+
+    fun onAction(client: Client, action: SlashCommandAction) {
+        if(client is DiscordWebSocketClient) {
+            client.on<SlashCommandEvent>(predicate = { it.commandName == name }) { action(this) }
+        }
+    }
+
     @CommandBuilder
     fun options(optionBuilder: OptionBuilder.() -> Unit) {
         val builder = OptionBuilder()
@@ -37,6 +48,8 @@ class ChatInputCommandBuilder(name: String, description: String, internal val op
     }
 
 }
+
+typealias SlashCommandAction = suspend SlashCommandEvent.() -> Unit
 
 open class OptionBuilder(open val options: MutableList<CommandOption> = mutableListOf()) {
 

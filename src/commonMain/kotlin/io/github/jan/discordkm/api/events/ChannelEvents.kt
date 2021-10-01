@@ -14,10 +14,23 @@ interface ChannelEvent : Event {
 
 }
 
+/**
+ * Sent when a (guild) channel was created
+ *
+ */
 class ChannelCreateEvent(override val channel: GuildChannel) : ChannelEvent
 
+/**
+ * Sent when a (guild) channel was updated
+ */
 class ChannelUpdateEvent(override val channel: GuildChannel, val oldChannel: GuildChannel?) : ChannelEvent
 
+/**
+ * Sent when a (guild) channel was deleted
+ */
 class ChannelDeleteEvent(override val channel: GuildChannel) : ChannelEvent
 
+/**
+ * Sent when the pins of a message channel get updated
+ */
 class ChannelPinUpdateEvent(override val channel: GuildTextChannel, val lastPinTimestamp: DateTimeTz?) : ChannelEvent

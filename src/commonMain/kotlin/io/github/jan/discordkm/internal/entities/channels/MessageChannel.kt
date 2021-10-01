@@ -27,6 +27,7 @@ import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.getOrNull
+import io.github.jan.discordkm.internal.utils.toIsoMap
 import io.github.jan.discordkm.internal.utils.toJsonObject
 
 
@@ -45,6 +46,7 @@ interface MessageChannel : Channel {
         get() = data.getOrNull<Int>("rate_limit_per_user")?.seconds
 
     val messageCache: EntityCache<Snowflake, Message>
+        get() = EntityCache(mapOf<Snowflake, Message>().toIsoMap())
 
     val messages: MessageList
         get() = MessageList(this, messageCache.values.associateBy { it.id })
@@ -73,7 +75,5 @@ interface MessageChannel : Channel {
         route = Route.Channel.START_TYPING(id).post()
         transform {  }
     }
-
-   // fun sendFile(file: VfsFile) : RestAction<DataMessage>
 
 }
