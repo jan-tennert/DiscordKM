@@ -18,11 +18,14 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
 import io.github.jan.discordkm.api.entities.lists.ThreadList
 import io.github.jan.discordkm.api.entities.lists.retrieve
+import io.github.jan.discordkm.api.media.Image
+import io.github.jan.discordkm.api.webhooks.Webhook
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.channels.Channel
 import io.github.jan.discordkm.internal.entities.channels.IParent
 import io.github.jan.discordkm.internal.entities.channels.Invitable
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
+import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -30,10 +33,15 @@ import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.putOptional
+import io.github.jan.discordkm.internal.utils.toJsonArray
+import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
@@ -85,6 +93,25 @@ interface GuildMessageChannel : GuildChannel, MessageChannel {
         })
         transform {  }
         //TODO: Check permissions
+    }
+
+    /**
+     * Creates a webhook in this channel
+     */
+    suspend fun createWebhook(name: String, avatar: Image? = null) = client.buildRestAction<Webhook> {
+        route = Route.Webhook.CREATE_WEBHOOK(id).post(buildJsonObject {
+            put("name", name)
+            putOptional("avatar", avatar?.encodedData)
+        })
+        transform { Webhook(client, it.toJsonObject()) }
+    }
+
+    /**
+     * Retrieves all webhooks in this channel
+     */
+    suspend fun retrieveWebhooks() = client.buildRestAction<List<Webhook>> {
+        route = Route.Webhook.GET_CHANNEL_WEBHOOKS(id).get()
+        transform { it.toJsonArray().map { Webhook(client, it.jsonObject) } }
     }
 
 }

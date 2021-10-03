@@ -17,7 +17,6 @@ import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
@@ -101,16 +100,6 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
     suspend fun editSelfUser(username: String, image: Image? = null) = editSelfUser {
         this.username = username
         this.image = image
-    }
-
-    suspend fun retrieveRTCRegions() = buildRestAction<String> {
-        route = Route.Voice.GET_VOICE_REGIONS.get()
-        transform { it }
-    }
-
-    suspend fun retrieveInvite(code: String) = client.buildRestAction<Invite> {
-        route = Route.Invite.GET_INVITE(code).get()
-        transform { Invite(client, it.toJsonObject()) }
     }
 
     data class SelfUserEdit(var username: String? = null, var image: Image? = null)

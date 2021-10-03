@@ -254,7 +254,7 @@ class GuildData(override val client: Client, override val data: JsonObject) : Gu
     }
 
     override suspend fun leaveVoiceChannel() = if(client is DiscordWebSocketClient) {
-        (client as DiscordWebSocketClient).gateway.send(UpdateVoiceStatePayload(id, null, selfMember.isMuted, selfMember.isDeafened))
+        client.gateways[0].send(UpdateVoiceStatePayload(id, null, selfMember.isMuted, selfMember.isDeafened))
     } else {
         throw UnsupportedOperationException("You can't leave a voice channel without having a gateway connection!")
     }

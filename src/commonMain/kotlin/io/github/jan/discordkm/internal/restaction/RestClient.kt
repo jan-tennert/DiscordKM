@@ -30,13 +30,13 @@ import io.ktor.http.contentType
 
 class RestClient(val client: Client) {
 
-    private val http = HttpClient {
+    val http = HttpClient {
         defaultRequest {
             header("Authorization", "Bot ${client.token}")
             header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.1.1)")
         }
     }
-    private val rateLimiter = RateLimiter(client.loggingLevel)
+    val rateLimiter = RateLimiter(client.loggingLevel)
 
     suspend fun custom(method: HttpMethod, endpoint: String, data: Any? = null) = when(method.value) {
         "GET" -> {

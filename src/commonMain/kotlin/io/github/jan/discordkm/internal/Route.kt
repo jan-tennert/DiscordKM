@@ -16,6 +16,20 @@ object Route {
 
     }
 
+    object Webhook {
+
+        const val EXECUTE_WEBHOOK = "/webhooks/%s/%s"
+        const val DELETE_WITH_TOKEN = "/webhooks/%s/%s"
+        const val DELETE = "/webhooks/%s"
+        const val MODIFY = "/webhooks/%s"
+        const val MODIFY_WITH_TOKEN = "/webhooks/%s/%s"
+        const val CREATE_WEBHOOK = "/channels/%s/webhooks"
+        const val GET_CHANNEL_WEBHOOKS = "/channels/%s/webhooks"
+        const val GET_WEBHOOK = "/webhooks/%s"
+        const val GET_WEBHOOK_WITH_TOKEN = "/webhooks/%s/%s"
+
+    }
+
     object Template {
 
         const val DELETE_GUILD_TEMPLATE = "/guilds/%s/templates/%s"

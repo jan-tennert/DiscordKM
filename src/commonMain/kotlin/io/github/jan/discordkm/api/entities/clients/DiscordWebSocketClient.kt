@@ -18,6 +18,7 @@ import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
+import io.github.jan.discordkm.api.events.ShardCreateEvent
 import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
 import io.github.jan.discordkm.internal.websocket.Compression
@@ -29,21 +30,31 @@ import kotlin.jvm.JvmName
 
 class DiscordWebSocketClient internal constructor(
     token: String,
-    encoding: Encoding,
-    compression: Compression,
+    private val encoding: Encoding,
+    private val compression: Compression,
     val intents: EnumList<Intent>,
     loggingLevel: Logger.Level,
-    status: PresenceStatus,
-    activity: Presence?,
-    reconnectDelay: TimeSpan = 5.seconds,
-    internal val enabledCache: List<Cache>
+    private val status: PresenceStatus,
+    private val activity: Presence?,
+    private val reconnectDelay: TimeSpan = 5.seconds,
+    internal val enabledCache: List<Cache>,
+    private val shards: List<Int> = emptyList(),
+    private val totalShards: Int = -1
 ) : Client(token, loggingLevel) {
 
-    internal val gateway = DiscordGateway(encoding, compression, this, status, activity, reconnectDelay)
+    internal val gateways = mutableListOf<DiscordGateway>()
     @get:JvmName("isClosed")
     var loggedIn = false
         private set
     val eventListeners = mutableListOf<EventListener>()
+
+    init {
+        if(shards.isEmpty()) gateways.add(DiscordGateway(encoding, compression, this, status, activity, reconnectDelay, 0, -1)) else shards.forEach {
+            gateways.add(DiscordGateway(encoding, compression, this, status, activity, reconnectDelay, it, totalShards))
+        }
+    }
+
+    internal fun getGatewayByShardId(shardId: Int) = gateways.first { it.shardId == shardId }
 
     inline fun <reified E : Event> on(crossinline predicate: (E) -> Boolean = { true }, crossinline onEvent: suspend E.() -> Unit) {
         eventListeners += EventListener {
@@ -53,21 +64,21 @@ class DiscordWebSocketClient internal constructor(
         }
     }
 
-    suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) = gateway.send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
+    suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) = gateways[0].send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
 
     suspend fun login() {
         if(loggedIn) throw UnsupportedOperationException("Discord Client already connected to the discord gateway")
-        gateway.start()
+        gateways.forEach { it.start(); if(totalShards != -1) handleEvent(ShardCreateEvent(this@DiscordWebSocketClient, it.shardId)) }
         loggedIn = true
     }
 
     fun disconnect() {
         if(!loggedIn) throw UnsupportedOperationException("Discord Client is already disconnected from the discord gateway")
-        gateway.close()
+        gateways.forEach { it.close() }
         loggedIn = false
     }
 
-    internal suspend fun handleEvent(event: Event) = coroutineScope { eventListeners.forEach { launch { it(event) } } }
+    suspend fun handleEvent(event: Event) = coroutineScope { eventListeners.forEach { launch { it(event) } } }
 
 }
 
@@ -80,10 +91,14 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
     private var activity = PresenceModifier()
     var reconnectDelay: TimeSpan = 5.seconds
     var enabledCache = Cache.STANDARD.toMutableList()
+    private val shards = mutableListOf<Int>()
+    var totalShards = -1
+
+    fun useShards(vararg shards: Int) { this.shards.addAll(shards.toList()) }
 
     fun activity(builder: PresenceModifier.() -> Unit) { activity = PresenceModifier().apply(builder) }
 
-    fun build() = DiscordWebSocketClient(token, encoding, compression, EnumList(Intent, intents), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache)
+    fun build() = DiscordWebSocketClient(token, encoding, compression, EnumList(Intent, intents), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache, shards, totalShards)
 
 }
 

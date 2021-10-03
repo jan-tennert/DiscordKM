@@ -21,6 +21,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -39,9 +40,15 @@ data class Payload(
     val eventName: String? = null
 )
 
-fun IdentifyPayload(token: String, intents: Long, status: PresenceStatus, activity: Presence?) = Payload(2, eventData = buildJsonObject {
+fun IdentifyPayload(token: String, intents: Long, status: PresenceStatus, activity: Presence?, shardId: Int = 0, totalShards: Int = -1) = Payload(2, eventData = buildJsonObject {
     put("token", token)
     put("intents", intents)
+    if(totalShards != -1) {
+        putJsonArray("shard") {
+            add(shardId)
+            add(totalShards)
+        }
+    }
     put("properties", buildJsonObject {
         put("\$os", OS.platformName)
         put("\$browser", "Discord.KM")

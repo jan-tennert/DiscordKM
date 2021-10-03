@@ -17,6 +17,7 @@ import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
 import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
+import io.github.jan.discordkm.api.events.RawEvent
 import io.github.jan.discordkm.internal.events.BanEventHandler
 import io.github.jan.discordkm.internal.events.ChannelCreateEventHandler
 import io.github.jan.discordkm.internal.events.ChannelDeleteEventHandler
@@ -56,6 +57,7 @@ import io.github.jan.discordkm.internal.events.ThreadMembersUpdateEventHandler
 import io.github.jan.discordkm.internal.events.ThreadUpdateEventHandler
 import io.github.jan.discordkm.internal.events.TypingStartEventHandler
 import io.github.jan.discordkm.internal.events.VoiceStateUpdateEventHandler
+import io.github.jan.discordkm.internal.events.WebhooksUpdateEventHandler
 import io.github.jan.discordkm.internal.serialization.IdentifyPayload
 import io.github.jan.discordkm.internal.serialization.Payload
 import io.github.jan.discordkm.internal.serialization.send
@@ -81,6 +83,8 @@ class DiscordGateway(
     val status: PresenceStatus,
     val activity: Presence?,
     val reconnectDelay: TimeSpan,
+    val shardId: Int = 0,
+    val totalShards: Int = -1
 ) {
 
     lateinit var ws: WebSocketClient
@@ -210,7 +214,7 @@ class DiscordGateway(
     }
 
     private suspend fun handleRawEvent(payload: Payload) = coroutineScope {
-        println(payload.eventData)
+        client.handleEvent(RawEvent(client, payload))
         launch {
             val event = when(payload.eventName!!) {
                 "READY" -> ReadyEventHandler(client).handle(payload.eventData!!)
@@ -230,6 +234,7 @@ class DiscordGateway(
                 "STAGE_INSTANCE_DELETE" -> StageInstanceDeleteEventHandler(client).handle(payload.eventData!!)
 
                 //misc
+                "WEBHOOKS_UPDATE" -> WebhooksUpdateEventHandler(client).handle(payload.eventData!!)
                 "TYPING_START" -> TypingStartEventHandler(client).handle(payload.eventData!!)
                 "USER_UPDATE" -> SelfUserUpdateEventHandler(client).handle(payload.eventData!!)
                 "PRESENCE_UPDATE" -> PresenceUpdateEventHandler(client).handle(payload.eventData!!)

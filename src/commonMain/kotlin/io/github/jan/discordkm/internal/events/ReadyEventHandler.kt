@@ -15,6 +15,7 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.ReadyEvent
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -22,12 +23,15 @@ import kotlinx.serialization.json.long
 
 internal class ReadyEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ReadyEvent> {
     override fun handle(data: JsonObject): ReadyEvent {
-        client.gateway.sessionId = data.getValue("session_id").jsonPrimitive.content
+        val shardId = data["shard"]?.jsonArray?.get(1)?.jsonPrimitive?.intOrNull
+        if(shardId != null) {
+            client.getGatewayByShardId(shardId).sessionId = data.getValue("session_id").jsonPrimitive.content
+        } else {
+            client.gateways[0].sessionId = data.getValue("session_id").jsonPrimitive.content
+        }
         val guilds = mutableListOf<Guild.Unavailable>()
         data.getValue("guilds").jsonArray.map { Guild.Unavailable(it.jsonObject.getValue("id").jsonPrimitive.long) }.forEach { guilds += it }
         client.selfUser = data.getValue("user").jsonObject.extractClientEntity<User>(client)
-        //shards
-        //application
-        return ReadyEvent(guilds, client)
+        return ReadyEvent(guilds, client, shardId)
     }
 }
