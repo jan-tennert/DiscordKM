@@ -98,7 +98,7 @@ class DiscordGateway(
     private var heartbeatInterval = 0L
     private var lastSequenceNumber: Int? = null
     var sessionId: String? = null
-        private set
+        internal set
     var isClosed = true
         private set
     private val http = HttpClient() {
