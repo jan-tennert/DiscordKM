@@ -121,7 +121,7 @@ class DiscordGateway(
         }
 
         LOGGER.info { "Connected to gateway!" }
-        while(true) {
+        while(!isClosed) {
             try {
                 val message = ws.incoming.receive().readBytes().decodeToString()
                 onMessage(message)
