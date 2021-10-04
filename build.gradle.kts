@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "io.github.jan-tennert.discordkm"
-version = "0.2"
+version = "0.3"
 
 repositories {
     mavenCentral()
@@ -130,18 +130,6 @@ kotlin {
         }
         nodejs()
     }
-    macosX64()
-    iosArm32()
-    iosArm64()
-    iosX64()
-    watchosArm32()
-    watchosArm64()
-    watchosX86()
-    tvosArm64()
-    tvosX64()
-    mingwX64()
-    linuxX64()
-
     addPublishing()
 
     sourceSets {
@@ -149,11 +137,12 @@ kotlin {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")
                 api("com.soywiz.korlibs.klock:klock:2.2.2")
-                api("com.soywiz.korlibs.korio:korio:2.2.1")
                 api("com.soywiz.korlibs.klogger:klogger:2.2.0")
                 api("io.ktor:ktor-client-core:$ktorVersion")
+                api("io.ktor:ktor-client-websockets:$ktorVersion")
                 api("co.touchlab:stately-iso-collections:1.1.10-a1")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+                api("com.soywiz.korlibs.korio:korio:2.2.1")
             }
         }
         val commonTest by getting {
@@ -163,19 +152,15 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-cio:1.6.4")
+                implementation("io.ktor:ktor-client-cio:$ktorVersion")
             }
         }
         val jvmTest by getting
         val jsMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-js:1.6.4")
+                implementation("io.ktor:ktor-client-js:$ktorVersion")
             }
         }
         val jsTest by getting
-        val nativeMain by creating { dependsOn(commonMain) }
-        listOf("macosX64", "linuxX64", "mingwX64", "iosArm64", "iosX64", "iosArm32", "watchosArm32", "watchosArm64", "watchosX86", "tvosArm64", "tvosX64").forEach { target ->
-            getByName(target + "Main").dependsOn(nativeMain)
-        }
     }
 }

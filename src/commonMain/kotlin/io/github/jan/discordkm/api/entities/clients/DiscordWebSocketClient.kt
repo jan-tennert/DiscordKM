@@ -42,19 +42,19 @@ class DiscordWebSocketClient internal constructor(
     private val totalShards: Int = -1
 ) : Client(token, loggingLevel) {
 
-    internal val gateways = mutableListOf<DiscordGateway>()
+    val shardConnections = mutableListOf<DiscordGateway>()
     @get:JvmName("isClosed")
     var loggedIn = false
         private set
     val eventListeners = mutableListOf<EventListener>()
 
     init {
-        if(shards.isEmpty()) gateways.add(DiscordGateway(encoding, compression, this, status, activity, reconnectDelay, 0, -1)) else shards.forEach {
-            gateways.add(DiscordGateway(encoding, compression, this, status, activity, reconnectDelay, it, totalShards))
+        if(shards.isEmpty()) shardConnections.add(DiscordGateway(encoding, compression, this, status, activity, reconnectDelay, 0, -1)) else shards.forEach {
+            shardConnections.add(DiscordGateway(encoding, compression, this, status, activity, reconnectDelay, it, totalShards))
         }
     }
 
-    internal fun getGatewayByShardId(shardId: Int) = gateways.first { it.shardId == shardId }
+    internal fun getGatewayByShardId(shardId: Int) = shardConnections.first { it.shardId == shardId }
 
     inline fun <reified E : Event> on(crossinline predicate: (E) -> Boolean = { true }, crossinline onEvent: suspend E.() -> Unit) {
         eventListeners += EventListener {
@@ -64,17 +64,17 @@ class DiscordWebSocketClient internal constructor(
         }
     }
 
-    suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) = gateways[0].send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
+    suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) = shardConnections[0].send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
 
     suspend fun login() {
         if(loggedIn) throw UnsupportedOperationException("Discord Client already connected to the discord gateway")
-        gateways.forEach { it.start(); if(totalShards != -1) handleEvent(ShardCreateEvent(this@DiscordWebSocketClient, it.shardId)) }
+        shardConnections.forEach { it.start(); if(totalShards != -1) handleEvent(ShardCreateEvent(this@DiscordWebSocketClient, it.shardId)) }
         loggedIn = true
     }
 
     fun disconnect() {
         if(!loggedIn) throw UnsupportedOperationException("Discord Client is already disconnected from the discord gateway")
-        gateways.forEach { it.close() }
+        shardConnections.forEach { it.close() }
         loggedIn = false
     }
 

@@ -11,10 +11,9 @@ package io.github.jan.discordkm.internal.websocket
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klogger.Logger
-import com.soywiz.korio.net.ws.WebSocketClient
-import com.soywiz.korio.net.ws.WsCloseInfo
 import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
 import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
 import io.github.jan.discordkm.api.events.RawEvent
@@ -63,6 +62,14 @@ import io.github.jan.discordkm.internal.serialization.Payload
 import io.github.jan.discordkm.internal.serialization.send
 import io.github.jan.discordkm.internal.utils.LoggerOutput
 import io.github.jan.discordkm.internal.utils.generateWebsocketURL
+import io.ktor.client.HttpClient
+import io.ktor.client.features.websocket.DefaultClientWebSocketSession
+import io.ktor.client.features.websocket.WebSockets
+import io.ktor.client.features.websocket.webSocketSession
+import io.ktor.http.HttpMethod
+import io.ktor.http.cio.websocket.readBytes
+import io.ktor.http.cio.websocket.send
+import io.ktor.http.takeFrom
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -79,7 +86,7 @@ import kotlinx.serialization.json.put
 class DiscordGateway(
     val encoding: Encoding,
     val compression: Compression,
-    val client: io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient,
+    val client: DiscordWebSocketClient,
     val status: PresenceStatus,
     val activity: Presence?,
     val reconnectDelay: TimeSpan,
@@ -87,12 +94,17 @@ class DiscordGateway(
     val totalShards: Int = -1
 ) {
 
-    lateinit var ws: WebSocketClient
     private val LOGGER = Logger("Websocket")
     private var heartbeatInterval = 0L
     private var lastSequenceNumber: Int? = null
-    internal var sessionId: String? = null
+    var sessionId: String? = null
+        private set
     private var closed = true
+    private val queue = mutableListOf<WebSocketAction>()
+    private val http = HttpClient() {
+        install(WebSockets)
+    }
+    lateinit var ws: DefaultClientWebSocketSession
 
     init {
         LOGGER.level = client.loggingLevel
@@ -103,29 +115,23 @@ class DiscordGateway(
         closed = false
         if(sessionId != null || !normalStart) com.soywiz.korio.async.delay(reconnectDelay)
         LOGGER.info { "Connecting to gateway..." }
-        ws = WebSocketClient(generateWebsocketURL(encoding, compression))
-        ws.onStringMessage {
-            onMessage(it)
+        ws = http.webSocketSession() {
+            method = HttpMethod.Get
+            url.takeFrom(generateWebsocketURL(encoding, compression))
         }
-        ws.onOpen { LOGGER.info { "Connected to gateway!" } }
-        ws.onError {
+        LOGGER.info { "Connected to gateway!" }
+        while(true) {
+            val message = ws.incoming.receive().readBytes().decodeToString()
+            onMessage(message)
+        }
+        /*ws.onError {
             if(it.toString().contains("StandaloneCoroutine was cancelled")) return@onError
             LOGGER.error { "Disconnected due to an error: ${it.message}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
             client.launch { start(false) }
-        }
-        ws.onBinaryMessage {
-            //zlib and eft
-        }
-        ws.onClose {
-            if(it.message != null) {
-                LOGGER.error { "Disconnected from gateway. Reason: ${it.message}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
-                client.launch { start(false) }
-            } else {
-                LOGGER.info { "Connection closed!" }
-                closed = true
-            }
-        }
+        }*/
     }
+
+    suspend fun send(payload: Payload) = ws.send(payload)
 
     private fun onMessage(message: String) {
         val json = Json.parseToJsonElement(message).jsonObject
@@ -152,13 +158,12 @@ class DiscordGateway(
             OpCode.HEARTBEAT -> {
                 sendHeartbeat()
             }
-            OpCode.RECONNECT -> TODO()
             OpCode.INVALID_SESSION -> {
                 LOGGER.warn { "Failed to resume! Trying to reconnect manually..." }
-                ws.close()
+                close()
                 sessionId = null
                 closed = true
-                start()
+                this@DiscordGateway.start(false)
             }
             OpCode.HELLO -> {
                 heartbeatInterval = payload.eventData!!["heartbeat_interval"]!!.jsonPrimitive.long
@@ -170,14 +175,14 @@ class DiscordGateway(
                     launch {
                         if(sessionId != null) {
                             LOGGER.info { "Trying to resume..." }
-                            ws.send(Payload(6, buildJsonObject {
+                            send(Payload(6, buildJsonObject {
                                 put("token", client.token)
                                 put("session_id", sessionId)
                                 put("seq", lastSequenceNumber)
                             }))
                         } else {
                             LOGGER.debug { "Authenticate..." }
-                            ws.send(IdentifyPayload(client.token, client.intents.rawValue, status, activity))
+                            send(IdentifyPayload(client.token, client.intents.rawValue, status, activity, shardId, totalShards))
                         }
                     }
                 }
@@ -197,7 +202,7 @@ class DiscordGateway(
         }
     }
 
-    private suspend fun sendHeartbeat() {
+  private suspend fun sendHeartbeat() {
         ws.send(buildJsonObject {
             put("op", 1)
             put("d", heartbeatInterval)
@@ -205,12 +210,8 @@ class DiscordGateway(
         }.toString())
     }
 
-    suspend fun send(payload: Payload) {
-        ws.send(payload)
-    }
-
     fun close() {
-        ws.close(WsCloseInfo.NormalClosure)
+        http.close()
     }
 
     private suspend fun handleRawEvent(payload: Payload) = coroutineScope {
@@ -289,7 +290,6 @@ class DiscordGateway(
     enum class OpCode(val code: Int) {
         DISPATCH(0),
         HEARTBEAT(1),
-        RECONNECT(7),
         INVALID_SESSION(9),
         HELLO(10),
         HEARTBEAT_ACK(11);
@@ -302,3 +302,5 @@ class DiscordGateway(
     }
 
 }
+
+typealias WebSocketAction = suspend () -> String

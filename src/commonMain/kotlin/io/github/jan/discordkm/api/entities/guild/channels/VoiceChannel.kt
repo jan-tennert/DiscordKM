@@ -34,7 +34,7 @@ interface VoiceChannel : GuildChannel, Invitable, IParent {
         get() = if(data.getOrNull<Int>("video_quality_mode") != null) VideoQualityMode.values().first { it.ordinal == data.getOrNull<Int>("video_quality_mode") } else VideoQualityMode.AUTO
 
     suspend fun join() = if(client is DiscordWebSocketClient) {
-        (client as DiscordWebSocketClient).gateways[0].send(UpdateVoiceStatePayload(guild.id, id, guild.selfMember.isMuted, guild.selfMember.isDeafened))
+        (client as DiscordWebSocketClient).shardConnections[0].send(UpdateVoiceStatePayload(guild.id, id, guild.selfMember.isMuted, guild.selfMember.isDeafened))
     } else {
         throw UnsupportedOperationException("You can't join a voice channel without having a gateway connection!")
     }

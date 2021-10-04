@@ -41,8 +41,6 @@ class MemberData(override val guild: Guild, override val data: JsonObject, val p
     override val status: PresenceStatus
         get() = guild.presences[id]?.status ?: PresenceStatus.OFFLINE
 
-    override var voiceState: VoiceState? = null
-
     override val roles: RetrievableRoleList
         get() = RetrievableRoleList(this, roleCache.values.associateBy { it.id })
 

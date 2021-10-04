@@ -33,7 +33,7 @@ class RestClient(val client: Client) {
     val http = HttpClient {
         defaultRequest {
             header("Authorization", "Bot ${client.token}")
-            header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.1.1)")
+            header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.3)")
         }
     }
     val rateLimiter = RateLimiter(client.loggingLevel)
@@ -51,7 +51,6 @@ class RestClient(val client: Client) {
                         body = if(it is MultiPartFormDataContent) {
                             it
                         } else {
-                            println(it)
                             contentType(ContentType.Application.Json)
                             it.toString()
                         }

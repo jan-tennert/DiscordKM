@@ -42,18 +42,30 @@ import kotlinx.serialization.json.buildJsonObject
 
 class Webhook(override val client: Client, override val data: JsonObject) : SerializableEntity, WebhookExecutor {
 
+    /**
+     * The id of the webhook
+     */
     override val id = data.getId()
 
+    /**
+     * The [WebhookType] of the webhook
+     */
     val type = valueOfIndex<WebhookType>(data.getOrThrow("type"), 1)
 
     val guildId = data.getOrNull<Snowflake>("guild_id")
 
     val channelId = data.getOrNull<Snowflake>("channel_id")
 
+    /**
+     * The name of the webhook
+     */
     val name = data.getOrThrow<String>("name")
 
     val avatarUrl = data.getOrNull<String>("avatar")?.let { DiscordImage.userAvatar(id, it) }
 
+    /**
+     * The token for the webhook. Can be empty
+     */
     override val token = data.getOrNull<String>("token") ?: ""
 
     val applicationId = data.getOrNull<Snowflake>("application_id")
@@ -106,7 +118,7 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
         val WEBHOOK_PATTERN = "(?:https?://)?(?:\\w+\\.)?discord(?:app)?\\.com/api(?:/v\\d+)?/webhooks/(\\d+)/([\\w-]+)(?:/(?:\\w+)?)?".toRegex()
 
         fun fromUrl(url: String): WebhookExecutor {
-            val groups = WEBHOOK_PATTERN.matchEntire(url)?.let { it.groups }?.drop(1) ?: throw IllegalArgumentException("Invalid webhook url: $url")
+            val groups = WEBHOOK_PATTERN.matchEntire(url)?.groups?.drop(1) ?: throw IllegalArgumentException("Invalid webhook url: $url")
             return from(Snowflake.fromId(groups[0]!!.value), groups[1]!!.value)
         }
 

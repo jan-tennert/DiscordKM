@@ -27,7 +27,7 @@ internal class ReadyEventHandler(val client: DiscordWebSocketClient) : InternalE
         if(shardId != null) {
             client.getGatewayByShardId(shardId).sessionId = data.getValue("session_id").jsonPrimitive.content
         } else {
-            client.gateways[0].sessionId = data.getValue("session_id").jsonPrimitive.content
+            client.shardConnections[0].sessionId = data.getValue("session_id").jsonPrimitive.content
         }
         val guilds = mutableListOf<Guild.Unavailable>()
         data.getValue("guilds").jsonArray.map { Guild.Unavailable(it.jsonObject.getValue("id").jsonPrimitive.long) }.forEach { guilds += it }
