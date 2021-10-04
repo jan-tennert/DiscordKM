@@ -99,8 +99,8 @@ class DiscordGateway(
     private var lastSequenceNumber: Int? = null
     var sessionId: String? = null
         private set
-    private var closed = true
-    private val queue = mutableListOf<WebSocketAction>()
+    var isClosed = true
+        private set
     private val http = HttpClient() {
         install(WebSockets)
     }
@@ -112,7 +112,7 @@ class DiscordGateway(
     }
 
     suspend fun start(normalStart: Boolean = true) {
-        closed = false
+        isClosed = false
         if(sessionId != null || !normalStart) com.soywiz.korio.async.delay(reconnectDelay)
         LOGGER.info { "Connecting to gateway..." }
         ws = http.webSocketSession() {
@@ -162,7 +162,7 @@ class DiscordGateway(
                 LOGGER.warn { "Failed to resume! Trying to reconnect manually..." }
                 close()
                 sessionId = null
-                closed = true
+                isClosed = true
                 this@DiscordGateway.start(false)
             }
             OpCode.HELLO -> {
@@ -195,7 +195,7 @@ class DiscordGateway(
 
     private suspend fun startHeartbeating() {
         while(true) {
-            if(closed) return
+            if(isClosed) return
             delay(heartbeatInterval)
             sendHeartbeat()
             LOGGER.debug { "Sending heartbeat..." }

@@ -3,6 +3,8 @@
 A Kotlin Multiplatform Discord API 
 Wrapper [![Maven Central](https://img.shields.io/maven-central/v/io.github.jan-tennert.discordkm/DiscordKM)](https://search.maven.org/artifact/io.github.jan-tennert.discordkm/DiscordKM)
 
+Note: currently **JS** and **JVM** are supported due to issues with Kotlin/Native
+
 You can use this [trello board](https://trello.com/b/EQqz7hAY/discordkm) to see my progress
 
 Discord: [Click here](https://discord.gg/mxRqJa4pHe)
@@ -76,4 +78,4 @@ Maven:
 </dependency>
 ```
 
-If you want a specific target add it to the artifactId like: DiscordKM-jvm or DiscordKM-mingwx64
+If you want a specific target add it to the artifactId like: DiscordKM-jvm and DiscordKM-js
