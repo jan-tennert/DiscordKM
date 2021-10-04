@@ -20,8 +20,6 @@ import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmName
 
 class Sticker(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity, Nameable {
@@ -46,7 +44,7 @@ class Sticker(override val data: JsonObject, override val client: Client) : Snow
     /**
      * "For guild stickers, the Discord name of a unicode emoji representing the sticker's expression. for standard stickers, a comma-separated list of related expressions."
      */
-    val tags = data.getValue("tags").jsonArray.map { it.jsonPrimitive.content }
+    val tags = data.getOrThrow<String>("tags").split(",")
 
     /**
      * [Type] of the sticker

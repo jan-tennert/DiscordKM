@@ -119,15 +119,21 @@ class DiscordGateway(
             method = HttpMethod.Get
             url.takeFrom(generateWebsocketURL(encoding, compression))
         }
+
         LOGGER.info { "Connected to gateway!" }
         while(true) {
-            val message = ws.incoming.receive().readBytes().decodeToString()
-            onMessage(message)
+            try {
+                val message = ws.incoming.receive().readBytes().decodeToString()
+                onMessage(message)
+            } catch(_: Exception) {
+                LOGGER.error { "Disconnected due to an error: ${ws.closeReason.await()}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
+                client.launch { start(false) }
+                break
+            }
+
         }
         /*ws.onError {
-            if(it.toString().contains("StandaloneCoroutine was cancelled")) return@onError
-            LOGGER.error { "Disconnected due to an error: ${it.message}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
-            client.launch { start(false) }
+
         }*/
     }
 
