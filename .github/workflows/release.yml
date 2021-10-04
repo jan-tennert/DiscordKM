@@ -14,7 +14,7 @@ env:
    SONATYPE_REPOSITORY_ID: ${{ secrets.SONATYPE_REPOSITORY_ID }}
 
 jobs:
-  publishJSJVM:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
@@ -28,49 +28,4 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Publish package
-        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishJvmPublicationToOssRepository publishJsPublicationToOssRepository publishKotlinMultiplatformPublicationToOssRepository
-  publishMacOS:
-    runs-on: macos-latest
-    steps:
-      - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
-
-      - uses: actions/checkout@v2
-
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Publish package
-        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishMacosX64PublicationToOssRepository publishWatchosX86PublicationToOssRepository publishWatchosArm64PublicationToOssRepository publishWatchosArm32PublicationToOssRepository publishIosX64PublicationToOssRepository publishIosArm64PublicationToOssRepository publishIosArm32PublicationToOssRepository publishTvosX64PublicationToOssRepository publishTvosArm64PublicationToOssRepository
-  publishLinux:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
-
-      - uses: actions/checkout@v2
-
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Publish package
-        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishLinuxX64PublicationToOssRepository 
-  publishWindows:
-    runs-on: windows-latest
-    steps:
-      - run: echo "Will start a Maven Central upload with version ${{ github.event.inputs.releaseversion }}"
-
-      - uses: actions/checkout@v2
-
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Publish package
-        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishMingwX64PublicationToOssRepository
+        run: ./gradlew -Pversion="${{ github.event.inputs.releaseversion }}" publishAllPublicationsToOssRepository
