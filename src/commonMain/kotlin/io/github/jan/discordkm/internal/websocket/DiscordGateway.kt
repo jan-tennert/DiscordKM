@@ -126,6 +126,7 @@ class DiscordGateway(
                 val message = ws.incoming.receive().readBytes().decodeToString()
                 onMessage(message)
             } catch(_: Exception) {
+                isClosed = true
                 LOGGER.error { "Disconnected due to an error: ${ws.closeReason.await()}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
                 client.launch { start(false) }
                 break
@@ -217,6 +218,7 @@ class DiscordGateway(
     }
 
     fun close() {
+        isClosed = true
         http.close()
     }
 
