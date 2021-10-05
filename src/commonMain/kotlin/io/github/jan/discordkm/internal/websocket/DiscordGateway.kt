@@ -17,6 +17,7 @@ import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
 import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
 import io.github.jan.discordkm.api.events.RawEvent
+import io.github.jan.discordkm.api.events.VoiceServerUpdate
 import io.github.jan.discordkm.internal.events.BanEventHandler
 import io.github.jan.discordkm.internal.events.ChannelCreateEventHandler
 import io.github.jan.discordkm.internal.events.ChannelDeleteEventHandler
@@ -247,6 +248,7 @@ class DiscordGateway(
                 "TYPING_START" -> TypingStartEventHandler(client).handle(payload.eventData!!)
                 "USER_UPDATE" -> SelfUserUpdateEventHandler(client).handle(payload.eventData!!)
                 "PRESENCE_UPDATE" -> PresenceUpdateEventHandler(client).handle(payload.eventData!!)
+                "VOICE_SERVER_UPDATE" -> VoiceServerUpdate(client, payload.eventData!!)
 
                 //roles
                 "GUILD_ROLE_CREATE" -> RoleCreateEventHandler(client).handle(payload.eventData!!)

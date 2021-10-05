@@ -26,6 +26,7 @@ import io.github.jan.discordkm.internal.websocket.DiscordGateway
 import io.github.jan.discordkm.internal.websocket.Encoding
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.jvm.JvmName
 
 class DiscordWebSocketClient internal constructor(
@@ -61,6 +62,21 @@ class DiscordWebSocketClient internal constructor(
             if(it is E && predicate(it)) {
                 onEvent(it)
             }
+        }
+    }
+
+    suspend inline fun <reified E : Event> awaitEvent(crossinline predicate: (E) -> Boolean = { true }) = suspendCancellableCoroutine<E> {
+        val listener = object : EventListener {
+            override suspend fun onEvent(event: Event) {
+                if(event is E && predicate(event)) {
+                    it.resume(event) { err -> throw err }
+                    eventListeners -= this
+                }
+            }
+        }
+        eventListeners += listener
+        it.invokeOnCancellation {
+            eventListeners -= listener
         }
     }
 

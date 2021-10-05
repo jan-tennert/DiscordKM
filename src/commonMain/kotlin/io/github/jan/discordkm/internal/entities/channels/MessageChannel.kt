@@ -70,7 +70,6 @@ interface MessageChannel : Channel {
     /**
      * Starts typing in this channel. This lasts for approximately 10 seconds
      */
-
     suspend fun sendTyping() = client.buildRestAction<Unit> {
         route = Route.Channel.START_TYPING(id).post()
         transform {  }

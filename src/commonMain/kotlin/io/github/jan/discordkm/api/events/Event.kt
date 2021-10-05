@@ -22,7 +22,7 @@ import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.toJsonObject
 
-sealed interface Event : BaseEntity
+interface Event : BaseEntity
 
 sealed interface MessageEvent : Event {
 
