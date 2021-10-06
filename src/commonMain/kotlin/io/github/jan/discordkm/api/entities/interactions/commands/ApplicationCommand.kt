@@ -14,10 +14,7 @@ import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.events.ButtonClickEvent
-import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
@@ -60,7 +57,7 @@ open class ApplicationCommand(override val client: Client, override val data: Js
 
 class ChatInputCommand(client: Client, data: JsonObject) : ApplicationCommand(client, data) {
 
-    val options = data.getValue("options").jsonArray.map { Json.decodeFromJsonElement<CommandOption>(it.jsonObject) }
+    val options = data["options"]?.jsonArray?.map { Json.decodeFromJsonElement<CommandOption>(it.jsonObject) } ?: emptyList()
 
 }
 
