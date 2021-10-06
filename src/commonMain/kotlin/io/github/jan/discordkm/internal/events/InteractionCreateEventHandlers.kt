@@ -95,23 +95,25 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         val resolved = data.getValue("data").jsonObject["resolved"]?.jsonObject
         val name = data.getValue("data").jsonObject.getOrThrow<String>("name")
         val options = mutableListOf<Interaction.InteractionOption>()
-        data.getValue("data").jsonObject.getValue("options").jsonArray.forEach { option ->
-            option as JsonObject
-            when(valueOfIndex<CommandOption.OptionType>(option.getOrThrow("type"), 1)) {
-                CommandOption.OptionType.SUB_COMMAND -> {
-                    subCommand = option.jsonObject.getOrThrow<String>("name")
-                    option["options"]?.jsonArray?.forEach {
-                        options += extractOption(resolved, it.jsonObject, data)
+        if(data.getValue("data").jsonObject["options"] != null) {
+            data.getValue("data").jsonObject.getValue("options").jsonArray.forEach { option ->
+                option as JsonObject
+                when(valueOfIndex<CommandOption.OptionType>(option.getOrThrow("type"), 1)) {
+                    CommandOption.OptionType.SUB_COMMAND -> {
+                        subCommand = option.jsonObject.getOrThrow<String>("name")
+                        option["options"]?.jsonArray?.forEach {
+                            options += extractOption(resolved, it.jsonObject, data)
+                        }
                     }
-                }
-                CommandOption.OptionType.SUB_COMMAND_GROUP -> {
-                    subCommandGroup = option.jsonObject.getOrThrow<String>("name")
-                    subCommand = option.getValue("options").jsonArray[0].jsonObject.getOrThrow<String>("name")
-                    option.getValue("options").jsonArray[0].jsonObject["options"]?.jsonArray?.forEach {
-                        options += extractOption(resolved, it.jsonObject, data)
+                    CommandOption.OptionType.SUB_COMMAND_GROUP -> {
+                        subCommandGroup = option.jsonObject.getOrThrow<String>("name")
+                        subCommand = option.getValue("options").jsonArray[0].jsonObject.getOrThrow<String>("name")
+                        option.getValue("options").jsonArray[0].jsonObject["options"]?.jsonArray?.forEach {
+                            options += extractOption(resolved, it.jsonObject, data)
+                        }
                     }
+                    else -> options += extractOption(resolved, option.jsonObject, data)
                 }
-                else -> options += extractOption(resolved, option.jsonObject, data)
             }
         }
         return SlashCommandEvent(client, StandardInteraction(client, data), name, OptionList(options), subCommand, subCommandGroup)
