@@ -79,3 +79,7 @@ Maven:
 ```
 
 If you want a specific target add it to the artifactId like: DiscordKM-jvm and DiscordKM-js
+
+# Addons
+
+- [DiscordKM-Lavalink](https://github.com/jan-tennert/DiscordKM-Lavalink) - Lavalink client for DiscordKM
