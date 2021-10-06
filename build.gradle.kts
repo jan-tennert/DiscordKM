@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "io.github.jan-tennert.discordkm"
-version = "0.3.6-Local5"
+version = "0.3.6"
 
 repositories {
     mavenCentral()
