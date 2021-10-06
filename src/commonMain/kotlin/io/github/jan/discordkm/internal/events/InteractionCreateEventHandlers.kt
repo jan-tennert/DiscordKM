@@ -31,6 +31,7 @@ import io.github.jan.discordkm.api.events.UserCommandEvent
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.guilds.RoleData
 import io.github.jan.discordkm.internal.utils.extractChannel
+import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
@@ -48,14 +49,26 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
     }
 
     private fun extractCommandAutoComplete(data: JsonObject) : InteractionCreateEvent {
+        println(data)
         val interactionData = data.getValue("data").jsonObject
         val commandId = interactionData.getOrThrow<Snowflake>("id")
         val commandName = interactionData.getOrThrow<String>("name")
-        val option = interactionData.getValue("options").jsonArray[0].jsonObject
-        val focused = option.getOrThrow<Boolean>("focused")
+        var option = interactionData.getValue("options").jsonArray[0].jsonObject
+        var subCommandGroup: String? = null
+        var subCommand: String? = null
+        val type = valueOfIndex<CommandOption.OptionType>(option.getOrThrow("type"), 1)
+        if(type == CommandOption.OptionType.SUB_COMMAND_GROUP) {
+            subCommandGroup = option.getOrThrow("name")
+            subCommand = option.getValue("options").jsonArray[0].jsonObject.getOrThrow("name")
+            option = option.getValue("options").jsonArray[0].jsonObject.getValue("options").jsonArray[0].jsonObject
+        } else if(type == CommandOption.OptionType.SUB_COMMAND) {
+            subCommand = option.getOrThrow("name")
+            option = option.getValue("options").jsonArray[0].jsonObject
+        }
+        val focused = option.getOrNull<Boolean>("focused") ?: false
         val optionName = option.getOrThrow<String>("name")
-        val optionValue = option.getOrThrow<String>("value")
-        return AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, optionValue, focused)
+        val optionValue = option.getOrNull<String>("value") ?: ""
+        return AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, optionValue, focused, subCommand, subCommandGroup)
     }
 
     private fun extractMessageComponent(data: JsonObject) : InteractionCreateEvent {

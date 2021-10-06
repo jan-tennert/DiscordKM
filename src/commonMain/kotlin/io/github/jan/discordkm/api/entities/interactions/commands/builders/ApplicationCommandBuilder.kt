@@ -9,12 +9,12 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.commands.builders
 
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.commands.OptionChoice
+import io.github.jan.discordkm.api.events.CommandEvent
 import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.utils.putJsonObject
@@ -26,6 +26,13 @@ import kotlinx.serialization.json.put
 
 open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name: String, var description: String) {
 
+    inline fun <reified E : CommandEvent> onAction(
+        client: DiscordWebSocketClient,
+        crossinline action: suspend E.() -> Unit
+    ) {
+        client.on<E>(predicate = { it.commandName == name }) { action(this) }
+    }
+
     internal open fun build() = buildJsonObject {
         put("name", name)
         put("description", description)
@@ -34,13 +41,16 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name:
 
 }
 
-class ChatInputCommandBuilder(name: String, description: String, internal val options: MutableList<CommandOption>) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT, name, description) {
+class ChatInputCommandBuilder(name: String, description: String, private val options: MutableList<CommandOption>) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT, name, description) {
 
-    private var action = {}
-
-    fun onAction(client: Client, action: SlashCommandAction) {
-        if(client is DiscordWebSocketClient) {
-            client.on<SlashCommandEvent>(predicate = { it.commandName == name }) { action(this) }
+    inline fun onAction(
+        client: DiscordWebSocketClient,
+        subCommand: String? = null,
+        subCommandGroup: String? = null,
+        crossinline action: SlashCommandAction
+    ) {
+        client.on<SlashCommandEvent>(predicate = { it.commandName == name && it.subCommand == subCommand && it.subCommandGroup == subCommandGroup }) {
+            action(this)
         }
     }
 
