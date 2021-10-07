@@ -55,10 +55,19 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
     val user: User
         get() = data.getValue("user").jsonObject.extractClientEntity(guild.client)
 
+    /**
+     * The voice state of the member retrieved from cache
+     */
     val voiceState: VoiceState?
 
+    /**
+     * The status of the member
+     */
     val status: PresenceStatus
 
+    /**
+     * A list of activities the user currently has
+     */
     val activities: List<Activity>
 
     override val client: Client
@@ -84,6 +93,11 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
             return EnumList(Permission, permissions)
         }
 
+    /**
+     * Returns the permission for the member in a specific guild channel
+     * @param channel The guild channel
+     * @see GuildChannel
+     */
     override fun getPermissionsFor(channel: GuildChannel): EnumList<Permission> {
         if(isOwner) return EnumList(Permission, Permission.ALL_PERMISSIONS)
         if(Permission.ADMINISTRATOR in permissions)return EnumList(Permission, Permission.ALL_PERMISSIONS)
@@ -148,7 +162,6 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
     /**
      * Modifies this user
      */
-
     suspend fun modify(modifier: MemberModifier.() -> Unit) = client.buildRestAction<Member> {
         route = Route.Member.MODIFY_MEMBER(guild.id, id).patch(MemberModifier().apply(modifier).build())
         transform { it.toJsonObject().extractGuildEntity(guild) }
@@ -160,7 +173,6 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
      *
      * Requires the permission [Permission.KICK_MEMBERS]
      */
-
     suspend fun kick() = guild.members.kick(id)
 
     /**
@@ -170,8 +182,6 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
      */
     suspend fun ban(delDays: Int?) = guild.members.ban(id, delDays)
 
-    //mute etc in voice entity
-
     override fun getValue(ref: Any?, property: KProperty<*>) = guild.members[id]!!
 
     override suspend fun retrieve() = guild.members.retrieve(id)
@@ -180,14 +190,35 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
 
 class MemberModifier {
 
+    /**
+     * The new nickname of the member
+     */
     var nickname: String? = null
+
+    /**
+     * A list of role ids the member will get
+     */
     val roleIds = mutableListOf<Snowflake>()
+
+    /**
+     * Whether the member should be muted
+     */
     var mute: Boolean? = null
+
+    /**
+     * Whether the member should be deafend
+     */
     var deaf: Boolean? = null
     private var channelId: Snowflake? = null
 
+    /**
+     * Adds a role to the member
+     */
     fun role(role: Role) { roleIds += role.id }
 
+    /**
+     * Moves the member to a voice channel
+     */
     fun moveTo(voiceChannel: VoiceChannel) { channelId = voiceChannel.id }
 
     fun build() = buildJsonObject {

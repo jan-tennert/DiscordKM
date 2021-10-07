@@ -11,8 +11,8 @@ package io.github.jan.discordkm.internal.restaction
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.TimeSpan
+import io.github.jan.discordkm.DiscordKMInfo
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.internal.utils.DiscordKMInfo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.receive
 import io.ktor.client.features.defaultRequest

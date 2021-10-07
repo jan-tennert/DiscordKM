@@ -27,15 +27,24 @@ import kotlinx.serialization.json.jsonObject
 
 open class ApplicationCommand(override val client: Client, override val data: JsonObject) : SerializableEntity, SnowflakeEntity, Nameable {
 
+    /**
+     * The type of the application command
+     */
     val type: ApplicationCommandType
         get() = valueOfIndexOrDefault(data.getOrThrow<Int>("type"), default = ApplicationCommandType.CHAT_INPUT)
 
     override val id: Snowflake
         get() = data.getId()
 
+    /**
+     * The id of the application which created this application command
+     */
     val applicationId: Snowflake
         get() = data.getOrThrow("application_id")
 
+    /**
+     * The id of the guild where this command was created in. Can be null if it's a global command
+     */
     val guildId: Snowflake?
         get() = data.getOrNull<Snowflake>("guild_id")
 
@@ -45,11 +54,15 @@ open class ApplicationCommand(override val client: Client, override val data: Js
     override val name: String
         get() = data.getOrThrow<String>("name")
 
+    /**
+     * The description of the command
+     */
     val description: String
         get() = data.getOrThrow<String>("description")
 
-    //options
-
+    /**
+     * The version of the command
+     */
     val version: Snowflake
         get() = data.getOrThrow<Snowflake>("version")
 
@@ -57,12 +70,26 @@ open class ApplicationCommand(override val client: Client, override val data: Js
 
 class ChatInputCommand(client: Client, data: JsonObject) : ApplicationCommand(client, data) {
 
+    /**
+     * The options of the command
+     */
     val options = data["options"]?.jsonArray?.map { Json.decodeFromJsonElement<CommandOption>(it.jsonObject) } ?: emptyList()
 
 }
 
 enum class ApplicationCommandType {
+    /**
+     * These are the "slash commands"
+     */
     CHAT_INPUT,
+
+    /**
+     * These pop out when you right-click a user
+     */
     USER,
+
+    /**
+     * These pop out when you right-click a message
+     */
     MESSAGE
 }

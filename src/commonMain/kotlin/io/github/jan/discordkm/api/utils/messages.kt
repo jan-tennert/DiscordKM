@@ -1,4 +1,4 @@
-package io.github.jan.discordkm.internal.utils
+package io.github.jan.discordkm.api.utils
 
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient

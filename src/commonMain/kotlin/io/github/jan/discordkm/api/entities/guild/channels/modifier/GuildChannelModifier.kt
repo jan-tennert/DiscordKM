@@ -23,8 +23,20 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.putJsonArray
 
 sealed interface GuildChannelModifier <C : GuildChannel> {
+
+    /**
+     * The new name for the guild channel
+     */
     var name: String?
-    val position: Int?
+
+    /**
+     * The new position for the category
+     */
+    var position: Int?
+
+    /**
+     * The permissions for the category
+     */
     val permissionOverrides: MutableList<PermissionOverride>
 
     fun addPermissionOverride(holder: PermissionHolder, allow: Set<Permission> = emptySet(), deny: Set<Permission> = emptySet()) {
@@ -45,6 +57,9 @@ sealed interface GuildChannelModifier <C : GuildChannel> {
 
 sealed interface NonCategoryModifier <C : GuildChannel> : GuildChannelModifier<C> {
 
+    /**
+     * The new parent [Category] for this guild channel
+     */
     var parentId: Snowflake?
 
     fun setParent(id: Snowflake) { parentId = id }

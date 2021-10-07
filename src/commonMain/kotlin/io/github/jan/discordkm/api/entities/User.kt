@@ -3,11 +3,11 @@ package io.github.jan.discordkm.api.entities
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.DiscordImage
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.getEnums
 import io.github.jan.discordkm.internal.utils.getId

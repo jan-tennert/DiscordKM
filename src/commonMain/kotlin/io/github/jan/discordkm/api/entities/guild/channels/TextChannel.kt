@@ -14,6 +14,9 @@ import io.github.jan.discordkm.api.entities.guild.channels.modifier.TextChannelM
 import io.github.jan.discordkm.api.entities.lists.retrieve
 import io.github.jan.discordkm.internal.entities.guilds.channels.NewsChannelData
 
+/**
+ * A text channel is a [GuildChannel] where you can send messages
+ */
 interface TextChannel : GuildTextChannel {
 
     companion object : GuildChannelBuilder<GuildTextChannel, TextChannelModifier> {
@@ -27,10 +30,13 @@ interface TextChannel : GuildTextChannel {
      * @param name The name this thread will get
      * @param autoArchiveDuration The duration after the thread will be achieved
      * @param invitable Whether if non-moderators can add non-moderators to this private thread
+     * @see Thread.ThreadDuration
     */
-
     suspend fun createPrivateThread(name: String, autoArchiveDuration: Thread.ThreadDuration = defaultAutoArchiveDuration, invitable: Boolean? = null): Thread
 
+    /**
+     * Converts this text channel to a news channel
+     */
     fun asNewsChannel(): NewsChannel = NewsChannelData(guild, data)
 
     override suspend fun retrieve() = guild.channels.retrieve(id) as TextChannel

@@ -24,7 +24,6 @@ import kotlinx.serialization.json.put
 
 interface StageChannel : VoiceChannel {
 
-
     override suspend fun modify(modifier: VoiceChannelModifier.() -> Unit): StageChannel
 
     override suspend fun retrieve() = guild.channels.retrieve(id) as StageChannel
@@ -45,6 +44,9 @@ interface StageChannel : VoiceChannel {
         onFinish {  }
     }
 
+    /**
+     * Retrieves the current stage instance, if this stage channel has one
+     */
     suspend fun retrieveInstance() = client.buildRestAction<StageInstance> {
         route = Route.StageInstance.GET_INSTANCE(id).get()
         transform { StageInstance(client, it.toJsonObject()) }

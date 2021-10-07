@@ -46,6 +46,9 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlin.reflect.KProperty
 
+/**
+ * A guild can contain channels and members.
+ */
 interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameable {
 
     override val id: Snowflake
@@ -86,14 +89,6 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
      */
     val discoverySplash: String?
 
-    //val permissions only sent when you check for the bot's guilds
-    //region deprecated
-
-    /**
-     * Returns the afk channel of the guild if available
-     */
-    //val afkChannel
-
     /**
      * Afk timeout
      */
@@ -103,11 +98,6 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
      * If widgets are enabled on the server or not
      */
     val widgetsEnabled: Boolean
-
-    /**
-     * The channel that the widget will generate an invite to
-     */
-    //val widgetChannel
 
     /**
      * The [VerificationLevel] required for the guild
@@ -135,9 +125,15 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
     val everyoneRole: Role
         get() = roles["@everyone"].first()
 
+    /**
+     * Returns the bot in this guild
+     */
     val selfMember: Member
         get() = members[client.selfUser.id]!!
 
+    /**
+     * In the command list you can get and create new [ApplicationCommands]
+     */
     val commands: CommandList
         get() = (this as GuildData).commands
 
@@ -151,7 +147,6 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
      */
     val owner: Member?
         get() = members[ownerId]
-
 
     /**
      * The custom guild [Emoji]s
@@ -173,18 +168,9 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
     val applicationId: Snowflake?
 
     /**
-     * The system channel where system messages will be sent to
-     */
-    //val systemChannel
-
-    /**
      * The [SystemChannelFlag]s
      */
     val systemChannelFlags: EnumList<SystemChannelFlag>
-
-    //val rulesChannel
-
-    //joinedAt?
 
     /**
      * If this guild is considered as large
@@ -201,11 +187,15 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
      */
     val memberCount: Int?
 
+    /**
+     * In the channel list you can get and create guild channels
+     */
     val channels: RetrievableChannelList
 
+    /**
+     * In the thread list you can get threads
+     */
     val threads: ThreadList
-
-    //presences
 
     /**
      * The vanity url code for this guild if it has one
@@ -239,8 +229,6 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
 
     val publicUpdatesChannelId: Snowflake?
 
-    //max vid users?
-
     /**
      * The [WelcomeScreen] of the guild if available
      */
@@ -251,8 +239,14 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
      */
     val nsfwLevel: NSFWLevel
 
+    /**
+     * The id of the widget channel
+     */
     val widgetChannelId: Snowflake?
 
+    /**
+     * The id of the system channel. In there Discord can send things like boosts and welcome messages
+     */
     val systemChannelId: Snowflake?
 
     /**
@@ -270,8 +264,14 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
      */
     val stickers: StickerList
 
+    /**
+     * The id of the rules channel.
+     */
     val rulesChannelId: Snowflake?
 
+    /**
+     * The id of the afk channel.
+     */
     val afkChannelId: Snowflake?
 
     /**
@@ -286,6 +286,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
 
     /**
      * Creates an invite for this channel
+     * @param channelId The channel this invite will refer to
      */
     suspend fun createInvite(channelId: Snowflake, builder: InviteBuilder.() -> Unit): Invite
 
@@ -323,8 +324,14 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
      */
     suspend fun createTemplate(name: String, description: String? = null) : GuildTemplate
 
+    /**
+     * An unavailable guild is sent on the [ReadyEvent] when the bot is on this guild but the guild currently has some issues and isn't loaded in the cache
+     */
     data class Unavailable(val id: Long)
 
+    /**
+     * The [NSFWLevel]
+     */
     enum class NSFWLevel {
         DEFAULT,
         EXPLICIT,
@@ -332,6 +339,9 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
         AGE_RESTRICTED
     }
 
+    /**
+     * A guild with a higher premium tier has more features like higher attachment size
+     */
     enum class PremiumTier {
         NONE,
         TIER_1,
@@ -339,19 +349,44 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
         TIER_3
     }
 
+    /**
+     * The [VerificationLevel] for the guild
+     */
     enum class VerificationLevel {
         NONE,
+
+        /**
+         * The users must have a verified email address
+         */
         LOW,
+
+        /**
+         * The users must also be registered on Discord for longer than 5 minutes
+         */
         MEDIUM,
+
+        /**
+         * The users must also be on this discord server for more than 10 minutes
+         */
         HIGH,
+
+        /**
+         * The users must have a verified phone on their account
+         */
         VERY_HIGH;
     }
 
+    /**
+     * The [NotificationLevel] sets the default notification level for all guild channels
+     */
     enum class NotificationLevel {
         ALL_MESSAGES,
         ONLY_MENTIONS
     }
 
+    /**
+     * The [ExplicitContentFilter] sets which message should be scanned from discord
+     */
     enum class ExplicitContentFilter {
         DISABLED,
         MEMBERS_WITHOUT_ROLES,
@@ -394,8 +429,14 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
 
         override val client = guild.client
 
+        /**
+         * The reason why a member was banned from their guild
+         */
         val reason = data.getOrNull<String>("reason")
 
+        /**
+         * The user who was banned
+         */
         val user = data.getOrThrow<String>("user").toJsonObject().extractClientEntity<User>(client)
 
     }
@@ -421,6 +462,9 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
 
     }
 
+    /**
+     * A welcome screen is shown when a new user joins a guild and the guild has the feature [Feature.WELCOME_SCREEN_ENABLED]
+     */
     class WelcomeScreen(val guild: Guild, data: JsonObject) {
 
         /**
@@ -434,7 +478,6 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
         val channels = data.getValue("welcome_channels").jsonArray.map { Channel(guild, it.jsonObject) }
 
         inner class Channel(val guild: Guild, data: JsonObject) {
-            //channel
             /**
              * The description shown for the channel
              */

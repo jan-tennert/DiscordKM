@@ -11,6 +11,8 @@ package io.github.jan.discordkm.api.entities.guild.channels.modifier
 
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
+import io.github.jan.discordkm.internal.check
+import io.github.jan.discordkm.internal.utils.checkAndReturn
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.buildJsonObject
 
@@ -18,16 +20,32 @@ class ThreadModifier(val thread: Thread) {
 
     var name: String? = null
     var slowModeTime: TimeSpan? = null
+
+    /**
+     * After this time this [thread] gets automatically achieved
+     */
     var autoArchiveDuration: Thread.ThreadDuration? = null
-    var achiev: Boolean? = null
+
+    /**
+     * Whether this thread should be archived
+     */
+    var archive: Boolean? = null
+
+    /**
+     * Whether this thread should be locked. Means normal users can't unarchive the thread
+     */
     var lock: Boolean? = null
 
-    fun build() = buildJsonObject {
-        putOptional("name", name)
-        putOptional("rate_limit_per_user", slowModeTime?.seconds?.toInt())
-        putOptional("auto_achieve_duration", autoArchiveDuration?.duration?.minutes?.toInt())
-        putOptional("achieved", achiev)
-        putOptional("locked", lock)
+    fun build() = checkAndReturn {
+        slowModeTime.check("The slowmode time has to be between zero and 21600 seconds") { it.seconds < 21600 && it.seconds > 0 }
+
+        buildJsonObject {
+            putOptional("name", name)
+            putOptional("rate_limit_per_user", slowModeTime?.seconds?.toInt())
+            putOptional("auto_achieve_duration", autoArchiveDuration?.duration?.minutes?.toInt())
+            putOptional("achieved", archive)
+            putOptional("locked", lock)
+        }
     }
 
 }

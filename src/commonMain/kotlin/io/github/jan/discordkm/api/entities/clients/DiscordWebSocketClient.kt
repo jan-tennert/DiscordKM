@@ -29,6 +29,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.jvm.JvmName
 
+/**
+ * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
+ */
 class DiscordWebSocketClient internal constructor(
     token: String,
     private val encoding: Encoding,
@@ -98,24 +101,63 @@ class DiscordWebSocketClient internal constructor(
 
 }
 
+/**
+ * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
+ */
 class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", replaceWith = ReplaceWith("buildClient()", "io.github.jan.discordkm.api.entities.clients.buildClient")) constructor(var token: String) {
 
+    /**
+     * The encoding used for the websocket. Currently, only [Encoding.JSON] is supported
+     */
     var encoding = Encoding.JSON
+
+    /**
+     * The compression used for the websocket. Currently, no compression is supported
+     */
     var compression = Compression.NONE
+
+    /**
+     * The intents specify which events you should receive. For example if you don't use VoiceStates remove the [Intent.GUILD_VOICE_STATES] intent
+     */
     var intents = mutableListOf<Intent>()
+
+    /**
+     * The logging level specifies which messages the console should get. [Logger.Level.DEBUG] receives all messages
+     */
     var loggingLevel = Logger.Level.DEBUG
     private var activity = PresenceModifier()
+
+    /**
+     * How much the client should wait before reconnecting to a disconnected websocket session
+     */
     var reconnectDelay: TimeSpan = 5.seconds
+
+    /**
+     * The cache specifies which entities should be cached.
+     */
     var enabledCache = Cache.ALL.toMutableList()
     private val shards = mutableListOf<Int>()
+
+    /**
+     * Specifies the total amount of shards. [Sharding](https://discord.com/developers/docs/topics/gateway#sharding)
+     */
     var totalShards = -1
 
+    /**
+     * Use only specific shards. For more information see [Sharding](https://discord.com/developers/docs/topics/gateway#sharding)
+     */
     fun useShards(vararg shards: Int) { this.shards.addAll(shards.toList()) }
 
+    /**
+     * Sets the default activity which is set after connecting to the websocket.
+     */
     fun activity(builder: PresenceModifier.() -> Unit) { activity = PresenceModifier().apply(builder) }
 
     fun build() = DiscordWebSocketClient(token, encoding, compression, EnumList(Intent, intents), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache, shards, totalShards)
 
 }
 
+/**
+ * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
+ */
 inline fun buildClient(token: String, builder: DiscordWebSocketClientBuilder.() -> Unit = {}) = DiscordWebSocketClientBuilder(token).apply(builder).build()

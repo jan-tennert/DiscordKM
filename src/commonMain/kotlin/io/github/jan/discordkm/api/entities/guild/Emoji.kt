@@ -22,6 +22,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmName
 
+/**
+ * An emoji can be a unicode emoji or an [Emote]
+ */
 @Serializable
 class Emoji(
     val id: Snowflake? = null,
@@ -30,10 +33,17 @@ class Emoji(
     val isAnimated: Boolean = false
 ) : Mentionable {
 
+    /**
+     * An emote is an emoji which is only available on a specific guild
+     */
     class Emote @PublishedApi internal constructor(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity, Nameable {
+
         override val id = data.getId()
         override val name = data.getOrThrow<String>("name")
 
+        /**
+         * Whether this emote is animated (= is a gif)
+         */
         @get:JvmName("isAnimated")
         val isAnimated = data.getOrThrow<Boolean>("animated")
         //allowed users?

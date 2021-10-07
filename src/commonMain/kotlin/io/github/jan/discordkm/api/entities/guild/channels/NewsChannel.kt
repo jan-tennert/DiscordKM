@@ -33,6 +33,9 @@ interface NewsChannel : GuildTextChannel {
 
     }
 
+    /**
+     * Converts the news channel to a text channel
+     */
     fun asTextChannel(): TextChannel = TextChannelData(guild, data)
 
     override suspend fun retrieve() = guild.channels.retrieve(id) as NewsChannel

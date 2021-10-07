@@ -77,13 +77,13 @@ interface GuildChannel : Channel, Reference<GuildChannel>, GuildEntity, Nameable
 
     override suspend fun retrieve() = guild.channels.retrieve(id) as GuildChannel
 
-    //permission overrides
 }
 
 interface GuildMessageChannel : GuildChannel, MessageChannel {
 
     /**
      * Deletes multiple messages in this channel
+     * @param ids The ids for message which are going to be deleted
      */
     suspend fun deleteMessages(ids: Iterable<Snowflake>) = client.buildRestAction<Unit> {
         route = Route.Message.BULK_DELETE(id.string).post(buildJsonObject {
@@ -97,6 +97,9 @@ interface GuildMessageChannel : GuildChannel, MessageChannel {
 
     /**
      * Creates a webhook in this channel
+     * @param name The webhook name
+     * @param avatar The webhook avatar
+     * @see Image
      */
     suspend fun createWebhook(name: String, avatar: Image? = null) = client.buildRestAction<Webhook> {
         route = Route.Webhook.CREATE_WEBHOOK(id).post(buildJsonObject {
@@ -162,7 +165,6 @@ interface GuildTextChannel : GuildMessageChannel, Invitable, IParent {
      * @param limit How many threads will get retrieved
      * @param before Threads before this id
      */
-
     suspend fun retrieveJoinedPrivateArchivedThreads(limit: Int? = null, before: Snowflake? = null): List<Thread>
 
 }

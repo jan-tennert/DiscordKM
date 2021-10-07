@@ -50,7 +50,6 @@ class RetrievableChannelList(val guild: Guild, override val internalMap: Map<Sno
     /**
      * Returns all guild channels in this guild
      */
-
     suspend fun retrieveChannels() = guild.client.buildRestAction<List<GuildChannel>> {
         route = Route.Channel.GET_CHANNELS(guild.id).get()
         transform { it.toJsonArray().map { json -> json.jsonObject.extractChannel(client, guild) as GuildChannel } }
@@ -63,9 +62,7 @@ class RetrievableChannelList(val guild: Guild, override val internalMap: Map<Sno
     /**
      * Creates a guild channel
      * @param type The type
-     *
      **/
-
     suspend inline fun <reified C: GuildChannel, M: GuildChannelModifier<C>, T : GuildChannelBuilder<C, M>> create(type: T, noinline builder: M.() -> Unit) : C = guild.client.buildRestAction<C> {
         route = Route.Channel.CREATE_CHANNEL(guild.id).post(type.create(builder))
         transform { it.toJsonObject().extractChannel(client, guild) as C }

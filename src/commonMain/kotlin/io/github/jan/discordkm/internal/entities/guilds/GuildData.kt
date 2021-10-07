@@ -55,6 +55,7 @@ import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.internal.EntityCache
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
+import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.entities.guilds.channels.ThreadData
 import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
@@ -64,7 +65,6 @@ import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
-import io.github.jan.discordkm.internal.utils.DiscordImage
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
 import io.github.jan.discordkm.internal.utils.getEnums

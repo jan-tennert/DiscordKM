@@ -13,7 +13,7 @@ import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.internal.utils.DiscordImage
+import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
@@ -22,6 +22,9 @@ import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmName
 
+/**
+ * A sticker can be from discord or from a guild
+ */
 class Sticker(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity, Nameable {
 
     override val id = data.getId()

@@ -11,6 +11,8 @@ package io.github.jan.discordkm.api.entities.guild.invites
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.invites.Invite.TargetType
+import io.github.jan.discordkm.internal.check
+import io.github.jan.discordkm.internal.utils.checkAndReturn
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -38,6 +40,14 @@ data class InviteBuilderObject internal constructor(
     var targetApplicationId: Snowflake? = null
 )
 
+/**
+ * @param maxAge The duration of invite in seconds before expire.
+ *               (0-604800). 0 means never
+ * @param maxUses Max number of uses (0-100). 0 means unlimited
+ * @param isTemporary "Whether this invite only grants temporary membership"
+ * @param isUnique "If true, don't try to reuse a similar invite (useful for creating many unique one time use invites)"
+ * @param target The target of this invite. Can refer to a EmbeddedApplication or a user's stream
+ */
 class InviteBuilder(
     var maxAge: Int? = null,
     var maxUses: Int? = null,
@@ -46,6 +56,10 @@ class InviteBuilder(
     var target: Target? = null
 ) {
 
-    fun build() = InviteBuilderObject(maxAge, maxUses, isTemporary, isUnique, target?.type?.ordinal?.plus(1), if(target?.type == TargetType.STREAM) target?.targetId else null, if(target?.type == TargetType.EMBEDDED_APPLICATION) target?.targetId else null)
+    fun build() = checkAndReturn {
+        maxAge.check("The maximum age of an invite has to be between 0 and 604800 seconds") { it in 0..604799 }
+        maxUses.check("The maximum uses of an invite have to be between 0 and 100") { it in 0..100 }
+        InviteBuilderObject(maxAge, maxUses, isTemporary, isUnique, target?.type?.ordinal?.plus(1), if(target?.type == TargetType.STREAM) target?.targetId else null, if(target?.type == TargetType.EMBEDDED_APPLICATION) target?.targetId else null)
+    }
 
 }

@@ -168,7 +168,6 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
         it.jsonArray.map { it.jsonObject.extractGuildEntity(guild!!) }
     } ?: emptyList()
 
-    //mentioned channels
     /**
      * Returns a list of embeds included in this message
      */
@@ -289,7 +288,6 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      * @param name The name this thread will get
      * @param autoArchiveDuration The [Thread.ThreadDuration] after the thread will be achieved
      */
-
     suspend fun createThread(name: String, autoArchiveDuration: Thread.ThreadDuration = (channel as GuildTextChannel).defaultAutoArchiveDuration) = client.buildRestAction<Thread> {
         route = Route.Thread.START_THREAD_WITH_MESSAGE(channel.id, id).post(buildJsonObject {
             put("name", name)
@@ -303,7 +301,6 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     /**
      * Pins this message in this channel
      */
-
     suspend fun pin() = client.buildRestAction<Unit> {
         route = Route.Message.PIN_MESSAGE(channel.id, id).put()
         transform {  }
@@ -329,18 +326,36 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
         stickerIds = stickerItems.map { it.id }
     )
 
+    /**
+     * The message interaction object is sent when it was sent by an interaction
+     */
     class MessageInteraction(val message: Message, override val data: JsonObject) : SerializableEntity {
 
         override val client: Client
             get() = message.client
 
+        /**
+         * The id of the interaction
+         */
         val interactionId = data.getOrThrow<Snowflake>("id")
+
+        /**
+         * The type of the interaction
+         */
         val type = valueOfIndex<Interaction.InteractionType>(data.getOrThrow("type"), 1)
+
+        /**
+         * The name of the command
+         */
         val commandName = data.getOrThrow<String>("name")
+
         val user: User = UserData(client, data.getValue("user").jsonObject)
 
     }
 
+    /**
+     * The message reference is sent when e.g. a message replies to another message
+     */
     @Serializable
     data class Reference(@SerialName("message_id") val messageId: Long? = null, @SerialName("guild_id") val guildId: Long? = null, @SerialName("channel_id") val channelId: Long? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)
 

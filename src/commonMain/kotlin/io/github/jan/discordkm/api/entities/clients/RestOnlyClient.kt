@@ -11,6 +11,12 @@ package io.github.jan.discordkm.api.entities.clients
 
 import com.soywiz.klogger.Logger
 
-class RestOnlyClient @Deprecated("Use the method buildRestOnlyClient") constructor(token: String, loggingLevel: Logger.Level) : Client(token, loggingLevel)
+/**
+ * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
+ */
+class RestOnlyClient @Deprecated("Use the method buildRestOnlyClient") internal constructor(token: String, loggingLevel: Logger.Level) : Client(token, loggingLevel)
 
-inline fun buildRestOnlyClient(token: String, loggingLevel: Logger.Level) =  RestOnlyClient(token, loggingLevel)
+/**
+ * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
+ */
+fun buildRestOnlyClient(token: String, loggingLevel: Logger.Level) =  RestOnlyClient(token, loggingLevel)

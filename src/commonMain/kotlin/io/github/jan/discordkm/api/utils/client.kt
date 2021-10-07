@@ -7,7 +7,7 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.internal.utils
+package io.github.jan.discordkm.api.utils
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
@@ -17,9 +17,10 @@ import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.utils.toJsonObject
 
 /**
- * Retrieves a webhook from its **id**
+ * Retrieves a webhook from its [id]
  */
 suspend fun Client.retrieveWebhook(id: Snowflake) = buildRestAction<Webhook> {
     route = Route.Webhook.GET_WEBHOOK(id).get()
@@ -27,7 +28,7 @@ suspend fun Client.retrieveWebhook(id: Snowflake) = buildRestAction<Webhook> {
 }
 
 /**
- * Retrieves a webhook from its **id** and **token**
+ * Retrieves a webhook from its [id] and [token]
  */
 suspend fun Client.retrieveWebhook(id: Snowflake, token: String) = buildRestAction<Webhook> {
     route = Route.Webhook.GET_WEBHOOK_WITH_TOKEN(id, token).get()
@@ -35,7 +36,7 @@ suspend fun Client.retrieveWebhook(id: Snowflake, token: String) = buildRestActi
 }
 
 /**
- * Retrieves a webhook from a url
+ * Retrieves a webhook from an [url]
  */
 suspend fun Client.retrieveWebhook(url: String) = Webhook.WEBHOOK_PATTERN.matchEntire(url)?.let {
     retrieveWebhook(Snowflake.fromId(it.groups[1]!!.value), it.groups[2]!!.value)
@@ -50,7 +51,7 @@ suspend fun Client.retrieveRTCRegions() = buildRestAction<String> {
 }
 
 /**
- * Retrieves an invite from its code
+ * Retrieves an invite from its [code]
  */
 suspend fun Client.retrieveInvite(code: String) = client.buildRestAction<Invite> {
     route = Route.Invite.GET_INVITE(code).get()

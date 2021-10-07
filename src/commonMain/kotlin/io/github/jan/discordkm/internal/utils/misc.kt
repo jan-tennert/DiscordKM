@@ -20,3 +20,5 @@ inline fun <reified T : Enum<T>> valueOfIndexOrDefault(index: Int?, add: Int = 0
 inline fun <reified T : Enum<T>> valueOfIndexOrNull(index: Int?, add: Int = 0) = enumValues<T>().firstOrNull { it.ordinal + add == index }
 
 fun <K, V> Map<K, V>.toIsoMap() = IsoMutableMap { this@toIsoMap.toMutableMap() }
+
+inline fun <T> checkAndReturn(check: () -> T) = check()

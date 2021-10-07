@@ -27,12 +27,26 @@ class VoiceChannelModifier(val type: Int? = null) : NonCategoryModifier<VoiceCha
 
     override var parentId: Snowflake? = null
 
+    /**
+     * The bitrate used in this voice channel
+     * (8000 - 96000)
+     */
     var bitrate: Int? by NullableLimitedInt(8000, 96000)
 
+    /**
+     * The maximum amount of members allowed to join this voice channel.
+     * (0 - 99)
+     */
     var userLimit: Int? by NullableLimitedInt(0, 99)
 
+    /**
+     * The new voice region for this voice channel
+     */
     var rtcRegion: String? = null
 
+    /**
+     * The quality for new video streams
+     */
     var videoQualityMode: VoiceChannel.VideoQualityMode? = null
 
     override fun build() = buildJsonObject {

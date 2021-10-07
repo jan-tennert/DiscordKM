@@ -29,41 +29,68 @@ import kotlinx.serialization.json.jsonObject
 
 open class CommandList(private val baseURL: String, val holder: CommandHolder, override val internalMap: Map<Snowflake, ApplicationCommand>) : NameableSnowflakeList<ApplicationCommand> {
 
+    /**
+     * Creates a new application command
+     */
     suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.post(baseURL, builder.build())
         transform { it.toJsonObject().extractApplicationCommand(client) }
         onFinish { holder.commandCache[it.id] = it }
     }
 
+    /**
+     * Creates a new chat input command
+     */
     suspend fun createChatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) = create(chatInputCommand(builder))
 
+    /**
+     * Creates a new message command
+     */
     suspend fun createMessageCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(messageCommand(builder))
 
+    /**
+     * Creates a new user command
+     */
     suspend fun createUserCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(userCommand(builder))
 
+    /**
+     * Retrieves all application commands
+     */
     suspend fun retrieveCommands() = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.get(baseURL)
         transform { it.toJsonArray().map { json -> json.jsonObject.extractApplicationCommand(client) } }
         onFinish { holder.commandCache.internalMap.clear(); holder.commandCache.internalMap.putAll(it.associateBy { command -> command.id }) }
     }
 
+    /**
+     * Retrieves a specific application command
+     */
     suspend fun retrieve(id: Snowflake) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.get("$baseURL/$id")
         transform { it.toJsonObject().extractApplicationCommand(client) }
         onFinish { holder.commandCache[it.id] = it }
     }
 
+    /**
+     * Modifies a application command
+     */
     suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.patch("$baseURL/$id", builder.build())
         transform { it.toJsonObject().extractApplicationCommand(client) }
         onFinish { holder.commandCache[it.id] = it }
     }
 
+    /**
+     * Deletes an application command
+     */
     suspend fun delete(id: Snowflake) = holder.client.buildRestAction<Unit> {
         route = RestAction.delete("$baseURL/$id")
         onFinish { holder.commandCache.remove(id) }
     }
 
+    /**
+     * Overrides all application commands with new ones
+     */
     suspend fun overrideCommands(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.put(baseURL, Json.encodeToJsonElement(CommandBulkOverride().apply(commands).commands.map { it.build() }))
         transform { it.toJsonArray().map { json -> json.jsonObject.extractApplicationCommand(client) } }

@@ -18,7 +18,7 @@ import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.api.entities.misc.EnumList
-import io.github.jan.discordkm.internal.utils.DiscordImage
+import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.utils.getColor
 import io.github.jan.discordkm.internal.utils.getEnums
 import io.github.jan.discordkm.internal.utils.getId

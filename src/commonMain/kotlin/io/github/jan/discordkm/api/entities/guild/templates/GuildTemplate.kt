@@ -21,6 +21,9 @@ import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import kotlinx.serialization.json.jsonObject
 
+/**
+ * A guild template is used to create a guild on top of another guild. Roles, channels, etc. are synced
+ */
 interface GuildTemplate : SerializableEntity {
 
     /**

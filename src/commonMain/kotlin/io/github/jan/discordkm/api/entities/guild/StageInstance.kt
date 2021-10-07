@@ -44,6 +44,10 @@ class StageInstance(override val client: Client, override val data: JsonObject) 
      * The stage channel where the stage instance is in
      */
     val stageChannelId = data.getOrThrow<Snowflake>("channel_id")
+
+    /**
+     * The stage channel where the stage instance is in
+     */
     val stageChannel
         get() = guild.channels.getGuildChannel<StageChannel>(stageChannelId)
 
@@ -63,9 +67,7 @@ class StageInstance(override val client: Client, override val data: JsonObject) 
     @get:JvmName("isDiscovery")
     val isDiscovery = data.getOrThrow<Boolean>("discoverable_disabled")
 
-    override fun getValue(ref: Any?, property: KProperty<*>): StageInstance {
-        throw UnsupportedOperationException("Stage instances aren't cached currently")
-    }
+    override fun getValue(ref: Any?, property: KProperty<*>) = guild.stageInstances.first { it.id == id }
 
     /**
      * Deletes this stage instance
@@ -78,6 +80,8 @@ class StageInstance(override val client: Client, override val data: JsonObject) 
 
     /**
      * Modifies this stage instance. All fields are optional
+     * @param topic The new topic for this stage instance
+     * @param privacyLevel The new privacy level for this stage instance
      */
     suspend fun modify(topic: String? = null, privacyLevel: PrivacyLevel? = null) = client.buildRestAction<StageInstance> {
         route = Route.StageInstance.MODIFY_INSTANCE(stageChannelId).patch(buildJsonObject {
@@ -88,11 +92,7 @@ class StageInstance(override val client: Client, override val data: JsonObject) 
         onFinish { (guild as GuildData).stageInstanceCache[id] = it }
     }
 
-    override suspend fun retrieve() = client.buildRestAction<StageInstance> {
-        route = Route.StageInstance.GET_INSTANCE(stageChannelId).get()
-        transform { StageInstance(client, it.toJsonObject()) }
-        onFinish { (guild as GuildData).stageInstanceCache[id] = it }
-    }
+    override suspend fun retrieve() = stageChannel.retrieveInstance()
 
     enum class PrivacyLevel {
         PUBLIC,

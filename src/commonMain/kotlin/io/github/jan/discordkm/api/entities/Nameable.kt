@@ -9,6 +9,9 @@
  */
 package io.github.jan.discordkm.api.entities
 
+/**
+ * All objects inheriting this interface have a name
+ */
 interface Nameable {
 
     val name: String

@@ -18,7 +18,6 @@ interface Category : GuildChannel {
     /**
      * Modifies this category
      */
-
     suspend fun modify(modifier: CategoryModifier.() -> Unit = {}): Category
 
     override suspend fun retrieve() = guild.channels.retrieve(id) as Category

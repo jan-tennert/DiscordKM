@@ -13,7 +13,7 @@ plugins {
     kotlin("plugin.serialization") version kotlinVersion
     id("maven-publish")
     signing
-    id("org.jetbrains.dokka") version "1.5.30"
+    id("org.jetbrains.dokka") version "1.5.31"
 }
 
 group = "io.github.jan-tennert.discordkm"

@@ -9,6 +9,9 @@
  */
 package io.github.jan.discordkm.api.entities
 
+/**
+ * All objects inheriting this interface can be mentioned via [asMention]
+ */
 interface Mentionable {
 
     val asMention: String

@@ -18,12 +18,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-/**
- * @param customId The id of the selection menu. Used for the [SelectionMenuEvent]
- * @param minValues The minimum amount of values the user has to select
- * @param maxValues The maximum amount of values the user can select
- * @param isDisabled Whether the user can interact with this selection menu
- */
 @Serializable
 class SelectionMenu(
     @Required
@@ -39,6 +33,13 @@ class SelectionMenu(
     val options: MutableList<SelectOption>
 ) : Component
 
+/**
+ * @param customId The id of the selection menu. Used for the [SelectionMenuEvent]
+ * @param minValues The minimum amount of values the user has to select
+ * @param maxValues The maximum amount of values the user can select
+ * @param isDisabled Whether the user can interact with this selection menu
+ * @param options The options of the selection menu
+ */
 class SelectionMenuBuilder(var customId: String, var minValues: Int, var maxValues: Int, var isDisabled: Boolean, val options: MutableList<SelectOption>) {
 
     @Transient
@@ -77,8 +78,19 @@ typealias OnSelected = suspend SelectionMenuEvent.() -> Unit
 
 /**
  * A selection menu
- */
-fun RowBuilder.selectionMenu(customId: String = "", label: String = "", minValues: Int = 1, maxValues: Int = 1, disabled: Boolean = false, options: List<SelectOption> = emptyList(), builder: SelectionMenuBuilder.() -> Unit) { components += SelectionMenuBuilder(minValues = minValues, maxValues = maxValues, options = options.toMutableList(), isDisabled = disabled, customId = customId).apply(builder).build()}
+ * @param customId The id of the selection menu. Used for the [SelectionMenuEvent]
+ * @param minValues The minimum amount of values the user has to select
+ * @param maxValues The maximum amount of values the user can select
+ * @param isDisabled Whether the user can interact with this selection menu
+ * @param options The options of the selection menu
+*/
+fun RowBuilder.selectionMenu(customId: String = "", isDisabled: Boolean = false, minValues: Int = 1, maxValues: Int = 1, options: List<SelectOption> = emptyList(), builder: SelectionMenuBuilder.() -> Unit) { components += SelectionMenuBuilder(minValues = minValues, maxValues = maxValues, options = options.toMutableList(), isDisabled = isDisabled, customId = customId).apply(builder).build()}
 
+/**
+ * @param label The label of the selection menu option
+ * @param value The value of the selection menu option (used for identifying the selected option in [SelectionMenuEvent])
+ * @param emoji The emoji of the selection menu option
+ * @param defaultOption Whether this selection menu option should be the default option
+ */
 @Serializable
 class SelectOption(val label: String? = null, val value: String, val description: String? = null, val emoji: Emoji? = null, @SerialName("default") val defaultOption: Boolean = false)

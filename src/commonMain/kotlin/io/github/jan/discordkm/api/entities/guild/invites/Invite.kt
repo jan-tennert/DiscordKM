@@ -32,6 +32,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlin.jvm.JvmName
 
+/**
+ * An invite is used to easily let a user join a guild, voice channel, stage instance, event etc.
+ */
 class Invite(override val client: Client, override val data: JsonObject) : SerializableEntity {
 
     /**
@@ -86,6 +89,9 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
         ignoreUnknownKeys = true
     }.decodeFromString<Metadata>(data.toString()) else null
 
+    /**
+     * Deletes this invite
+     */
     suspend fun delete() = client.buildRestAction<Unit> {
         route = Route.Invite.DELETE_INVITE(code).delete()
         transform {  }

@@ -107,6 +107,9 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
 
 }
 
+/**
+ * The intents specify which events you should receive. For example if you don't use VoiceStates remove the [Intent.GUILD_VOICE_STATES] intent
+ */
 enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
 
     GUILDS(0),

@@ -9,9 +9,9 @@
  */
 package io.github.jan.discordkm.api.entities.guild.invites
 
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.SerializableEntity
-import io.github.jan.discordkm.internal.utils.DiscordImage
+import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow

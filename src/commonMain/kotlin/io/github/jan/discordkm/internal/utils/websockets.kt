@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.internal.utils
 
-import io.github.jan.discordkm.internal.utils.DiscordKMInfo.DISCORD_API_VERSION
+import io.github.jan.discordkm.DiscordKMInfo.DISCORD_API_VERSION
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.Compression.NONE
 import io.github.jan.discordkm.internal.websocket.Encoding

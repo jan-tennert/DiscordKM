@@ -9,6 +9,9 @@
  */
 package io.github.jan.discordkm.api.entities.activity
 
+/**
+ * A user status says whether the user is online, idling, offline etc.
+ */
 enum class PresenceStatus(val status: String) {
     ONLINE("online"),
     DO_NOT_DISTURB("dnd"),

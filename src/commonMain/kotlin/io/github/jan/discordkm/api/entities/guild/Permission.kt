@@ -12,6 +12,9 @@ package io.github.jan.discordkm.api.entities.guild
 import io.github.jan.discordkm.api.entities.EnumSerializer
 import io.github.jan.discordkm.api.entities.SerializableEnum
 
+/**
+ * Roles and Members can have specific permission to restrict their access on the guild
+ */
 enum class Permission(override val offset: Int) : SerializableEnum<Permission> {
 
     CREATE_INSTANT_INVITE(0),

@@ -11,6 +11,9 @@ package io.github.jan.discordkm.api.entities
 
 import io.github.jan.discordkm.api.entities.clients.Client
 
+/**
+ * The base entity for all entities
+ */
 interface BaseEntity {
 
     val client: Client

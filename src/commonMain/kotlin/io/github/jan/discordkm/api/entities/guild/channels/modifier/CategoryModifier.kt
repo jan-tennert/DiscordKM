@@ -13,6 +13,7 @@ import io.github.jan.discordkm.api.entities.guild.channels.Category
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverride
 
 class CategoryModifier : GuildChannelModifier<Category> {
+
     override var name: String? = null
 
     override var position: Int? = null

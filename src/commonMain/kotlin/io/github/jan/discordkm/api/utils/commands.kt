@@ -7,7 +7,7 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.internal.utils
+package io.github.jan.discordkm.api.utils
 
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.CommandEvent

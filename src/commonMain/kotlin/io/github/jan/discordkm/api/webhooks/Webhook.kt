@@ -20,12 +20,12 @@ import io.github.jan.discordkm.api.entities.messages.buildMessage
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
+import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.RateLimiter
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.restaction.generateUrl
-import io.github.jan.discordkm.internal.utils.DiscordImage
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow

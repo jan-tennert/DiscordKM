@@ -38,48 +38,55 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmInline
 
-//maybe cache threads?
+/**
+ * A thread can be created within a text channel. Used for cleaning up the chat
+ */
 interface Thread : GuildTextChannel, IParent {
 
     override val parent
         get() = guild.channels[parentId ?: Snowflake.empty()] as? GuildTextChannel
 
+    /**
+     * The thread metadata containing things like if the thread is archived etc.
+     */
     val metadata: ThreadMetadata
         get() = Json.decodeFromString<ThreadMetadata>(data.getOrThrow<String>("thread_metadata"))
 
+    /**
+     * The members participating in this thread. If its empty use [retrieveThreadMembers]
+     */
     val members: ThreadMemberList
 
     /**
      * Joins this [Thread]
      */
-
     suspend fun join()
 
     /**
      * Retrieves all thread members from this thread
      *
      * Requires the intent [Intent.GUILD_MEMBERS]
+     * @see ThreadMember
      */
     suspend fun retrieveThreadMembers(): List<ThreadMember>
 
     /**
      * Leaves this thread
      */
-
     suspend fun leave()
-
 
     override suspend fun send(message: DataMessage): Message
 
     /**
      * Modifies this [Thread]
      */
-
     suspend fun modify(modifier: ThreadModifier.() -> Unit): Thread
 
-    override suspend fun retrieve() = throw UnsupportedOperationException()
+    override suspend fun retrieve() = throw UnsupportedOperationException("Can't retrieve thread ${name}")
 
-
+    /**
+     * The thread metadata containing things like if the thread is archived etc.
+     */
     @Serializable
     data class ThreadMetadata(
         @SerialName("archived")
@@ -97,8 +104,14 @@ interface Thread : GuildTextChannel, IParent {
 
     data class ThreadMember(val guild: Guild, override val data: JsonObject) : SerializableEntity, SnowflakeEntity, Nameable {
 
+        /**
+         * The id of the user
+         */
         override val id = data.getOrThrow<Snowflake>("user_id")
 
+        /**
+         * The id of the thread
+         */
         val threadId = data.getId()
 
         override val client = guild.client
@@ -121,7 +134,7 @@ interface Thread : GuildTextChannel, IParent {
      */
     @JvmInline
     @Serializable(with = ThreadDurationSerializer::class)
-    value class ThreadDuration internal constructor(val duration: TimeSpan) {
+    value class ThreadDuration private constructor(val duration: TimeSpan) {
 
         companion object {
             val HOUR = ThreadDuration(1.hours)

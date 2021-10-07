@@ -17,12 +17,18 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+/**
+ * The type for the [Activity]
+ */
 @Serializable(with = ActivityTypeSerializer::class)
 enum class ActivityType {
     PLAYING,
     STREAMING,
     LISTENING,
     WATCHING,
+    /**
+     * This activity type is user-only. Bots can't set them
+     */
     CUSTOM,
     COMPETING
 }

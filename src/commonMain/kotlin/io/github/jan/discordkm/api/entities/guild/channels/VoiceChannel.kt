@@ -19,20 +19,38 @@ import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
 import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
 
+/**
+ * A voice channel is a [GuildChannel] which you can connect to
+ */
 interface VoiceChannel : GuildChannel, Invitable, IParent {
 
+    /**
+     * The maximum amount of members allowed to join this voice channel.
+     */
     val userLimit: Int
         get() = data.getOrDefault("user_limit", 0)
 
+    /**
+     * The voice region of this voice channel
+     */
     val regionId: String?
         get() = data.getOrNull<String>("rtc_region")
 
+    /**
+     * The birate of this voice channel
+     */
     val bitrate: Int
         get() = data.getOrDefault<Int>("bitrate", 0)
 
+    /**
+     * The voice quality mode of this voice channel
+     */
     val videoQualityMode: VideoQualityMode
         get() = if(data.getOrNull<Int>("video_quality_mode") != null) VideoQualityMode.values().first { it.ordinal == data.getOrNull<Int>("video_quality_mode") } else VideoQualityMode.AUTO
 
+    /**
+     * Joins this voice channel over the websocket
+     */
     suspend fun join() = if(client is DiscordWebSocketClient) {
         (client as DiscordWebSocketClient).shardConnections[0].send(UpdateVoiceStatePayload(guild.id, id, guild.selfMember.isMuted, guild.selfMember.isDeafened))
     } else {
