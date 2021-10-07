@@ -51,6 +51,7 @@ enum class Cache {
     companion object {
 
         val STANDARD = listOf(MEMBERS, CHANNELS)
+        val ALL = values().toList()
 
     }
 

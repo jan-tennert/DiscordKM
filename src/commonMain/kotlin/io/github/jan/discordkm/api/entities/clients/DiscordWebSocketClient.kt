@@ -106,7 +106,7 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
     var loggingLevel = Logger.Level.DEBUG
     private var activity = PresenceModifier()
     var reconnectDelay: TimeSpan = 5.seconds
-    var enabledCache = Cache.STANDARD.toMutableList()
+    var enabledCache = Cache.ALL.toMutableList()
     private val shards = mutableListOf<Int>()
     var totalShards = -1
 

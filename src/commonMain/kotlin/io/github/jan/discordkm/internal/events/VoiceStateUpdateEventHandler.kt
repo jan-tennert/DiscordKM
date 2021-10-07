@@ -25,8 +25,8 @@ class VoiceStateUpdateEventHandler(val client: DiscordWebSocketClient) : Interna
         val oldVoiceState = guild.voiceStates.firstOrNull { it.userId == voiceState.userId }
         guild.let {
             if(Cache.VOICE_STATES in client.enabledCache) {
-                (it as GuildData).voiceStates.removeAll { state -> state.userId == voiceState.userId }
-                (it as GuildData).voiceStates += voiceState
+                (it as GuildData).voiceStateCache.remove(voiceState.userId)
+                (it as GuildData).voiceStateCache[voiceState.userId] =  voiceState
             }
         }
         return VoiceStateUpdateEvent(client, voiceState, oldVoiceState)

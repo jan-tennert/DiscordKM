@@ -122,6 +122,8 @@ class GuildData(override val client: Client, override val data: JsonObject) : Gu
 
     internal val emojiCache = EntityCache((data.getValue("emojis").jsonArray.map { it.jsonObject.extractClientEntity<Emoji.Emote>(client) }).associateBy { it.id }.toIsoMap())
 
+    internal val voiceStateCache = EntityCache(data.getValue("voice_states").jsonArray.map { VoiceStateData(client, it.jsonObject) }.associateBy { it.userId }.toIsoMap())
+
     override val stickers: StickerList
         get() = StickerList(stickerCache.internalMap)
 
@@ -134,8 +136,8 @@ class GuildData(override val client: Client, override val data: JsonObject) : Gu
     override val roles: RoleList
         get() = RoleList(this, roleCache.values.associateBy { it.id })
 
-    override val voiceStates: MutableList<VoiceState>
-        get() = data.getValue("voice_states").jsonArray.map { VoiceStateData(client, it.jsonObject) }.toMutableList()
+    override val voiceStates: List<VoiceState>
+        get() = voiceStateCache.values
 
     override val members
         get() = RetrievableMemberList(this, memberCache.values.associateBy { it.id })

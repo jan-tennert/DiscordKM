@@ -38,16 +38,17 @@ import kotlinx.serialization.json.jsonObject
 
 open class GuildChannelData(override val guild: Guild, final override val data: JsonObject) : GuildChannel {
 
-    override val permissionOverrides = data["permission_overwrites"]?.jsonArray?.map {
-        val holder = when(it.jsonObject.getOrThrow<Int>("type")) {
-            0 -> guild.roles[it.jsonObject.getOrThrow<Snowflake>("id")] as PermissionHolder
-            1 -> guild.members[it.jsonObject.getOrThrow<Snowflake>("id")] as PermissionHolder
-            else -> throw IllegalStateException()
-        }
-        val allow = it.jsonObject.getEnums("allow", Permission)
-        val deny = it.jsonObject.getEnums("deny", Permission)
-        PermissionOverride(holder, allow, deny)
-    }?.toSet() ?: emptySet()
+    override val permissionOverrides
+        get() = data["permission_overwrites"]?.jsonArray?.map {
+            val holder = when(it.jsonObject.getOrThrow<Int>("type")) {
+                0 -> guild.roles[it.jsonObject.getOrThrow<Snowflake>("id")] as PermissionHolder
+                1 -> guild.members[it.jsonObject.getOrThrow<Snowflake>("id")] as PermissionHolder
+                else -> throw IllegalStateException()
+            }
+            val allow = it.jsonObject.getEnums("allow", Permission)
+            val deny = it.jsonObject.getEnums("deny", Permission)
+            PermissionOverride(holder, allow, deny)
+        }?.toSet() ?: emptySet()
 
 }
 

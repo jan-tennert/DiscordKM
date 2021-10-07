@@ -56,7 +56,6 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
         get() = data.getValue("user").jsonObject.extractClientEntity(guild.client)
 
     val voiceState: VoiceState?
-        get() = guild.voiceStates.firstOrNull { it.userId == id }
 
     val status: PresenceStatus
 
