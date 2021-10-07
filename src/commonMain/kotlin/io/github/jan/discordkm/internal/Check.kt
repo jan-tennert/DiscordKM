@@ -2,8 +2,10 @@ package io.github.jan.discordkm.internal
 
 object Check {
 
-    fun checkArgument(message: String, check: () -> Boolean) = if(!check()) throw IllegalArgumentException(message) else Unit
+    val SLOWMODE = 0..21600
 
 }
 
-fun <T> T?.check(message: String, check: (T) -> Boolean) = if(this != null) Check.checkArgument(message, check = { check(this) }) else null
+fun <T> T?.check(message: String, check: (T) -> Boolean) = if(this != null) if(!check(this)) throw IllegalArgumentException(message) else Unit else null
+
+fun Int?.checkRange(name: String, range: IntRange) = check("$name has to be between ${range.first} and ${range.last}") { this in range }

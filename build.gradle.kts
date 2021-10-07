@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "io.github.jan-tennert.discordkm"
-version = "0.4"
+version = "0.4.1"
 
 repositories {
     mavenCentral()
@@ -134,6 +134,7 @@ kotlin {
     addPublishing()
 
     sourceSets {
+        all { languageSettings { optIn("kotlin.RequiresOptIn") } }
         val commonMain by getting {
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0")

@@ -89,7 +89,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     val actionRows = data["components"]?.let { json ->
         json.jsonArray.map { row ->
             val internalComponents = row.jsonObject.getValue("components").jsonArray.map { component ->
-                when (valueOfIndex<ComponentType>(component.jsonObject.getOrThrow("type"))) {
+                when (valueOfIndex<ComponentType>(component.jsonObject.getOrThrow("type"), -1)) {
                     ComponentType.BUTTON -> componentJson.decodeFromJsonElement(
                         Button.serializer(),
                         component

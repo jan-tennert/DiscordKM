@@ -171,7 +171,10 @@ class DataMessage @Deprecated("Use buildMessage method") constructor(
     fun buildCallback(type: Int, ephemeral: Boolean = false): Any = if(attachments.isEmpty()) {
         buildJsonObject {
             put("type", type)
-            put("data", buildJson().toJsonObject())
+            put("data", buildJsonObject {
+                putJsonObject(buildJson().toJsonObject())
+                if(ephemeral) put("flags", 1 shl 6)
+            })
         }
     } else {
         MultiPartFormDataContent(

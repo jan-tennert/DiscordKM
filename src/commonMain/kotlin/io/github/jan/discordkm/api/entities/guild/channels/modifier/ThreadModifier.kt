@@ -11,7 +11,9 @@ package io.github.jan.discordkm.api.entities.guild.channels.modifier
 
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
+import io.github.jan.discordkm.internal.Check
 import io.github.jan.discordkm.internal.check
+import io.github.jan.discordkm.internal.checkRange
 import io.github.jan.discordkm.internal.utils.checkAndReturn
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.buildJsonObject
@@ -20,6 +22,10 @@ class ThreadModifier(val thread: Thread) {
 
     var name: String? = null
     var slowModeTime: TimeSpan? = null
+        set(value) {
+            value?.seconds?.toInt().checkRange("slow mode time", Check.SLOWMODE)
+            field = value
+        }
 
     /**
      * After this time this [thread] gets automatically achieved

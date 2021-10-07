@@ -19,11 +19,13 @@ class EntityCache<K, T>(internal var internalMap: IsoMutableMap<K, T> = IsoMutab
         get() = internalMap.values.toList()
 
     @PublishedApi
+    @DiscordKMInternal
     internal operator fun set(id: K, value: T) {
         internalMap[id] = value
     }
 
     @PublishedApi
+    @DiscordKMInternal
     internal fun remove(id: K) {
         internalMap.remove(id)
     }
