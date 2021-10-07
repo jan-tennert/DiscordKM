@@ -40,7 +40,8 @@ signing {
     }
 }
 
-val dokkaOutputDir = "H:/Programming/Other/DiscordKMDocs"
+//val dokkaOutputDir = "H:/Programming/Other/DiscordKMDocs"
+val dokkaOutputDir = "$buildDir/dokka"
 
 tasks.dokkaHtml {
 //    outputDirectory.set(file(dokkaOutputDir))
