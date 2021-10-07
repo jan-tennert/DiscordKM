@@ -7,7 +7,8 @@ Note: currently **JS** and **JVM** are supported due to issues with Kotlin/Nativ
 
 You can use this [trello board](https://trello.com/b/EQqz7hAY/discordkm) to see my progress
 
-Discord: [Click here](https://discord.gg/mxRqJa4pHe)
+Discord: [Click here](https://discord.gg/mxRqJa4pHe) \
+Docs: [Click here](https://jan-tennert.github.io/DiscordKMDocs/)
 
 #### Warning: This project is in Alpha and can change without notice
 
