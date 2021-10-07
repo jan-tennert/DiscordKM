@@ -43,7 +43,7 @@ signing {
 val dokkaOutputDir = "H:/Programming/Other/DiscordKMDocs"
 
 tasks.dokkaHtml {
-    outputDirectory.set(file(dokkaOutputDir))
+//    outputDirectory.set(file(dokkaOutputDir))
 }
 
 val deleteDokkaOutputDir by tasks.register<Delete>("deleteDokkaOutputDirectory") {
