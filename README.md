@@ -84,3 +84,4 @@ If you want a specific target add it to the artifactId like: DiscordKM-jvm and D
 # Addons
 
 - [DiscordKM-Lavalink](https://github.com/jan-tennert/DiscordKM-Lavalink) - Lavalink client for DiscordKM
+- [DiscordKM-Utils](https://github.com/jan-tennert/DiscordKM-Utils) - Utilities like button paginators
