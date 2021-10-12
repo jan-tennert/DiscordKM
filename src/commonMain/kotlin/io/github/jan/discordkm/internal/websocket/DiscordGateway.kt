@@ -68,6 +68,7 @@ import io.ktor.client.features.websocket.DefaultClientWebSocketSession
 import io.ktor.client.features.websocket.WebSockets
 import io.ktor.client.features.websocket.webSocketSession
 import io.ktor.http.HttpMethod
+import io.ktor.http.cio.websocket.close
 import io.ktor.http.cio.websocket.readBytes
 import io.ktor.http.cio.websocket.send
 import io.ktor.http.takeFrom
@@ -105,6 +106,7 @@ class DiscordGateway(
     private val http = HttpClient() {
         install(WebSockets)
     }
+    private var disconnect: Boolean = false
     lateinit var ws: DefaultClientWebSocketSession
 
     init {
@@ -128,15 +130,13 @@ class DiscordGateway(
                 onMessage(message)
             } catch(_: Exception) {
                 isClosed = true
+                if(disconnect) return
                 LOGGER.error { "Disconnected due to an error: ${ws.closeReason.await()}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
                 client.launch { start(false) }
                 break
             }
 
         }
-        /*ws.onError {
-
-        }*/
     }
 
     suspend fun send(payload: Payload) = ws.send(payload)
@@ -202,9 +202,9 @@ class DiscordGateway(
     }
 
     private suspend fun startHeartbeating() {
-        while(true) {
-            if(isClosed) return
+        while(!isClosed && !disconnect) {
             delay(heartbeatInterval)
+            if(disconnect) return
             sendHeartbeat()
             LOGGER.debug { "Sending heartbeat..." }
         }
@@ -218,9 +218,11 @@ class DiscordGateway(
         }.toString())
     }
 
-    fun close() {
+    suspend fun close() {
         isClosed = true
-        http.close()
+        disconnect = true
+        LOGGER.info { "Closing websocket connection on shard $shardId" }
+        ws.close()
     }
 
     private suspend fun handleRawEvent(payload: Payload) = coroutineScope {
@@ -312,5 +314,3 @@ class DiscordGateway(
     }
 
 }
-
-typealias WebSocketAction = suspend () -> String

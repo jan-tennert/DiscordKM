@@ -9,13 +9,18 @@
  */
 package io.github.jan.discordkm.api.entities.activity
 
+import io.github.jan.discordkm.DiscordEnum
+
 /**
  * A user status says whether the user is online, idling, offline etc.
  */
-enum class PresenceStatus(val status: String) {
+enum class PresenceStatus(val status: String) : DiscordEnum<String, PresenceStatus> {
     ONLINE("online"),
     DO_NOT_DISTURB("dnd"),
     IDLE("idle"),
     INVISIBLE("invisible"),
-    OFFLINE("offline")
+    OFFLINE("offline");
+
+    override operator fun get(key: String) = PresenceStatus.values().first { it.status == key }
+
 }

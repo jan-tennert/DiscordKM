@@ -81,8 +81,6 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
     val accentColor: Color?
         get() = if(data.getOrNull<Int>("accent_color") != null) Color(data.getOrThrow("accent_color")) else null
 
-    //locale?
-
     /**
      * The flags on the user's account
      */
@@ -98,7 +96,6 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
     /**
      * Creates a new [PrivateChannel]
      */
-
     suspend fun createPrivateChannel() = client.buildRestAction<PrivateChannel> {
         route = Route.User.CREATE_DM.post(buildJsonObject {
             put("recipient_id", id.long)

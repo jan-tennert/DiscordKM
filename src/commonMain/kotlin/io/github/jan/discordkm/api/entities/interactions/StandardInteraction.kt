@@ -46,7 +46,7 @@ open class StandardInteraction(client: Client, data: JsonObject) : Interaction(c
     }
 
     /**
-     * Replies to this interaction
+     * Replies to this interaction with a message
      */
     suspend fun reply(message: DataMessage, ephemeral: Boolean = false) = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(message.buildCallback(4, ephemeral))
@@ -55,12 +55,12 @@ open class StandardInteraction(client: Client, data: JsonObject) : Interaction(c
     }
 
     /**
-     * Replies to this interaction
+     * Replies to this interaction with a message
      */
     suspend fun reply(ephemeral: Boolean = false, message: MessageBuilder.() -> Unit) = reply(buildMessage(message), ephemeral)
 
     /**
-     * Replies to this interaction
+     * Replies to this interaction with a message
      */
     suspend fun reply(message: String, ephemeral: Boolean = false) = reply(buildMessage { content = message }, ephemeral)
 
@@ -72,6 +72,9 @@ open class StandardInteraction(client: Client, data: JsonObject) : Interaction(c
         transform { Message(channel!!, it.toJsonObject()) }
     }
 
+    /**
+     * Edits the original reply message
+     */
     suspend fun editOriginalMessage(builder: MessageBuilder.() -> Unit) = editOriginalMessage(MessageBuilder().apply(builder).build())
 
     /**

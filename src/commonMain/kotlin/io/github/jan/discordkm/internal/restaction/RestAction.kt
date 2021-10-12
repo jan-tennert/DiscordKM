@@ -12,25 +12,33 @@ package io.github.jan.discordkm.internal.restaction
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.ktor.http.HttpMethod
 
-abstract class RestAction<T> internal constructor(private val action: FormattedRoute, val client: Client) {
+typealias RestActionListener <T> = suspend (T) -> Unit
+
+class FormattedRoute internal constructor(val endpoint: String, val method: HttpMethod, val body: Any? = null)
+
+class RestAction<T>(val client: Client)  {
+
+    lateinit var route: FormattedRoute
+    private lateinit var transform: (String) -> T
+    private var check: () -> Unit = {  }
+    private var onFinish: RestActionListener<T> = {}
+
+    fun transform(transform: (String) -> T) {
+        this.transform = transform
+    }
 
     @PublishedApi
-    internal var check: () -> Unit = { }
-    @PublishedApi
-    internal var listener: RestActionListener<T> = {}
-
-    @PublishedApi
-    internal fun checkBeforeSending(check: () -> Unit) : RestAction<T> { this.check = check; return this }
-
-    suspend fun await(): T {
+    internal suspend fun await(): T {
         check()
-        val json = client.rest.custom(action.method, action.endpoint, action.body)
+        val json = client.rest.custom(route.method, route.endpoint, route.body)
         val result = transform(json)
-        listener(result)
+        onFinish(result)
         return result
     }
 
-    abstract fun transform(data: String) : T
+    fun onFinish(onFinish: RestActionListener<T>) { this.onFinish = onFinish }
+
+    fun check(check: () -> Unit) { this.check = check }
 
     companion object {
         fun get(endpoint: String) = FormattedRoute(endpoint, HttpMethod.Get)
@@ -42,39 +50,4 @@ abstract class RestAction<T> internal constructor(private val action: FormattedR
 
 }
 
-typealias RestActionListener <T> = suspend (T) -> Unit
-
-class FormattedRoute internal constructor(val endpoint: String, val method: HttpMethod, val body: Any? = null)
-
-class RestActionBuilder<T>(val client: Client)  {
-
-    lateinit var route: FormattedRoute
-    private lateinit var transform: (String) -> T
-    @PublishedApi
-    internal var check: () -> Unit = {  }
-    @PublishedApi
-    internal var onFinish: RestActionListener<T> = {}
-
-    fun transform(transform: (String) -> T) {
-        this.transform = transform
-    }
-
-    fun onFinish(onFinish: RestActionListener<T>) { this.onFinish = onFinish }
-
-    fun check(check: () -> Unit) { this.check = check }
-
-    fun build() = object : RestAction<T>(route, client) {
-        override fun transform(data: String): T = this@RestActionBuilder.transform(data)
-    }
-
-}
-
-suspend inline fun <T> Client.buildRestAction(init: RestActionBuilder<T>.() -> Unit): T {
-    val builder = RestActionBuilder<T>(this).apply(init)
-    return builder.build()
-        .apply {
-            listener = builder.onFinish
-            check = builder.check
-        }
-        .await()
-}
+suspend inline fun <T> Client.buildRestAction(init: RestAction<T>.() -> Unit) = RestAction<T>(this).apply(init).await()

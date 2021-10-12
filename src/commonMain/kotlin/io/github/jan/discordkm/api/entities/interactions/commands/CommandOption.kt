@@ -43,7 +43,8 @@ data class CommandOption(
         CHANNEL,
         ROLE,
         MENTIONABLE,
-        NUMBER
+        NUMBER,
+        ATTACHMENT
     }
 
 }
@@ -63,8 +64,7 @@ object ChannelTypeSerializer : KSerializer<ChannelType> {
 
 object OptionTypeSerializer: KSerializer<CommandOption.OptionType> {
 
-    override fun deserialize(decoder: Decoder) = valueOfIndex<CommandOption.OptionType>(decoder.decodeInt())
-
+    override fun deserialize(decoder: Decoder) = valueOfIndex<CommandOption.OptionType>(decoder.decodeInt(), 1)
     override val descriptor = PrimitiveSerialDescriptor("OptionType", PrimitiveKind.INT)
 
     override fun serialize(encoder: Encoder, value: CommandOption.OptionType) {

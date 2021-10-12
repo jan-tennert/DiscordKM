@@ -183,6 +183,7 @@ object Route {
         const val GET_VANITY_URL = "/guilds/%s/vanity-url"
         const val GET_WELCOME_SCREEN = "/guilds/%s/welcome-screen"
         const val MODIFY_WELCOME_SCREEN = "/guilds/%s/welcome-screen"
+        const val GET_AUDIT_LOGS = "/guilds/%s/audit-logs"
 
         //integrations
         //prune ?

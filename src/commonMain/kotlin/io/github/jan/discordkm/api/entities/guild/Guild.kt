@@ -20,6 +20,8 @@ import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
+import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLog
+import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLogAction
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteBuilder
@@ -33,7 +35,11 @@ import io.github.jan.discordkm.api.entities.lists.RoleList
 import io.github.jan.discordkm.api.entities.lists.StickerList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
 import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
@@ -325,6 +331,24 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
     suspend fun createTemplate(name: String, description: String? = null) : GuildTemplate
 
     /**
+     * Retrieves audit log entries from this guild
+     * @param userId Filter the log for actions made by a user
+     * @param type Filter the entries by the [AuditLogAction] type
+     * @param before Filter the entries before the specified entry id
+     * @param limit Limit the result
+     */
+    suspend fun retrieveAuditLogs(userId: Snowflake? = null, before: Snowflake? = null, limit: Int = 50, type: AuditLogAction? = null) = client.buildRestAction<AuditLog> {
+        route = Route.Guild.GET_AUDIT_LOGS(id).get {
+            putOptional("user_id", userId)
+            putOptional("action_type", type?.value)
+            putOptional("before", before)
+            putOptional("limit", limit)
+        }
+
+        transform { AuditLog(it.toJsonObject(), this@Guild) }
+    }
+
+    /**
      * An unavailable guild is sent on the [ReadyEvent] when the bot is on this guild but the guild currently has some issues and isn't loaded in the cache
      */
     data class Unavailable(val id: Long)
@@ -346,7 +370,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
         NONE,
         TIER_1,
         TIER_2,
-        TIER_3
+        TIER_3;
     }
 
     /**

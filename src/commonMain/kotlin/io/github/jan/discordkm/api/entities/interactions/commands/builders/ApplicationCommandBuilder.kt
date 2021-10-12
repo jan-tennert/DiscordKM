@@ -16,6 +16,7 @@ import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.commands.OptionChoice
 import io.github.jan.discordkm.api.events.CommandEvent
 import io.github.jan.discordkm.api.events.SlashCommandEvent
+import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import kotlinx.serialization.json.Json
@@ -92,6 +93,10 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
         choiceBuilder.choices()
         options += CommandOption(CommandOption.OptionType.NUMBER, name, description, required, choiceBuilder.choices)
     }
+
+    @CommandBuilder
+    @DiscordKMUnstable
+    fun attachment(name: String, description: String, required: Boolean = false): Nothing = TODO() //{ options += CommandOption(CommandOption.OptionType.ATTACHMENT, name, description, required) }
 
     @CommandBuilder
     fun boolean(name: String, description: String, required: Boolean = false) { options += CommandOption(CommandOption.OptionType.BOOLEAN, name, description, required) }

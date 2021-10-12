@@ -5,3 +5,9 @@ package io.github.jan.discordkm.internal
     RequiresOptIn.Level.WARNING
 )
 annotation class DiscordKMInternal
+
+@RequiresOptIn(
+    "This feature is unstable or not tested",
+    RequiresOptIn.Level.ERROR
+)
+annotation class DiscordKMUnstable
