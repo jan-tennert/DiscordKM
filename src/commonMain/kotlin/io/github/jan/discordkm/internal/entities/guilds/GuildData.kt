@@ -32,6 +32,8 @@ import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.guild.VoiceState
+import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLog
+import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLogAction
 import io.github.jan.discordkm.api.entities.guild.channels.Category
 import io.github.jan.discordkm.api.entities.guild.channels.NewsChannel
 import io.github.jan.discordkm.api.entities.guild.channels.StageChannel
@@ -256,6 +258,22 @@ class GuildData(override val client: Client, override val data: JsonObject) : Gu
         route = Route.Thread.GET_ACTIVE_THREADS(id).get()
         transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> ThreadData(this@GuildData, thread.jsonObject, it.toJsonObject().jsonArray.map { Json.decodeFromString("members") }) }}
         onFinish { it.forEach { thread -> threadCache[thread.id] = thread } }
+    }
+
+    override suspend fun retrieveAuditLogs(
+        userId: Snowflake?,
+        before: Snowflake?,
+        limit: Int,
+        type: AuditLogAction?
+    ) = client.buildRestAction<AuditLog> {
+        route = Route.Guild.GET_AUDIT_LOGS(id).get {
+            putOptional("user_id", userId)
+            putOptional("action_type", type?.value)
+            putOptional("before", before)
+            putOptional("limit", limit)
+        }
+
+        transform { AuditLog(it.toJsonObject(), this@GuildData) }
     }
 
     override suspend fun retrieveBans() = client.buildRestAction<List<Guild.Ban>> {
