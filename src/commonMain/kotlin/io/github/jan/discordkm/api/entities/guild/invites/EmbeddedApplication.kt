@@ -9,12 +9,14 @@
  */
 package io.github.jan.discordkm.api.entities.guild.invites
 
+import io.github.jan.discordkm.api.entities.Snowflake
+
 object EmbeddedApplication {
 
-    const val YOUTUBE_TOGETHER = 755600276941176913
-    const val POKER = 755827207812677713
-    const val BETRAYAL = 773336526917861400
-    const val FISHINGTON = 814288819477020702
-    const val CHESS = 832012586023256104
+    val YOUTUBE_TOGETHER = Snowflake.fromId(755600276941176913)
+    val POKER = Snowflake.fromId(755827207812677713)
+    val BETRAYAL = Snowflake.fromId(773336526917861400)
+    val FISHINGTON = Snowflake.fromId(814288819477020702)
+    val CHESS = Snowflake.fromId(832012586023256104)
 
 }

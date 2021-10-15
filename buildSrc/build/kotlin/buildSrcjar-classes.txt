@@ -1,0 +1,1 @@
+H:\Programming\Other\DiscordKM\buildSrc\build\classes\kotlin\main\Publishing.class;H:\Programming\Other\DiscordKM\buildSrc\build\classes\kotlin\main\Versions.class

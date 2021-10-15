@@ -36,6 +36,8 @@ object DiscordImage {
 
     fun roleIcon(id: Snowflake, hash: String) = getImage("role-icons", id, hash)
 
+    fun memberAvatar(id: Snowflake, guildId: Snowflake, hash: String) = "${baseURL}guilds/$guildId/users/$id/avatars/$hash.png"
+
     private fun getImage(path: String, id: Snowflake, hash: String, extension: String = "png") = "$baseURL$path/$id/$hash.$extension"
 
 }

@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.api.entities.lists
 
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
@@ -41,17 +42,17 @@ open class CommandList(private val baseURL: String, val holder: CommandHolder, o
     /**
      * Creates a new chat input command
      */
-    suspend fun createChatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) = create(chatInputCommand(builder))
+    suspend fun createChatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) = create(chatInputCommand(holder.client as? DiscordWebSocketClient, builder))
 
     /**
      * Creates a new message command
      */
-    suspend fun createMessageCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(messageCommand(builder))
+    suspend fun createMessageCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(messageCommand(holder.client as? DiscordWebSocketClient, builder))
 
     /**
      * Creates a new user command
      */
-    suspend fun createUserCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(userCommand(builder))
+    suspend fun createUserCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(userCommand(holder.client as? DiscordWebSocketClient, builder))
 
     /**
      * Retrieves all application commands

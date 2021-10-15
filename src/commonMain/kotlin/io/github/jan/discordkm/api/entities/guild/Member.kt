@@ -27,6 +27,7 @@ import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
 import io.github.jan.discordkm.api.entities.lists.RetrievableRoleList
 import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.MemberData
@@ -125,6 +126,12 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
      * Returns the roles of the member
      */
     val roles: RetrievableRoleList
+
+    /**
+     * The avatar of the member. (Nitro-Exclusive Feature)
+     */
+    val avatarUrl: String?
+        get() = data.getOrNull<String>("avatar")?.let { DiscordImage.memberAvatar(id, guild.id, it) }
 
     /**
      * Returns the date when the member joined his guild

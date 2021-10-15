@@ -68,6 +68,8 @@ class MessageBuilder {
         actionRows = message.actionRows.toMutableList()
     }
 
+    fun allowedMentions(builder: AllowedMentions.() -> Unit) { allowedMentions = AllowedMentions().apply(builder) }
+
     fun import(message: Message) = import(message.copy())
 
     fun actionRow(builder: RowBuilder.() -> Unit) { actionRows += RowBuilder().apply(builder).build() }
@@ -110,7 +112,7 @@ object AllowedMentionSerializer : KSerializer<AllowedMentionType> {
 @Serializable
 data class AllowedMentions(
     @SerialName("parse")
-    val types: List<AllowedMentionType> = emptyList(),
+    val types: Set<AllowedMentionType> = setOf(),
     val roles: List<Long> = emptyList(),
     val users: List<Long> = emptyList(),
     @SerialName("replied_user")

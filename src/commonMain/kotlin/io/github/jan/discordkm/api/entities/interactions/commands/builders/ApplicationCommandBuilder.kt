@@ -14,6 +14,7 @@ import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCom
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.commands.OptionChoice
+import io.github.jan.discordkm.api.events.AutoCompleteEvent
 import io.github.jan.discordkm.api.events.CommandEvent
 import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.internal.DiscordKMUnstable
@@ -25,13 +26,12 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.put
 
-open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name: String, var description: String) {
+open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name: String, var description: String, val client: DiscordWebSocketClient? = null) {
 
-    inline fun <reified E : CommandEvent> onAction(
-        client: DiscordWebSocketClient,
+    inline fun <reified E : CommandEvent> onCommand(
         crossinline action: suspend E.() -> Unit
     ) {
-        client.on<E>(predicate = { it.commandName == name }) { action(this) }
+        client?.let { c -> c.on<E>(predicate = { it.commandName == name }) { action(this) } }
     }
 
     internal open fun build() = buildJsonObject {
@@ -42,17 +42,27 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name:
 
 }
 
-class ChatInputCommandBuilder(name: String, description: String, private val options: MutableList<CommandOption>) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT, name, description) {
+class ChatInputCommandBuilder(name: String, description: String, private val options: MutableList<CommandOption>, client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT, name, description, client) {
 
-    inline fun onAction(
-        client: DiscordWebSocketClient,
+    inline fun onCommand(
         subCommand: String? = null,
         subCommandGroup: String? = null,
-        crossinline action: SlashCommandAction
+        crossinline action: suspend SlashCommandEvent.() -> Unit
     ) {
-        client.on<SlashCommandEvent>(predicate = { it.commandName == name && it.subCommand == subCommand && it.subCommandGroup == subCommandGroup }) {
+        client?.let { c -> c.on<SlashCommandEvent>(predicate = { it.commandName == name && it.subCommand == subCommand && it.subCommandGroup == subCommandGroup }) {
             action(this)
-        }
+        } }
+    }
+
+    inline fun onAutoComplete(
+        subCommand: String? = null,
+        subCommandGroup: String? = null,
+        optionName: String? = null,
+        crossinline action: suspend AutoCompleteEvent.() -> Unit
+    ) {
+        client?.let { c -> c.on<AutoCompleteEvent>(predicate = { it.commandName == name && it.subCommand == subCommand && it.subCommandGroup == subCommandGroup && it.optionName == optionName }) {
+            action(this)
+        } }
     }
 
     @CommandBuilder
@@ -68,8 +78,6 @@ class ChatInputCommandBuilder(name: String, description: String, private val opt
     }
 
 }
-
-typealias SlashCommandAction = suspend SlashCommandEvent.() -> Unit
 
 open class OptionBuilder(open val options: MutableList<CommandOption> = mutableListOf()) {
 
@@ -155,24 +163,28 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
             choices += OptionChoice(name, primitiveValue)
         }
 
+        fun choice(choice: Pair<String, T>) = choice(choice.first, choice.second)
+
+        infix fun String.value(value: T) = choice(this to value)
+
     }
 
 }
 
-inline fun chatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
-    val commandBuilder = ChatInputCommandBuilder("", "", mutableListOf())
+inline fun chatInputCommand(client: DiscordWebSocketClient? = null, builder: ChatInputCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
+    val commandBuilder = ChatInputCommandBuilder("", "", mutableListOf(), client)
     commandBuilder.builder()
     return commandBuilder
 }
 
-inline fun messageCommand(builder: ApplicationCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
-    val commandBuilder = ApplicationCommandBuilder(ApplicationCommandType.MESSAGE, "", "")
+inline fun messageCommand(client: DiscordWebSocketClient? = null, builder: ApplicationCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
+    val commandBuilder = ApplicationCommandBuilder(ApplicationCommandType.MESSAGE, "", "", client)
     commandBuilder.builder()
     return commandBuilder
 }
 
-inline fun userCommand(builder: ApplicationCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
-    val commandBuilder = ApplicationCommandBuilder(ApplicationCommandType.USER, "", "")
+inline fun userCommand(client: DiscordWebSocketClient? = null, builder: ApplicationCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
+    val commandBuilder = ApplicationCommandBuilder(ApplicationCommandType.USER, "", "", client)
     commandBuilder.builder()
     return commandBuilder
 }

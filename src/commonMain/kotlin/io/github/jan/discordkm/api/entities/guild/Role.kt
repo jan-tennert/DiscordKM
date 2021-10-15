@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
+import com.github.ajalt.colormath.Color
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
@@ -16,8 +17,8 @@ import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
-import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.utils.getColor
 import io.github.jan.discordkm.internal.utils.getEnums
@@ -114,7 +115,6 @@ interface Role : Mentionable, Reference<Role>, SnowflakeEntity, GuildEntity, Per
      *
      * Requires the permission [Permission.MANAGE_ROLES]
      */
-
     suspend fun setPosition(newPosition: Int): Role
 
     class Tag(val botId: Long? = null, integrationId: Long? = null, val premiumSubscriber: Boolean? = null)
@@ -129,12 +129,14 @@ class RoleModifier {
     var color: Color? = null
     var hoist: Boolean? = null
     var mentionable: Boolean? = null
+    var icon: Image? = null
 
     fun build() = buildJsonObject {
         putOptional("name", name)
         putOptional("permissions", EnumList(Permission, permissions).rawValue)
-        putOptional("color", color)
+        putOptional("color", color?.toSRGB()?.toRGBInt()?.argb)
         putOptional("hoist", hoist)
+        putOptional("icon", icon?.encodedData)
         putOptional("mentionable", mentionable)
     }
 

@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.api.entities
 
-import io.github.jan.discordkm.api.entities.misc.Color
+import com.github.ajalt.colormath.Color
 import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.DiscordImage
@@ -9,6 +9,7 @@ import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractClientEntity
+import io.github.jan.discordkm.internal.utils.getColor
 import io.github.jan.discordkm.internal.utils.getEnums
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrDefault
@@ -79,7 +80,7 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
      * The user's banner color if available
      */
     val accentColor: Color?
-        get() = if(data.getOrNull<Int>("accent_color") != null) Color(data.getOrThrow("accent_color")) else null
+        get() = if(data.getOrNull<Int>("accent_color") != null) data.getColor("accent_color") else null
 
     /**
      * The flags on the user's account

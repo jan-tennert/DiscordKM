@@ -19,7 +19,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Serializable
-class SelectionMenu(
+data class SelectionMenu(
     @Required
     override val type: ComponentType = ComponentType.SELECTION_MENU,
     @SerialName("custom_id")

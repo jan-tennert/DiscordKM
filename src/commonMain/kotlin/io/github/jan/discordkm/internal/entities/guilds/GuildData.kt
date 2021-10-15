@@ -26,6 +26,7 @@ import io.github.jan.discordkm.api.entities.guild.Guild.PremiumTier
 import io.github.jan.discordkm.api.entities.guild.Guild.SystemChannelFlag
 import io.github.jan.discordkm.api.entities.guild.Guild.VerificationLevel
 import io.github.jan.discordkm.api.entities.guild.Guild.WelcomeScreen
+import io.github.jan.discordkm.api.entities.guild.GuildModifier
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.Role
@@ -64,6 +65,7 @@ import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateD
 import io.github.jan.discordkm.internal.exceptions.PermissionException
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
@@ -322,6 +324,11 @@ class GuildData(override val client: Client, override val data: JsonObject) : Gu
             putOptional("description", description)
         })
         transform { GuildTemplateData(client, it.toJsonObject()) }
+    }
+
+    override suspend fun modify(modifier: GuildModifier.() -> Unit) = client.buildRestAction<Unit> {
+        route = Route.Guild.MODIFY_GUILD(id).patch(GuildModifier().apply(modifier).build())
+        transform {  }
     }
 
     override fun toString() = "Guild[id=$id,name=$name]"

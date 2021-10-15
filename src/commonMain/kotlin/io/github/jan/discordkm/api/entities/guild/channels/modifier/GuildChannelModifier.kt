@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.guild.channels.modifier
 
+import io.github.jan.discordkm.api.entities.Modifier
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Permission
@@ -22,7 +23,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.putJsonArray
 
-sealed interface GuildChannelModifier <C : GuildChannel> {
+sealed interface GuildChannelModifier <C : GuildChannel> : Modifier {
 
     /**
      * The new name for the guild channel
@@ -43,7 +44,7 @@ sealed interface GuildChannelModifier <C : GuildChannel> {
         permissionOverrides += PermissionOverride(holder, EnumList(Permission, allow.toList()), EnumList(Permission, deny.toList()))
     }
 
-    fun build() = buildJsonObject {
+    override fun build() = buildJsonObject {
         putOptional("name", name)
         putOptional("position", position)
         putJsonArray("permission_overrides") {

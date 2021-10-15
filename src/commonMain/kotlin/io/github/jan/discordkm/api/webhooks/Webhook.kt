@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.api.webhooks
 
 import com.soywiz.klogger.Logger
+import io.github.jan.discordkm.api.entities.Modifier
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
@@ -92,12 +93,7 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
      * Modifies this webhook
      */
     suspend fun modify(modifier: WebhookModifier.() -> Unit) = client.buildRestAction<Webhook> {
-        val newWebhook = WebhookModifier().apply(modifier)
-        val data = buildJsonObject {
-            putOptional("name", newWebhook.name)
-            putOptional("avatar", newWebhook.avatar?.encodedData)
-            putOptional("channel_id", newWebhook.channelId?.string)
-        }
+        val data = WebhookModifier().apply(modifier).build()
         route = if(token.isEmpty()) {
             Route.Webhook.MODIFY(id).patch(data)
         } else {
@@ -162,4 +158,16 @@ interface WebhookExecutor : SnowflakeEntity {
 
 }
 
-class WebhookModifier(var name: String? = null, var avatar: Image? = null, var channelId: Snowflake? = null)
+class WebhookModifier : Modifier {
+
+    var name: String? = null
+    var avatar: Image? = null
+    var channelId: Snowflake? = null
+
+    override fun build() = buildJsonObject {
+        putOptional("name", name)
+        putOptional("avatar", avatar?.encodedData)
+        putOptional("channel_id", channelId?.string)
+    }
+
+}

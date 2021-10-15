@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.api.entities.guild.channels.modifier
 
 import com.soywiz.klock.TimeSpan
+import io.github.jan.discordkm.api.entities.Modifier
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.internal.Check
 import io.github.jan.discordkm.internal.check
@@ -18,7 +19,7 @@ import io.github.jan.discordkm.internal.utils.checkAndReturn
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.buildJsonObject
 
-class ThreadModifier(val thread: Thread) {
+class ThreadModifier(val thread: Thread) : Modifier {
 
     var name: String? = null
     var slowModeTime: TimeSpan? = null
@@ -42,7 +43,7 @@ class ThreadModifier(val thread: Thread) {
      */
     var lock: Boolean? = null
 
-    fun build() = checkAndReturn {
+    override fun build() = checkAndReturn {
         slowModeTime.check("The slowmode time has to be between zero and 21600 seconds") { it.seconds < 21600 && it.seconds > 0 }
 
         buildJsonObject {

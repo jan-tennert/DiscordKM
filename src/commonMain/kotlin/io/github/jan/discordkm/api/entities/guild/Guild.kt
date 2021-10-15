@@ -328,12 +328,22 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
 
     /**
      * Retrieves audit log entries from this guild
+     *
+     * Requires the permission [Permission.VIEW_AUDIT_LOG]
+     *
      * @param userId Filter the log for actions made by a user
      * @param type Filter the entries by the [AuditLogAction] type
      * @param before Filter the entries before the specified entry id
      * @param limit Limit the result
      */
     suspend fun retrieveAuditLogs(userId: Snowflake? = null, before: Snowflake? = null, limit: Int = 50, type: AuditLogAction? = null): AuditLog
+
+    /**
+     * Modifies this guild,
+     *
+     * Requires the Permission [Permission.MANAGE_GUILD]
+     */
+    suspend fun modify(modifier: GuildModifier.() -> Unit)
 
     /**
      * An unavailable guild is sent on the [ReadyEvent] when the bot is on this guild but the guild currently has some issues and isn't loaded in the cache

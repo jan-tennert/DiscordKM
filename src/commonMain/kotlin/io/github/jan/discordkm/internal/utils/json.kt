@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.internal.utils
 
+import com.github.ajalt.colormath.model.RGBInt
 import io.github.jan.discordkm.api.entities.EnumSerializer
 import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -30,7 +31,6 @@ import io.github.jan.discordkm.api.entities.guild.invites.InviteApplication
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
 import io.github.jan.discordkm.api.entities.interactions.commands.ChatInputCommand
 import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.api.entities.misc.EnumList
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.channels.Channel
@@ -65,7 +65,7 @@ import kotlinx.serialization.json.put
 fun JsonObject.getId(): Snowflake {
     return Snowflake.fromId(getOrThrow<String>("id"))
 }
-fun JsonObject.getColor(key: String) = Color(getValue(key).jsonPrimitive.int)
+fun JsonObject.getColor(key: String) = RGBInt.fromRGBA(getOrThrow(key))
 fun <T : SerializableEnum<T>> JsonObject.getEnums(key: String, serializer: EnumSerializer<T>) = if(get(key)?.jsonPrimitive?.long != null) serializer.decode(get(key)?.jsonPrimitive?.long!!) else EnumList.empty()
 fun JsonObject.getRoleTag(key: String): Role.Tag? {
     val json = get("tags")?.jsonObject
@@ -86,6 +86,7 @@ inline fun <reified T> JsonObject.getOrThrow(key: String): T {
         Double::class -> getValue(key).jsonPrimitive.double as T
         Boolean::class -> getValue(key).jsonPrimitive.boolean as T
         Snowflake::class -> Snowflake.fromId(getValue(key).jsonPrimitive.content) as T
+        UInt::class -> getValue(key).jsonPrimitive.int.toUInt() as T
         else -> throw IllegalStateException()
     }
 }
