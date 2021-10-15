@@ -53,19 +53,19 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension.addPublishing()
             maven {
                 name = "Oss"
                 setUrl {
-                    "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${Publishing.REPOSITORY_ID}"
+                    "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${System.getenv("SONATYPE_REPOSITORY_ID")}"
                 }
                 credentials {
-                    username = Publishing.SONATYPE_USERNAME
-                    password = Publishing.SONATYPE_PASSWORD
+                    username = System.getenv("SONATYPE_USERNAME")
+                    password = System.getenv("SONATYPE_PASSWORD")
                 }
             }
             maven {
                 name = "Snapshot"
                 setUrl { "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
                 credentials {
-                    username = Publishing.SONATYPE_USERNAME
-                    password = Publishing.SONATYPE_PASSWORD
+                    username = System.getenv("SONATYPE_USERNAME")
+                    password = System.getenv("SONATYPE_PASSWORD")
                 }
             }
         }
