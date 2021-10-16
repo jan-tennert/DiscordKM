@@ -9,7 +9,10 @@
  */
 package io.github.jan.discordkm.api.entities.messages
 
+import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRowBuilder
@@ -68,6 +71,8 @@ class MessageBuilder {
         actionRows = message.actionRows.toMutableList()
     }
 
+    fun reference(message: Message) { reference = Message.Reference(message.id, message.guild!!.id, message.channel.id, true) }
+
     fun allowedMentions(builder: AllowedMentions.() -> Unit) { allowedMentions = AllowedMentions().apply(builder) }
 
     fun import(message: Message) = import(message.copy())
@@ -83,12 +88,6 @@ class MessageBuilder {
     fun file(attachment: Attachment) { attachments += attachment }
 
     fun embed(builder: EmbedBuilder.() -> Unit) { embeds += buildEmbed(builder) }
-
-    fun reference(messageId: Snowflake) {
-        reference = Message.Reference(messageId = messageId.long)
-    }
-
-    fun reference(message: Message) = reference(message.id)
 
     fun build() = DataMessage(content, tts, embeds, allowedMentions, attachments, actionRows, reference)
 
@@ -113,11 +112,19 @@ object AllowedMentionSerializer : KSerializer<AllowedMentionType> {
 data class AllowedMentions(
     @SerialName("parse")
     val types: Set<AllowedMentionType> = setOf(),
-    val roles: List<Long> = emptyList(),
-    val users: List<Long> = emptyList(),
+    val roles: MutableList<Snowflake> = mutableListOf(),
+    val users: MutableList<Snowflake> = mutableListOf(),
     @SerialName("replied_user")
     val replyToUser: Boolean = false
-)
+) {
+
+    fun mention(mentionable: Mentionable) = when(mentionable) {
+        is User -> users.add(mentionable.id)
+        is Role -> roles.add(mentionable.id)
+        else -> throw IllegalArgumentException("Can't mention type ${mentionable::class}")
+    }
+
+}
 
 val componentJson = Json {
     classDiscriminator = "classType"

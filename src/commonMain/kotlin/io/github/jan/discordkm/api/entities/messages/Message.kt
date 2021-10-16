@@ -281,6 +281,24 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
     suspend fun edit(content: String) = edit(buildMessage { this.content = content })
 
+    /**
+     * Replies to this message
+     */
+    suspend fun reply(message: DataMessage) = channel.send {
+        import(message)
+        reference(this@Message)
+    }
+
+    /**
+     * Replies to this message
+     */
+    suspend fun reply(builder: MessageBuilder.() -> Unit) = reply(buildMessage(builder))
+
+    /**
+     * Replies to this message
+     */
+    suspend fun reply(content: String) = reply { this.content = content }
+
     override fun getValue(ref: Any?, property: KProperty<*>) = channel.messages[id]!!
 
     /**
@@ -322,7 +340,6 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
         embeds,
         allowedMentions = AllowedMentions(),
         actionRows = actionRows,
-        reference = reference,
         stickerIds = stickerItems.map { it.id }
     )
 
@@ -357,7 +374,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      * The message reference is sent when e.g. a message replies to another message
      */
     @Serializable
-    data class Reference(@SerialName("message_id") val messageId: Long? = null, @SerialName("guild_id") val guildId: Long? = null, @SerialName("channel_id") val channelId: Long? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)
+    data class Reference(@SerialName("message_id") val messageId: Snowflake? = null, @SerialName("guild_id") val guildId: Snowflake? = null, @SerialName("channel_id") val channelId: Snowflake? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)
 
     enum class Flag(override val offset: Int) : SerializableEnum<Flag> {
 

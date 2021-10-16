@@ -33,7 +33,6 @@ allprojects {
         }
     }
 }
-
 //val dokkaOutputDir = "H:/Programming/Other/DiscordKMDocs"
 val dokkaOutputDir = "$buildDir/dokka"
 
