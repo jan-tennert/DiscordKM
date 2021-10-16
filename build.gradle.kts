@@ -52,62 +52,62 @@ val javadocJar = tasks.register<Jar>("javadocJar") {
 }
 
 allprojects {
-    fun org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension.addPublishing() {
-        publishing {
-            repositories {
-                maven {
-                    name = "Oss"
-                    setUrl {
-                        "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${Publishing.REPOSITORY_ID}"
-                    }
-                    credentials {
-                        username = Publishing.SONATYPE_USERNAME
-                        password = Publishing.SONATYPE_PASSWORD
-                    }
+    publishing {
+        repositories {
+            maven {
+                name = "Oss"
+                setUrl {
+                    "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${Publishing.REPOSITORY_ID}"
                 }
-                maven {
-                    name = "Snapshot"
-                    setUrl { "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
-                    credentials {
-                        username = Publishing.SONATYPE_USERNAME
-                        password = Publishing.SONATYPE_PASSWORD
-                    }
+                credentials {
+                    username = Publishing.SONATYPE_USERNAME
+                    password = Publishing.SONATYPE_PASSWORD
                 }
             }
+            maven {
+                name = "Snapshot"
+                setUrl { "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
+                credentials {
+                    username = Publishing.SONATYPE_USERNAME
+                    password = Publishing.SONATYPE_PASSWORD
+                }
+            }
+        }
 
-            publications {
-                withType<MavenPublication> {
-                    artifact(javadocJar)
-                    pom {
-                        name.set("DiscordKM")
-                        description.set("A Kotlin Multiplatform Discord API Wrapper ")
+        publications {
+            withType<MavenPublication> {
+                artifact(javadocJar)
+                pom {
+                    name.set("DiscordKM")
+                    description.set("A Kotlin Multiplatform Discord API Wrapper ")
+                    url.set("https://github.com/jan-tennert/DiscordKM")
+                    licenses {
+                        license {
+                            name.set("GPL-3.0")
+                            url.set("https://www.gnu.org/licenses/gpl-3.0.en.html")
+                        }
+                    }
+                    issueManagement {
+                        system.set("Github")
+                        url.set("https://github.com/jan-tennert/DiscordKM/issues")
+                    }
+                    scm {
+                        connection.set("https://github.com/jan-tennert/DiscordKM.git")
                         url.set("https://github.com/jan-tennert/DiscordKM")
-                        licenses {
-                            license {
-                                name.set("GPL-3.0")
-                                url.set("https://www.gnu.org/licenses/gpl-3.0.en.html")
-                            }
-                        }
-                        issueManagement {
-                            system.set("Github")
-                            url.set("https://github.com/jan-tennert/DiscordKM/issues")
-                        }
-                        scm {
-                            connection.set("https://github.com/jan-tennert/DiscordKM.git")
-                            url.set("https://github.com/jan-tennert/DiscordKM")
-                        }
-                        developers {
-                            developer {
-                                name.set("TheRealJanGER")
-                                email.set("jan.m.tennert@gmail.com")
-                            }
+                    }
+                    developers {
+                        developer {
+                            name.set("TheRealJanGER")
+                            email.set("jan.m.tennert@gmail.com")
                         }
                     }
                 }
             }
         }
     }
+}
 
+allprojects {
     kotlin {
         jvm {
             compilations.all {
@@ -126,7 +126,6 @@ allprojects {
             }
             nodejs()
         }
-        addPublishing()
 
         sourceSets {
             all { languageSettings { optIn("kotlin.RequiresOptIn") } }
