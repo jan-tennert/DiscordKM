@@ -38,7 +38,7 @@ allprojects {
 val dokkaOutputDir = "$buildDir/dokka"
 
 tasks.dokkaHtml {
-//    outputDirectory.set(file(dokkaOutputDir))
+   outputDirectory.set(file(dokkaOutputDir))
 }
 
 val deleteDokkaOutputDir by tasks.register<Delete>("deleteDokkaOutputDirectory") {
@@ -107,59 +107,58 @@ allprojects {
     }
 }
 
-allprojects {
-    kotlin {
-        jvm {
-            compilations.all {
-                kotlinOptions.jvmTarget = "1.8"
-            }
-            withJava()
-            testRuns["test"].executionTask.configure {
-                useJUnit()
-            }
+kotlin {
+    jvm {
+        compilations.all {
+            kotlinOptions.jvmTarget = "1.8"
         }
-        js(LEGACY) {
-            browser {
-                commonWebpackConfig {
-                    cssSupport.enabled = true
-                }
-            }
-            nodejs()
-        }
-
-        sourceSets {
-            all { languageSettings { optIn("kotlin.RequiresOptIn") } }
-            val commonMain by getting {
-                dependencies {
-                    api("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.SERIALIZATION}")
-                    api("com.soywiz.korlibs.klock:klock:${Versions.KORLIBS}")
-                    api("com.soywiz.korlibs.klogger:klogger:${Versions.KORLIBS}")
-                    api("io.ktor:ktor-client-core:${Versions.KTOR}")
-                    api("io.ktor:ktor-client-websockets:${Versions.KTOR}")
-                    api("co.touchlab:stately-iso-collections:${Versions.STATELY}")
-                    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.COROUTINES}")
-                    api("com.soywiz.korlibs.korio:korio:${Versions.KORLIBS}")
-                    api("com.github.ajalt.colormath:colormath:${Versions.COLORMATH}")
-                }
-            }
-            val commonTest by getting {
-                dependencies {
-                    implementation(kotlin("test"))
-                }
-            }
-            val jvmMain by getting {
-                dependencies {
-                    implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
-                }
-            }
-            val jvmTest by getting
-            val jsMain by getting {
-                dependencies {
-                    implementation("io.ktor:ktor-client-js:${Versions.KTOR}")
-                }
-            }
-            val jsTest by getting
+        withJava()
+        testRuns["test"].executionTask.configure {
+            useJUnit()
         }
     }
+    js(LEGACY) {
+        browser {
+            commonWebpackConfig {
+                cssSupport.enabled = true
+            }
+        }
+        nodejs()
+    }
 
+    sourceSets {
+        all { languageSettings { optIn("kotlin.RequiresOptIn") } }
+        val commonMain by getting {
+            dependencies {
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.SERIALIZATION}")
+                api("com.soywiz.korlibs.klock:klock:${Versions.KORLIBS}")
+                api("com.soywiz.korlibs.klogger:klogger:${Versions.KORLIBS}")
+                api("io.ktor:ktor-client-core:${Versions.KTOR}")
+                api("io.ktor:ktor-client-websockets:${Versions.KTOR}")
+                api("co.touchlab:stately-iso-collections:${Versions.STATELY}")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.COROUTINES}")
+                api("com.soywiz.korlibs.korio:korio:${Versions.KORLIBS}")
+                api("com.github.ajalt.colormath:colormath:${Versions.COLORMATH}")
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        val jvmMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
+            }
+        }
+        val jvmTest by getting
+        val jsMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-js:${Versions.KTOR}")
+            }
+        }
+        val jsTest by getting
+    }
 }
+
+
