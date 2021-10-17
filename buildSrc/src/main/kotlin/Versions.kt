@@ -24,7 +24,7 @@ object Versions {
 object Publishing {
 
     val REPOSITORY_ID = System.getenv("SONATYPE_REPOSITORY_ID")
-    val SONATYPE_USERNAME = System.getenv("SONATYPE_USERNAME")
-    val SONATYPE_PASSWORD = System.getenv("SONATYPE_PASSWORD")
+    val SONATYPE_USERNAME = System.getenv("OSSRH_USERNAME")
+    val SONATYPE_PASSWORD = System.getenv("OSSRH_PASSWORD")
 
 }
