@@ -3,7 +3,9 @@ package io.github.jan.discordkm.api.entities.guild
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Modifier
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.media.Image
+import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.utils.ifNotEmpty
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.JsonArray
@@ -25,11 +27,11 @@ class GuildModifier : Modifier {
     var discoverySplashImage: Image? = null
     var bannerImage: Image? = null
     private var systemChannelId: Snowflake? = null
-    private var systemChannelFlags: MutableList<Guild.SystemChannelFlag> = mutableListOf()
+    private var systemChannelFlags: MutableSet<Guild.SystemChannelFlag> = mutableSetOf()
     var rulesChannelId: Snowflake? = null
     var publicUpdatesChannelId: Snowflake? = null
     var preferredLocale: String? = null
-    var features: MutableList<Guild.Feature> = mutableListOf()
+    var features: MutableSet<Guild.Feature> = mutableSetOf()
     var description: String? = null
 
     override fun build() = buildJsonObject {
@@ -45,14 +47,13 @@ class GuildModifier : Modifier {
         putOptional("discovery_splash", discoverySplashImage?.encodedData)
         putOptional("banner", bannerImage?.encodedData)
         putOptional("system_channel_id", systemChannelId)
-        systemChannelFlags.ifNotEmpty { put("system_channel_flags", Guild.SystemChannelFlag.encode(systemChannelFlags)) }
+        systemChannelFlags.ifNotEmpty { put("system_channel_flags", Guild.SystemChannelFlag.encode(systemChannelFlags.toList())) }
         putOptional("rules_channel_id", rulesChannelId)
         putOptional("public_updates_channel_id", publicUpdatesChannelId)
         putOptional("preferred_locale", preferredLocale)
         putOptional("name", name)
         features.ifNotEmpty { put("features", JsonArray(features.map { JsonPrimitive(it.name) })) }
         putOptional("description", description)
-
     }
 
     fun afkChannel(modifier: AfkChannelModifier.() -> Unit) {
@@ -69,6 +70,6 @@ class GuildModifier : Modifier {
     fun transferOwnershipTo(member: Member) = transferOwnershipTo(member.id)
 
     inner class AfkChannelModifier(var id: Snowflake? = null, var timeout: TimeSpan? = null)
-    inner class SystemChannelModifier(var id: Snowflake? = null, var flags: MutableList<Guild.SystemChannelFlag> = mutableListOf())
+    inner class SystemChannelModifier(var id: Snowflake? = null, var flags: MutableSet<Guild.SystemChannelFlag> = mutableSetOf())
 
 }

@@ -21,6 +21,7 @@ import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
@@ -28,6 +29,7 @@ import kotlinx.serialization.json.put
 
 open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name: String, var description: String, val client: DiscordWebSocketClient? = null) {
 
+    @CommandBuilder
     inline fun <reified E : CommandEvent> onCommand(
         crossinline action: suspend E.() -> Unit
     ) {
@@ -44,6 +46,7 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name:
 
 class ChatInputCommandBuilder(name: String, description: String, private val options: MutableList<CommandOption>, client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT, name, description, client) {
 
+    @CommandBuilder
     inline fun onCommand(
         subCommand: String? = null,
         subCommandGroup: String? = null,
@@ -54,6 +57,7 @@ class ChatInputCommandBuilder(name: String, description: String, private val opt
         } }
     }
 
+    @CommandBuilder
     inline fun onAutoComplete(
         subCommand: String? = null,
         subCommandGroup: String? = null,
@@ -85,21 +89,21 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
     fun string(name: String, description: String, required: Boolean = false, autocomplete: Boolean? = null, choices: ChoicesBuilder<String>.() -> Unit = {}) {
         val choiceBuilder = ChoicesBuilder<String>()
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.STRING, name, description, required, choiceBuilder.choices, autocomplete = autocomplete)
+        options += CommandOption(CommandOption.OptionType.STRING, name, description, required, choices = choiceBuilder.choices, autocomplete = autocomplete)
     }
 
     @CommandBuilder
-    fun int(name: String, description: String, required: Boolean = false, choices: ChoicesBuilder<Int>.() -> Unit = {}) {
+    fun int(name: String, description: String, required: Boolean = false, max: Int? = null, min: Int? = null, choices: ChoicesBuilder<Int>.() -> Unit = {}) {
         val choiceBuilder = ChoicesBuilder<Int>()
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.INTEGER, name, description, required, choiceBuilder.choices)
+        options += CommandOption(CommandOption.OptionType.INTEGER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder.choices)
     }
 
     @CommandBuilder
-    fun double(name: String, description: String, required: Boolean = false, choices: ChoicesBuilder<Double>.() -> Unit = {}) {
+    fun number(name: String, description: String, required: Boolean = false, max: Double? = null, min: Double? = null, choices: ChoicesBuilder<Double>.() -> Unit = {}) {
         val choiceBuilder = ChoicesBuilder<Double>()
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.NUMBER, name, description, required, choiceBuilder.choices)
+        options += CommandOption(CommandOption.OptionType.NUMBER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder.choices)
     }
 
     @CommandBuilder

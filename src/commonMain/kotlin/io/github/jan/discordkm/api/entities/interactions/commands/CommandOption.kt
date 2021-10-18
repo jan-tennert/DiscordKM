@@ -18,6 +18,7 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
 data class CommandOption(
@@ -26,6 +27,10 @@ data class CommandOption(
     val description: String,
     @SerialName("required")
     val isRequired: Boolean? = null,
+    @SerialName("min_value")
+    val minValue: JsonPrimitive? = null,
+    @SerialName("max_value")
+    val maxValue: JsonPrimitive? = null,
     val choices: List<OptionChoice>? = null,
     val options: List<CommandOption>? = null,
     @SerialName("channel_types")
