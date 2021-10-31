@@ -166,6 +166,10 @@ class DiscordGateway(
             OpCode.HEARTBEAT -> {
                 sendHeartbeat()
             }
+            OpCode.RECONNECT -> {
+                close()
+                start(false)
+            }
             OpCode.INVALID_SESSION -> {
                 LOGGER.warn { "Failed to resume! Trying to reconnect manually..." }
                 close()
@@ -304,6 +308,7 @@ class DiscordGateway(
         HEARTBEAT(1),
         INVALID_SESSION(9),
         HELLO(10),
+        RECONNECT(7),
         HEARTBEAT_ACK(11);
 
         companion object {
