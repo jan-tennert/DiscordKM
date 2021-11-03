@@ -17,7 +17,7 @@ object Versions {
     const val COROUTINES = "1.5.2"
     const val STATELY = "1.2.0-nmm"
     const val COLORMATH = "3.1.1"
-    const val DISCORDKM = "0.5.1"
+    const val DISCORDKM = "0.5.2"
 
 }
 
