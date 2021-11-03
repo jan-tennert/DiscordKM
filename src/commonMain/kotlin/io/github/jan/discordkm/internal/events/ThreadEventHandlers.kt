@@ -31,7 +31,8 @@ import kotlinx.serialization.json.jsonPrimitive
 class ThreadCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadCreateEvent> {
 
     override fun handle(data: JsonObject): ThreadCreateEvent {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
         val thread = ThreadData(guild, data)
         if(Cache.THREADS in client.enabledCache) (guild as GuildData).threadCache[thread.id] = thread
         return ThreadCreateEvent(thread)

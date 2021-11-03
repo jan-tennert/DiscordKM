@@ -32,7 +32,8 @@ class InviteDeleteEventHandler(val client: Client) : InternalEventHandler<Invite
 
     override fun handle(data: JsonObject): InviteDeleteEvent {
         val channel = client.channels[data.getOrThrow<Snowflake>("channel_id")]!! as Invitable
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
         val code = data.getOrThrow<String>("code")
         return InviteDeleteEvent(channel, guild, code)
     }

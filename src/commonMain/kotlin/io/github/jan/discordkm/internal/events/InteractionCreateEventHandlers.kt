@@ -35,6 +35,11 @@ import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -67,8 +72,13 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         }
         val focused = option.getOrNull<Boolean>("focused") ?: false
         val optionName = option.getOrThrow<String>("name")
-        val optionValue = option.getOrNull<String>("value") ?: ""
-        return AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, optionValue, focused, subCommand, subCommandGroup)
+        val optionValue = option.getOrNull<JsonPrimitive>("value")
+        return when(type) {
+            CommandOption.OptionType.STRING -> AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, optionValue?.contentOrNull, focused, subCommand, subCommandGroup)
+            CommandOption.OptionType.INTEGER -> AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, optionValue?.intOrNull, focused, subCommand, subCommandGroup)
+            CommandOption.OptionType.NUMBER -> AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, optionValue?.doubleOrNull, focused, subCommand, subCommandGroup)
+            else -> throw IllegalStateException("Invalid autocomplete option type: $type")
+        }
     }
 
     private fun extractMessageComponent(data: JsonObject) : InteractionCreateEvent {

@@ -24,7 +24,8 @@ import kotlinx.serialization.json.JsonObject
 class BanEventHandler(val client: Client) {
 
     inline fun <reified C : BanEvent> handle(data: JsonObject): C {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
         val user = data.getOrThrow<String>("user").toJsonObject().extractClientEntity<User>(client)
         return when(C::class) {
             GuildBanAddEvent::class -> GuildBanAddEvent(guild, user) as C

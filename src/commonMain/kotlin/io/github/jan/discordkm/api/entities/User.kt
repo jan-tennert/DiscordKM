@@ -85,8 +85,8 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
     /**
      * The flags on the user's account
      */
-    val flags: EnumList<Flag>
-        get() = data.getEnums("flags", Flag)
+    val flags: EnumList<UserFlag>
+        get() = data.getEnums("flags", UserFlag)
 
     /**
      * The type of nitro subscription on a user's account
@@ -121,7 +121,7 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
         NITRO
     }
 
-    enum class Flag(override val offset: Int) : SerializableEnum<Flag> {
+    enum class UserFlag(override val offset: Int) : SerializableEnum<UserFlag> {
         DISCORD_EMPLOYEE(0),
         PARTNERED_SERVER_OWNER(1),
         HYPE_SQUAD_EVENTS(2),
@@ -135,9 +135,10 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
         VERIFIED_BOT(16),
         EARLY_VERIFIED_BOT_DEVELOPER(17),
         DISCORD_CERTIFIED_MODERATOR(18),
+        BOT_HTTP_INTERACTIONS(19),
         UNKNOWN(-1);
 
-        companion object : EnumSerializer<Flag> {
+        companion object : EnumSerializer<UserFlag> {
             override val values = values().toList()
         }
 

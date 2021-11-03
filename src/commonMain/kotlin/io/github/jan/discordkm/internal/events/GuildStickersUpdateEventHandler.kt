@@ -24,7 +24,8 @@ class GuildStickersUpdateEventHandler(val client: DiscordWebSocketClient) : Inte
 
     override fun handle(data: JsonObject): GuildStickersUpdateEvent {
         val stickers = data.getValue("stickers").jsonArray.map { Sticker(data, client) }
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
         if(Cache.STICKERS in client.enabledCache) {
             val cache = (guild as GuildData).stickerCache
             cache.internalMap.clear()

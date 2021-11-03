@@ -52,6 +52,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonObjectBuilder
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.double
@@ -87,6 +88,7 @@ inline fun <reified T> JsonObject.getOrThrow(key: String): T {
         Boolean::class -> getValue(key).jsonPrimitive.boolean as T
         Snowflake::class -> Snowflake.fromId(getValue(key).jsonPrimitive.content) as T
         UInt::class -> getValue(key).jsonPrimitive.int.toUInt() as T
+        JsonPrimitive::class -> getValue(key).jsonPrimitive as T
         else -> throw IllegalStateException()
     }
 }

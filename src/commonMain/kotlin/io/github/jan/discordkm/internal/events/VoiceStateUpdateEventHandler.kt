@@ -15,13 +15,15 @@ import io.github.jan.discordkm.api.events.VoiceStateUpdateEvent
 import io.github.jan.discordkm.internal.Cache
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.VoiceStateData
+import io.github.jan.discordkm.internal.utils.getOrThrow
 import kotlinx.serialization.json.JsonObject
 
 class VoiceStateUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<VoiceStateUpdateEvent> {
 
     override fun handle(data: JsonObject): VoiceStateUpdateEvent {
         val voiceState = VoiceStateData(client, data)
-        val guild = client.guilds[voiceState.guildId ?: Snowflake.empty()]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
         val oldVoiceState = guild.voiceStates.firstOrNull { it.userId == voiceState.userId }
         guild.let {
             if(Cache.VOICE_STATES in client.enabledCache) {

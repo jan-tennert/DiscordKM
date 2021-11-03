@@ -25,7 +25,8 @@ import kotlinx.serialization.json.jsonObject
 class RoleCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleCreateEvent> {
 
     override fun handle(data: JsonObject): RoleCreateEvent {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
         val role = RoleData(guild, data.getValue("role").jsonObject)
         if(Cache.ROLES in client.enabledCache) (guild as GuildData).roleCache[role.id] = role
         return RoleCreateEvent(role)

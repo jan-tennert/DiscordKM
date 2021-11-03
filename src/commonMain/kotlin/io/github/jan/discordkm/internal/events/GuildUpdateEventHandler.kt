@@ -19,7 +19,8 @@ import kotlinx.serialization.json.JsonObject
 class GuildUpdateEventHandler(val client: Client) : InternalEventHandler<GuildUpdateEvent> {
 
     override fun handle(data: JsonObject): GuildUpdateEvent {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
         (guild as GuildData).update(data)
         return GuildUpdateEvent(client, guild)
     }

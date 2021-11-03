@@ -19,7 +19,8 @@ import kotlinx.serialization.json.JsonObject
 class WebhooksUpdateEventHandler(val client: Client) : InternalEventHandler<WebhooksUpdateEvent> {
 
     override fun handle(data: JsonObject): WebhooksUpdateEvent {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
         val channel = client.channels[data.getOrThrow<Snowflake>("channel_id")]!! as GuildMessageChannel
         return WebhooksUpdateEvent(guild, channel)
     }

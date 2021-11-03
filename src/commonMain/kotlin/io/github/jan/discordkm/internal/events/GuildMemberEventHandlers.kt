@@ -10,7 +10,6 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.GuildMemberAddEvent
 import io.github.jan.discordkm.api.events.GuildMemberRemoveEvent
@@ -27,7 +26,7 @@ class GuildMemberAddEventHandler(val client: DiscordWebSocketClient) : InternalE
 
     override fun handle(data: JsonObject): GuildMemberAddEvent {
         val guildId = data.getOrThrow<Snowflake>("guild_id")
-        val guild = client.guilds[guildId]!!
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on an event. The guilds probably aren't done initialising.")
         val member = MemberData(guild, data)
         if(Cache.MEMBERS in client.enabledCache) (guild as GuildData).memberCache[member.user.id] = member
         return GuildMemberAddEvent(member)
@@ -38,7 +37,8 @@ class GuildMemberAddEventHandler(val client: DiscordWebSocketClient) : InternalE
 class GuildMemberUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildMemberUpdateEvent> {
 
     override fun handle(data: JsonObject): GuildMemberUpdateEvent {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on an event. The guilds probably aren't done initialising.")
         val member = MemberData(guild, data)
         if(Cache.MEMBERS in client.enabledCache) (guild as GuildData).memberCache[member.user.id] = member
         return GuildMemberUpdateEvent(member)
@@ -49,7 +49,8 @@ class GuildMemberUpdateEventHandler(val client: DiscordWebSocketClient) : Intern
 class GuildMemberRemoveEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildMemberRemoveEvent> {
 
     override fun handle(data: JsonObject): GuildMemberRemoveEvent {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guildId = data.getOrThrow<Snowflake>("guild_id")
+        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on an event. The guilds probably aren't done initialising.")
         val user = UserData(client, data.getValue("user").jsonObject)
         if(Cache.MEMBERS in client.enabledCache) (guild as GuildData).memberCache.remove(user.id)
         return GuildMemberRemoveEvent(guild, user)
