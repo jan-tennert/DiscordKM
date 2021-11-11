@@ -9,341 +9,164 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
+import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.TimeSpan
-import io.github.jan.discordkm.api.entities.EnumSerializer
+import io.github.jan.discordkm.api.entities.BaseEntity
+import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.SerializableEntity
-import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
+import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.containers.CacheGuildMemberContainer
+import io.github.jan.discordkm.api.entities.containers.CacheGuildRoleContainer
+import io.github.jan.discordkm.api.entities.containers.GuildMemberContainer
+import io.github.jan.discordkm.api.entities.containers.GuildRoleContainer
+import io.github.jan.discordkm.api.entities.containers.RoleContainer
 import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLog
 import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLogAction
+import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteBuilder
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
-import io.github.jan.discordkm.api.entities.lists.CommandList
-import io.github.jan.discordkm.api.entities.lists.EmojiList
+import io.github.jan.discordkm.api.entities.lists.ChannelList
+import io.github.jan.discordkm.api.entities.lists.EmoteList
+import io.github.jan.discordkm.api.entities.lists.MemberList
 import io.github.jan.discordkm.api.entities.lists.PresenceList
-import io.github.jan.discordkm.api.entities.lists.RetrievableChannelList
-import io.github.jan.discordkm.api.entities.lists.RetrievableMemberList
 import io.github.jan.discordkm.api.entities.lists.RoleList
-import io.github.jan.discordkm.api.entities.lists.StickerList
-import io.github.jan.discordkm.api.entities.lists.ThreadList
-import io.github.jan.discordkm.api.entities.misc.EnumList
-import io.github.jan.discordkm.internal.entities.guilds.GuildData
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.CacheEntity
+import io.github.jan.discordkm.internal.caching.CacheEntry
+import io.github.jan.discordkm.internal.caching.GuildCacheManager
+import io.github.jan.discordkm.internal.delete
+import io.github.jan.discordkm.internal.entities.DiscordImage
+import io.github.jan.discordkm.internal.entities.guilds.channels.ThreadData
+import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
+import io.github.jan.discordkm.internal.get
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
+import io.github.jan.discordkm.internal.post
+import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.SerializableEnum
+import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.extractClientEntity
-import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.putOptional
+import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 import kotlin.reflect.KProperty
 
 /**
  * A guild can contain channels and members.
  */
-interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameable {
+open class Guild(override val id: Snowflake, override val client: Client) : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity {
 
-    override val id: Snowflake
-        get() = data.getId()
+    override val cache: GuildCacheEntry?
+        get() = client.cacheManager.guildCache[id]
+    open val roles = GuildRoleContainer(this)
+    open val members = GuildMemberContainer(this)
 
-    /**
-     * The id owner the guild's owner
-     */
-    val ownerId: Snowflake
+    suspend fun retrieveActiveThreads() = client.buildRestAction<List<Thread>> {
+        route = Route.Thread.GET_ACTIVE_THREADS(id).get()
+        transform {
+            it.toJsonObject().getValue("threads").jsonArray.map { thread ->
+                ThreadData(
+                    this@Guild,
+                    thread.jsonObject,
+                    it.toJsonObject().jsonArray.map { Json.decodeFromString("members") })
+            }
+        }
+        onFinish { it.forEach { thread -> threadCache[thread.id] = thread } }
+    }
 
-    /**
-     * Name of the guild
-     */
-    override val name: String
+    suspend fun retrieveAuditLogs(
+        userId: Snowflake?,
+        before: Snowflake?,
+        limit: Int,
+        type: AuditLogAction?
+    ) = client.buildRestAction<AuditLog> {
+        route = Route.Guild.GET_AUDIT_LOGS(id).get {
+            putOptional("user_id", userId)
+            putOptional("action_type", type?.value)
+            putOptional("before", before)
+            putOptional("limit", limit)
+        }
 
-    /**
-     * Icon Url of the guild
-     */
-    val iconUrl: String?
+        transform { AuditLog(it.toJsonObject(), this@Guild) }
+    }
 
-    /**
-     * Icon hash; returned when in the guild template
-     */
-    val iconHash: String?
+    suspend fun retrieveBans() = client.buildRestAction<List<Guild.Ban>> {
+        route = Route.Ban.GET_BANS(id).get()
+        transform { it.toJsonArray().map { ban -> Guild.Ban(this@Guild, ban.jsonObject) } }
+    }
 
-    /**
-     * All voice states for this server
-     */
-    val voiceStates: List<VoiceState>
+    suspend fun leaveVoiceChannel() = if (client is DiscordWebSocketClient) {
+        (client as DiscordWebSocketClient).shardConnections[0].send(UpdateVoiceStatePayload(id, null, selfMute = false, selfDeaf = false))
+    } else {
+        throw UnsupportedOperationException("You can't leave a voice channel without having a gateway connection!")
+    }
 
-    /**
-     * Splash hash
-     */
-    val splash: String?
+    suspend fun retrieveBan(userId: Snowflake) = client.buildRestAction<Guild.Ban> {
+        route = Route.Ban.GET_BAN(id, userId).get()
+        transform { Guild.Ban(this@Guild, it.toJsonObject()) }
+    }
 
-    /**
-     * Discovery splash is only available if the guild has the [Feature] feature
-     */
-    val discoverySplash: String?
+    suspend fun leave() = client.buildRestAction<Unit> {
+        route = Route.User.LEAVE_GUILD(id).delete()
+        onFinish {
+            client.guildCache.remove(id)
+        }
+    }
 
-    /**
-     * Afk timeout
-     */
-    val afkTimeout: TimeSpan
+    suspend fun delete() = client.buildRestAction<Unit> {
+        route = Route.Guild.DELETE_GUILD(id).delete()
+        
+    }
 
-    /**
-     * If widgets are enabled on the server or not
-     */
-    val widgetsEnabled: Boolean
+    suspend fun createInvite(channelId: Snowflake, builder: InviteBuilder.() -> Unit) = client.buildRestAction<Invite> {
+        route = Route.Invite.CREATE_CHANNEL_INVITE(channelId)
+            .post(Json.encodeToJsonElement(InviteBuilder().apply(builder).build()))
+        transform { Invite(client, it.toJsonObject()) }
+    }
 
-    /**
-     * The [VerificationLevel] required for the guild
-     */
-    val verificationLevel: VerificationLevel
+    suspend fun retrieveTemplates() = client.buildRestAction<List<GuildTemplate>> {
+        route = Route.Template.GET_GUILD_TEMPLATES(id).get()
+        transform { it.toJsonArray().map { GuildTemplateData(client, it.jsonObject) } }
+    }
 
-    /**
-     * The default [NotificationLevel] for the guild
-     */
-    val defaultMessageNotificationLevel: NotificationLevel
+    suspend fun createTemplate(name: String, description: String?) = client.buildRestAction<GuildTemplate> {
+        route = Route.Template.CREATE_GUILD_TEMPLATE(id).post(buildJsonObject {
+            put("name", name)
+            putOptional("description", description)
+        })
+        transform { GuildTemplateData(client, it.toJsonObject()) }
+    }
 
-    /**
-     * The [ExplicitContentFilter] level for the guild
-     */
-    val explicitContentFilter: ExplicitContentFilter
+    suspend fun modify(modifier: GuildModifier.() -> Unit) = client.buildRestAction<Unit> {
+        route = Route.Guild.MODIFY_GUILD(id).patch(GuildModifier().apply(modifier).build())
+        
+    }
 
-    /**
-     * Returns the [Role]s in the guild
-     */
-    val roles: RoleList
-
-    /**
-     * Returns the default role
-     */
-    val everyoneRole: Role
-        get() = roles["@everyone"].first()
-
-    /**
-     * Returns the bot in this guild
-     */
-    val selfMember: Member
-        get() = members[client.selfUser.id]!!
-
-    /**
-     * In the command list you can get and create new [ApplicationCommands]
-     */
-    val commands: CommandList
-        get() = (this as GuildData).commands
-
-    /**
-     * Returns the [Member]s in the guild
-     */
-    val members: RetrievableMemberList
-
-    /**
-     * Gets the owner of the guild from the cache
-     */
-    val owner: Member?
-        get() = members[ownerId]
-
-    /**
-     * The custom guild [Emoji]s
-     */
-    val emojis: EmojiList
-
-    /**
-     * Enabled guild [Feature]s
-     */
-    val features: List<Feature>
-
-    /**
-     * Required [MfaLevel] for the guild
-     */
-    val mfaLevel: MfaLevel
-    /**
-     * Application id of the guild creator if the guild is bot created
-     */
-    val applicationId: Snowflake?
-
-    /**
-     * The [SystemChannelFlag]s
-     */
-    val systemChannelFlags: EnumList<SystemChannelFlag>
-
-    /**
-     * If this guild is considered as large
-     */
-    val isLarge: Boolean
-
-    /**
-     * If this guild is unavailable due to an outage
-     */
-    val isUnavailable: Boolean
-
-    /**
-     * Total number of members in this guild
-     */
-    val memberCount: Int?
-
-    /**
-     * In the channel list you can get and create guild channels
-     */
-    val channels: RetrievableChannelList
-
-    /**
-     * In the thread list you can get threads
-     */
-    val threads: ThreadList
-
-    /**
-     * The vanity url code for this guild if it has one
-     */
-    val vanityUrlCode: String?
-
-    /**
-     * The description of a community guild
-     */
-    val description: String?
-
-    /**
-     * The banner of this guild
-     */
-    val bannerUrl: String?
-
-    /**
-     * The [PremiumTier] of the guild (server boost level)
-     */
-    val premiumTier: PremiumTier
-
-    /**
-     * The amount of server boosts
-     */
-    val premiumSubscriptionCount: Int
-
-    /**
-     * The preferredLocale of the community guild
-     */
-    val preferredLocale: String
-
-    val publicUpdatesChannelId: Snowflake?
-
-    /**
-     * The [WelcomeScreen] of the guild if available
-     */
-    val welcomeScreen: WelcomeScreen?
-
-    /**
-     * The [NSFWLevel] of the guild
-     */
-    val nsfwLevel: NSFWLevel
-
-    /**
-     * The id of the widget channel
-     */
-    val widgetChannelId: Snowflake?
-
-    /**
-     * The id of the system channel. In there Discord can send things like boosts and welcome messages
-     */
-    val systemChannelId: Snowflake?
-
-    /**
-     * All [StageInstance]s in this guild
-     */
-    val stageInstances: List<StageInstance>
-
-    /**
-     * All [GuildPresence]s in this guild
-     */
-    val presences: PresenceList
-
-    /**
-     * The [Sticker]s of the guild
-     */
-    val stickers: StickerList
-
-    /**
-     * The id of the rules channel.
-     */
-    val rulesChannelId: Snowflake?
-
-    /**
-     * The id of the afk channel.
-     */
-    val afkChannelId: Snowflake?
-
-    /**
-     * Leaves the guild
-     */
-    suspend fun leave()
-
-    /**
-     * Deletes the guild. The bot must be the owner of this guild
-     */
-    suspend fun delete()
-
-    /**
-     * Creates an invite for this channel
-     * @param channelId The channel this invite will refer to
-     */
-    suspend fun createInvite(channelId: Snowflake, builder: InviteBuilder.() -> Unit): Invite
-
-    /**
-     * Retrieves all active threads
-     */
-    suspend fun retrieveActiveThreads() : List<Thread>
-
-    /**
-     * Retrieves all bans from the guild
-
-     * Requires the permission [Permission.BAN_MEMBERS]
-     */
-    suspend fun retrieveBans() : List<Ban>
-
-    /**
-     * Retrieves a ban object from the guild
-     *
-     * Requires the permission [Permission.BAN_MEMBERS]
-     */
-    suspend fun retrieveBan(userId: Snowflake): Ban
-
-    /**
-     * Leaves the current voice channel, if the bot is in a voice channel
-     */
-    suspend fun leaveVoiceChannel()
-
-    /**
-     * Retrieves all guild templates for this guild
-     */
-    suspend fun retrieveTemplates(): List<GuildTemplate>
-
-    /**
-     * Creates a guild template from this guild
-     */
-    suspend fun createTemplate(name: String, description: String? = null) : GuildTemplate
-
-    /**
-     * Retrieves audit log entries from this guild
-     *
-     * Requires the permission [Permission.VIEW_AUDIT_LOG]
-     *
-     * @param userId Filter the log for actions made by a user
-     * @param type Filter the entries by the [AuditLogAction] type
-     * @param before Filter the entries before the specified entry id
-     * @param limit Limit the result
-     */
-    suspend fun retrieveAuditLogs(userId: Snowflake? = null, before: Snowflake? = null, limit: Int = 50, type: AuditLogAction? = null): AuditLog
-
-    /**
-     * Modifies this guild,
-     *
-     * Requires the Permission [Permission.MANAGE_GUILD]
-     */
-    suspend fun modify(modifier: GuildModifier.() -> Unit)
+    override fun toString() = "Guild[id=$id]"
 
     /**
      * An unavailable guild is sent on the [ReadyEvent] when the bot is on this guild but the guild currently has some issues and isn't loaded in the cache
@@ -353,27 +176,37 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
     /**
      * The [NSFWLevel]
      */
-    enum class NSFWLevel {
+    enum class NSFWLevel : EnumWithValue<Int> {
         DEFAULT,
         EXPLICIT,
         SAFE,
-        AGE_RESTRICTED
+        AGE_RESTRICTED;
+
+        override val value: Int
+            get() = ordinal
+
+        companion object : EnumWithValueGetter<NSFWLevel, Int>(values())
     }
 
     /**
      * A guild with a higher premium tier has more features like higher attachment size
      */
-    enum class PremiumTier {
+    enum class PremiumTier : EnumWithValue<Int> {
         NONE,
         TIER_1,
         TIER_2,
         TIER_3;
+
+        override val value: Int
+            get() = ordinal
+
+        companion object : EnumWithValueGetter<PremiumTier, Int>(values())
     }
 
     /**
      * The [VerificationLevel] for the guild
      */
-    enum class VerificationLevel {
+    enum class VerificationLevel : EnumWithValue<Int> {
         NONE,
 
         /**
@@ -395,26 +228,45 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
          * The users must have a verified phone on their account
          */
         VERY_HIGH;
+
+        override val value: Int
+            get() = ordinal
+
+        companion object : EnumWithValueGetter<VerificationLevel, Int>(values())
     }
 
     /**
      * The [NotificationLevel] sets the default notification level for all guild channels
      */
-    enum class NotificationLevel {
+    enum class NotificationLevel : EnumWithValue<Int> {
         ALL_MESSAGES,
-        ONLY_MENTIONS
+        ONLY_MENTIONS;
+
+        override val value: Int
+            get() = ordinal
+
+        companion object : EnumWithValueGetter<NotificationLevel, Int>(values())
+
     }
 
     /**
      * The [ExplicitContentFilter] sets which message should be scanned from discord
      */
-    enum class ExplicitContentFilter {
+    enum class ExplicitContentFilter : EnumWithValue<Int> {
         DISABLED,
         MEMBERS_WITHOUT_ROLES,
-        ALL_MEMBERS
+        ALL_MEMBERS;
+
+        override val value: Int
+            get() = ordinal
+
+        companion object : EnumWithValueGetter<ExplicitContentFilter, Int>(values())
     }
 
-    enum class Feature {
+    /**
+     * A Guild Feature specifies which features a guild can use. For example if a guild has the feature "BANNER" it means that the guild can use the banner feature
+     */
+    enum class Feature : EnumWithValue<String> {
         ANIMATED_ICON,
         BANNER,
         COMMERCE,
@@ -438,17 +290,36 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
         PRIVATE_THREADS,
         THREADS_ENABLED,
         NEW_THREAD_PERMISSIONS,
-        ROLE_ICONS
+        ROLE_ICONS;
+
+        override val value: String
+            get() = name
+
+        companion object : EnumWithValueGetter<Feature, String>(values())
+
     }
 
-    enum class MfaLevel {
+    /*+
+    See [Discord Docs](https://discord.com/developers/docs/resources/guild#guild-object-mfa-level) for more information
+     */
+    enum class MfaLevel : EnumWithValue<Int>{
         NONE,
-        ELEVATED
+        ELEVATED;
+
+        override val value: Int
+            get() = ordinal
+
+        companion object : EnumWithValueGetter<MfaLevel, Int>(values())
+
     }
 
-    class Ban(val guild: Guild, override val data: JsonObject) : SerializableEntity {
+    /**
+     * Contains information about a banned guild member
+     * See [Discord Docs](https://discord.com/developers/docs/resources/guild#ban-object) for more information
+     */
+    class Ban(val guild: Guild, val data: JsonObject) : SerializableEntity {
 
-        override val client = guild.client
+        val client = guild.client
 
         /**
          * The reason why a member was banned from their guild
@@ -462,57 +333,64 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
 
     }
 
+    /**
+     * See [Discord Docs](https://discord.com/developers/docs/resources/guild#guild-object-system-channel-flags) for more information
+     */
     enum class SystemChannelFlag(override val offset: Int) : SerializableEnum<SystemChannelFlag> {
         UNKNOWN(-1),
         SUPPRESS_JOIN_NOTIFICATIONS(0),
         SUPPRESS_PREMIUM_SUBSCRIPTIONS(1),
         SUPPRESS_GUILD_REMINDER_NOTIFICATIONS(2);
 
-        companion object : EnumSerializer<SystemChannelFlag> {
-            override val values = values().toList()
-        }
+        companion object : FlagSerializer<SystemChannelFlag>(values())
     }
 
-    class GuildPresence(override val guild: Guild, override val data: JsonObject) : GuildEntity {
+    class GuildPresenceCacheEntry(override val guild: Guild, val data: JsonObject) : GuildEntity {
 
         val member = guild.members[data.getValue("user").jsonObject.getOrThrow<Snowflake>("id")]!!
 
         val status = PresenceStatus.values().first { it.status == data.getOrNull<String>("status") }
 
-        val activities = data.getValue("activities").jsonArray.map { Json { ignoreUnknownKeys = true }.decodeFromJsonElement<Activity>(it.jsonObject) }
+        val activities = data.getValue("activities").jsonArray.map {
+            Json {
+                ignoreUnknownKeys = true
+            }.decodeFromJsonElement<Activity>(it.jsonObject)
+        }
 
     }
 
     /**
-     * A welcome screen is shown when a new user joins a guild and the guild has the feature [Feature.WELCOME_SCREEN_ENABLED]
+     * The welcome screen which is shown, when a new user joins the guild
+     * @param description The description of the welcome screen
+     * @param channels The channels shown in the welcome screen
+     * @see Channel
      */
-    class WelcomeScreen(val guild: Guild, data: JsonObject) {
+    @Serializable
+    class WelcomeScreen(
+        val description: String? = null,
+        val channels: List<Channel> = emptyList()
+    ) {
 
         /**
-         * The description of the welcome screen
+         * This is a welcome screen channels which is shown in the welcome screen to explain what this channel does
+         * @param channelId The id of the channel
+         * @param description The description shown on the welcome screen
+         * @param emojiId The id of the emoji shown in the welcome screen
+         * @param emojiName The name of the emoji shown in the welcome screen
          */
-        val description = data.getOrThrow<String>("description")
-
-        /**
-         * The channels shown in the [WelcomeScreen]
-         */
-        val channels = data.getValue("welcome_channels").jsonArray.map { Channel(guild, it.jsonObject) }
-
-        inner class Channel(val guild: Guild, data: JsonObject) {
-            /**
-             * The description shown for the channel
-             */
-            val description = data.getOrThrow<String>("description")
+        @Serializable
+        class Channel(
+            val channelId: Snowflake,
+            val description: String,
+            val emojiId: Snowflake? = null,
+            val emojiName: String? = null
+        ) {
 
             /**
-             * The emoji id if the emoji is custom
+             * The emoji shown in the welcome screen
              */
-            val emojiId = data.getOrNull<Long>("emoji_id")
+            val emoji = emojiName?.let { Emoji(id = emojiId, name = it) }
 
-            /**
-             * The emoji name if the emoji is custom
-             */
-            val emojiName = data.getOrNull<String>("emoji_name")
         }
 
     }
@@ -520,4 +398,127 @@ interface Guild : SnowflakeEntity, Reference<Guild>, SerializableEntity, Nameabl
     override fun getValue(ref: Any?, property: KProperty<*>) = client.guilds[id]!!
 
     override suspend fun retrieve() = client.guilds.retrieve(id)
+}
+
+/**
+ * A guild cache entry contains all information given by the Discord API
+ * @param id The id of the guild
+ * @param name The name of the guild
+ * @param iconHash The icon hash of the guild
+ * @param splashHash The splash hash of the guild
+ * @param ownerId The id of the owner of the guild
+ * @param afkChannelId The id of the afk channel
+ * @param afkTimeout The afk timeout of the guild
+ * @param verificationLevel The verification level of the guild
+ * @param defaultMessageNotifications The default message notifications of the guild
+ * @param explicitContentFilter The explicit content filter of the guild
+ * @param roles The roles of the guild
+ * @param emotes The custom emojis of the guild
+ * @param features The features of the guild
+ * @param mfaLevel The mfa level of the guild
+ * @param applicationId The id of the application
+ * @param widgetEnabled Whether the widget is enabled or not
+ * @param widgetChannelId The id of the widget channel
+ * @param systemChannelId The id of the system channel
+ * @param memberCount The member count of the guild
+ * @param joinedAt The time the user joined the guild
+ * @param isLarge Whether the guild is large or not
+ * @param isUnavailable Whether the guild is unavailable or not
+ * @param memberCount The member count of the guild
+ * @param voiceStates The voice states of the guild
+ * @param members The members of the guild
+ * @param channels The channels of the guild
+ * @param presences The presences of the guild
+ * @param vanityUrlCode The vanity url of the guild
+ * @param description The description of the guild
+ * @param bannerHash The banner hash of the guild
+ * @param premiumTier The premium tier of the guild
+ * @param premiumSubscriptionCount The premium subscription count of the guild
+ * @param preferredLocale The preferred locale of the guild
+ * @param publicUpdatesChannelId The id of the public updates channel
+ * @param bannerHash The banner of the guild
+ * @param premiumSubscriptionCount The premium subscription count of the guild
+ * @param systemChannelFlags The system channel flags of the guild
+ * @param rulesChannelId The id of the rules channel
+ *
+ * @see GuildChannel
+ * @see Role
+ * @see Member
+ * @see Emoji.Emote
+ * @see Guild.VerificationLevel
+ * @see Guild.NotificationLevel
+ * @see Guild.ExplicitContentFilter
+ * @See Guild.SystemChannelFlag
+ * @see Guild.Feature
+ */
+data class GuildCacheEntry(
+    override val id: Snowflake,
+    override val client: Client,
+    override val name: String,
+    val iconHash: String?,
+    val splashHash: String?,
+    val afkChannelId: Snowflake?,
+    val afkTimeout: TimeSpan,
+    val verificationLevel: VerificationLevel,
+    val defaultMessageNotifications: NotificationLevel,
+    val explicitContentFilter: ExplicitContentFilter,
+    val emotes: EmoteList,
+    val features: Set<Feature>,
+    val mfaLevel: MfaLevel,
+    val applicationId: Snowflake?,
+    val widgetEnabled: Boolean,
+    val widgetChannelId: Snowflake?, //TODO: Make channel ids actual channel but with optional caching
+    val systemChannelId: Snowflake?,
+    val systemChannelFlags: Set<SystemChannelFlag>,
+    val rulesChannelId: Snowflake?,
+    val joinedAt: DateTimeTz?,
+    val isLarge: Boolean,
+    val isUnavailable: Boolean,
+    val memberCount: Int,
+    val voiceStates: List<VoiceState>,
+    val channels: ChannelList,
+    val presences: PresenceList,
+    val vanityUrlCode: String?,
+    val description: String?,
+    val bannerHash: String?,
+    val premiumTier: PremiumTier,
+    val premiumSubscriptionCount: Int,
+    val preferredLocale: String,
+    val publicUpdatesChannelId: Snowflake?,
+    val ownerId: Snowflake,
+    val welcomeScreen: WelcomeScreen?,
+    val discoveryHash: String?,
+) : Guild(id, client), Nameable, CacheEntry {
+
+    val cacheManager = GuildCacheManager()
+    override val roles: CacheGuildRoleContainer
+        get() = CacheGuildRoleContainer(this, cacheManager.roleCache.values)
+    override val members: CacheGuildMemberContainer
+        get() = CacheGuildMemberContainer(this, cacheManager.memberCache.values)
+
+    val everyoneRole: Role
+        get() = cacheManager.roleCache.filter { it.value.name == "@everyone" }.values.first()
+
+    /**
+     * The discovery image shown on the discovery tab
+     */
+    val discoveryImageUrl = discoveryHash?.let { DiscordImage.guildDiscoverySplash(id, it) }
+
+    /**
+     * The icon of this guild
+     */
+    val iconUrl = iconHash?.let { DiscordImage.guildIcon(id, it) }
+
+    /**
+     * The banner of this guild
+     */
+    val bannerUrl = bannerHash?.let { DiscordImage.guildBanner(id, it) }
+
+    /**
+     * The splash of this guild
+     */
+    val splashUrl = splashHash?.let { DiscordImage.guildSplash(id, it) }
+
+    override fun toString() = "Guild[id=$id, name=$name]"
+
 }

@@ -12,14 +12,21 @@ package io.github.jan.discordkm.api.entities.messages
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import com.soywiz.klock.parse
-import io.github.jan.discordkm.api.entities.EnumSerializer
+import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.activity.Activity
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
+import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
@@ -33,12 +40,11 @@ import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
 import io.github.jan.discordkm.api.entities.lists.ReactionList
+import io.github.jan.discordkm.api.media.Attachment
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
-import io.github.jan.discordkm.internal.entities.channels.MessageChannel
-import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.exceptions.PermissionException
 import io.github.jan.discordkm.internal.invoke
@@ -46,6 +52,7 @@ import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
 import io.github.jan.discordkm.internal.utils.extractMessageChannelEntity
@@ -69,14 +76,14 @@ import kotlinx.serialization.json.put
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-class Message(val channel: MessageChannel, override val data: JsonObject) : SnowflakeEntity, Reference<Message>, SerializableEntity {
+class Mesasdssage(val channel: MessageChannel, override val data: JsonObject) : SnowflakeEntity, Reference<Message>, SerializableEntity {
 
     override val id = data.getId()
 
     /**
      * The id of the channel where this message was sent
      */
-    val channelId = data.getOrThrow<Snowflake>("channel_id")
+    val channel.id. = data.getOrThrow<Snowflake>("channel_id")
 
     /**
      * The attachments this message contains
@@ -231,109 +238,6 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      */
     val reactions = ReactionList(this)
 
-    /**
-     * Crossposts this message if it was sent in a [NewsChannel]
-     */
-    suspend fun crosspost() = client.buildRestAction<Unit> {
-        route = Route.Message.CROSSPOST_MESSAGE(channelId.toString(), id).post()
-        transform {  }
-        check {
-            when {
-             // TODO: check permissions
-                channel.type == ChannelType.DM -> throw UnsupportedOperationException("You can't crosspost a message in a private channel")
-                channel.type != ChannelType.GUILD_NEWS -> throw UnsupportedOperationException("You can only crosspost in a news channel!")
-            }
-        }
-    }
-
-    /**
-     * Deletes the message in the channel
-     * Needs [Permission.MANAGE_MESSAGES] to delete other's messages
-     */
-    suspend fun delete() = client.buildRestAction<Unit> {
-        route = Route.Message.DELETE_MESSAGE(channelId.toString(), id).delete()
-        transform {  }
-        check {
-            if(channel.type == ChannelType.DM && author.id != client.selfUser.id) throw PermissionException("You can't delete others messages in a private channel")
-            val canDelete = author.id == client.selfUser.id || Permission.MANAGE_MESSAGES in guild!!.selfMember.getPermissionsFor(channel as GuildChannel)
-            if(!canDelete) throw PermissionException("You can't delete others messages without the permission MANAGE_MESSAGES")
-        }
-    }
-
-
-    /**
-     * Edits this message
-     */
-    suspend fun edit(message: DataMessage) = client.buildRestAction<Message> {
-        route = Route.Message.EDIT_MESSAGE(channel.id, id).patch(Json.encodeToString(message))
-        transform { it.toJsonObject().extractMessageChannelEntity(channel) }
-        check {
-            if(author.id != client.selfUser.id) throw UnsupportedOperationException("You can't edit other's messages!")
-        }
-    }
-
-    /**
-     * Edits this message
-     */
-    suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(message))
-    /**
-     * Edits this message
-     */
-    suspend fun edit(content: String) = edit(buildMessage { this.content = content })
-
-    /**
-     * Replies to this message
-     */
-    suspend fun reply(message: DataMessage) = channel.send {
-        import(message)
-        reference(this@Message)
-    }
-
-    /**
-     * Replies to this message
-     */
-    suspend fun reply(builder: MessageBuilder.() -> Unit) = reply(buildMessage(builder))
-
-    /**
-     * Replies to this message
-     */
-    suspend fun reply(content: String) = reply { this.content = content }
-
-    override fun getValue(ref: Any?, property: KProperty<*>) = channel.messages[id]!!
-
-    /**
-     * Creates a thread from this message
-     * @param name The name this thread will get
-     * @param autoArchiveDuration The [Thread.ThreadDuration] after the thread will be achieved
-     */
-    suspend fun createThread(name: String, autoArchiveDuration: Thread.ThreadDuration = (channel as GuildTextChannel).defaultAutoArchiveDuration) = client.buildRestAction<Thread> {
-        route = Route.Thread.START_THREAD_WITH_MESSAGE(channel.id, id).post(buildJsonObject {
-            put("name", name)
-            put("auto_archive_duration", autoArchiveDuration.duration.minutes.toInt())
-        })
-        transform { it.toJsonObject().extractGuildEntity(guild!!) }
-        onFinish { (guild!! as GuildData).threadCache[it.id] = it }
-        check { if(guild == null) throw UnsupportedOperationException("You can't create a thread from a private channel message") }
-    }
-
-    /**
-     * Pins this message in this channel
-     */
-    suspend fun pin() = client.buildRestAction<Unit> {
-        route = Route.Message.PIN_MESSAGE(channel.id, id).put()
-        transform {  }
-        check { if(channel is PrivateChannel) throw UnsupportedOperationException("You can't pin a message in a private channel!"); if(isPinned) throw IllegalStateException("You can't pin a pinned message!'")}
-    }
-
-    /**
-     * Unpins this message in this channel
-     */
-    suspend fun unpin() = client.buildRestAction<Unit> {
-        route = Route.Message.UNPIN_MESSAGE(channel.id, id).delete()
-        transform {  }
-        check { if(channel is PrivateChannel) throw UnsupportedOperationException("You can't unpin a message in a private channel!"); if(!isPinned) throw IllegalStateException("You can't unpin an unpinned message!") }
-    }
-
     fun copy() = DataMessage(
         content,
         isTTS,
@@ -374,7 +278,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
      * The message reference is sent when e.g. a message replies to another message
      */
     @Serializable
-    data class Reference(@SerialName("message_id") val messageId: Snowflake? = null, @SerialName("guild_id") val guildId: Snowflake? = null, @SerialName("channel_id") val channelId: Snowflake? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)
+    data class Reference(@SerialName("message_id") val messageId: Snowflake? = null, @SerialName("guild_id") val guildId: Snowflake? = null, @SerialName("channel_id") val channel.id.: Snowflake? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)
 
     enum class Flag(override val offset: Int) : SerializableEnum<Flag> {
 
@@ -387,7 +291,7 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
         EPHEMERAL(6),
         LOADING(7);
 
-        companion object : EnumSerializer<Flag> {
+        companion object : FlagSerializer<Flag> {
             override val values = values().toList()
         }
 
@@ -396,6 +300,126 @@ class Message(val channel: MessageChannel, override val data: JsonObject) : Snow
     override suspend fun retrieve() = channel.messages.retrieve(id)
 
 }
+
+interface Message : SnowflakeEntity, BaseEntity {
+
+    override val id: Snowflake
+    override val client: Client
+        get() = channel.client
+    val guild: Guild?
+        get() = null
+    val channel: MessageChannel
+
+    /**
+     * Crossposts this message if it was sent in a [NewsChannel]
+     */
+    suspend fun crosspost() = client.buildRestAction<Unit> {
+        route = Route.Message.CROSSPOST_MESSAGE(channel.id.toString(), id).post()
+    }
+
+    /**
+     * Deletes the message in the channel
+     * Needs [Permission.MANAGE_MESSAGES] to delete other's messages
+     */
+    suspend fun delete() = client.buildRestAction<Unit> {
+        route = Route.Message.DELETE_MESSAGE(channel.id.toString(), id).delete()
+    }
+
+
+    /**
+     * Edits this message
+     */
+    suspend fun edit(message: DataMessage) = client.buildRestAction<Message> {
+        route = Route.Message.EDIT_MESSAGE(channel.id, id).patch(Json.encodeToString(message))
+        transform { it.toJsonObject().extractMessageChannelEntity(channel) }
+    }
+
+    /**
+     * Edits this message
+     */
+    suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(message))
+    /**
+     * Edits this message
+     */
+    suspend fun edit(content: String) = edit(buildMessage { this.content = content })
+
+    /**
+     * Replies to this message
+     */
+    suspend fun reply(message: DataMessage) = channel.send {
+        import(message)
+        reference(this@Message)
+    }
+
+    /**
+     * Replies to this message
+     */
+    suspend fun reply(builder: MessageBuilder.() -> Unit) = reply(buildMessage(builder))
+
+    /**
+     * Replies to this message
+     */
+    suspend fun reply(content: String) = reply { this.content = content }
+
+    /**
+     * Creates a thread from this message
+     * @param name The name this thread will get
+     * @param autoArchiveDuration The [Thread.ThreadDuration] after the thread will be achieved
+     */
+    suspend fun createThread(name: String, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY) = client.buildRestAction<Thread> {
+        route = Route.Thread.START_THREAD_WITH_MESSAGE(channel.id, id).post(buildJsonObject {
+            put("name", name)
+            put("auto_archive_duration", autoArchiveDuration.duration.minutes.toInt())
+        })
+        transform { Thread.from(it.toJsonObject(), guild!!) }
+    }
+
+    /**
+     * Pins this message in this channel
+     */
+    suspend fun pin() = client.buildRestAction<Unit> {
+        route = Route.Message.PIN_MESSAGE(channel.id, id).put()
+    }
+
+    /**
+     * Unpins this message in this channel
+     */
+    suspend fun unpin() = client.buildRestAction<Unit> {
+        route = Route.Message.UNPIN_MESSAGE(channel.id, id).delete()
+    }
+}
+
+data class MessageCacheEntry(
+    override val id: Snowflake,
+    override val guild: Guild? = null,
+    override val channel: MessageChannel,
+    val author: User,
+    val member: Member?,
+    val content: String,
+    val timestamp: DateTimeTz,
+    val editedTimestamp: DateTimeTz?,
+    val isTTSMessage: Boolean,
+    val mentionsEveryone: Boolean,
+    val mentions: List<User>,
+    val mentionedRoles: List<Role>,
+    val mentionedChannels: List<GuildChannelCacheEntry>,
+    val attachments: List<Attachment>,
+    val embeds: List<MessageEmbed>,
+    //val reactions: List<Reacti>,
+    val nonce: Snowflake?,
+    val pinned: Boolean,
+    val type: MessageType,
+    val activity: Activity?,
+   // val application: Application?,
+    val flags: List<Mesasdssage.Flag>,
+    val stickers: List<Sticker>,
+    val components: List<ActionRow>,
+    val thread: Thread?,
+    val interaction: Mesasdssage.MessageInteraction?,
+    val reference: Mesasdssage.Reference,
+    val referencedMessage: MessageCacheEntry,
+    val webhookId: Snowflake
+) : Message
 
 enum class MessageType(val id: Int) {
     DEFAULT(0),

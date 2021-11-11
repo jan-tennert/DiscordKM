@@ -38,7 +38,7 @@ class AutoCompleteInteraction<T>(client: Client, data: JsonObject)  : Interactio
                 }
             })
         })
-        transform { }
+        
         onFinish { isAcknowledged = true }
     }
 

@@ -38,3 +38,7 @@ sealed interface NameList <K, V : Nameable> : DiscordList<K, V> {
 }
 
 sealed interface NameableSnowflakeList <V : Nameable> : SnowflakeList<V>, NameList<Snowflake, V>
+
+class EmptyDiscordList <K, V> internal constructor(): DiscordList<K, V> {
+    override val internalMap: Map<K, V> = emptyMap()
+}

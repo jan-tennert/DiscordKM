@@ -15,11 +15,11 @@ import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
-import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.api.entities.misc.FlagList
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.events.ShardCreateEvent
-import io.github.jan.discordkm.internal.Cache
+import io.github.jan.discordkm.internal.caching.Cache
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
@@ -36,7 +36,7 @@ class DiscordWebSocketClient internal constructor(
     token: String,
     private val encoding: Encoding,
     private val compression: Compression,
-    val intents: EnumList<Intent>,
+    val intents: FlagList<Intent>,
     loggingLevel: Logger.Level,
     private val status: PresenceStatus,
     private val activity: Presence?,
@@ -153,7 +153,7 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
      */
     fun activity(builder: PresenceModifier.() -> Unit) { activity = PresenceModifier().apply(builder) }
 
-    fun build() = DiscordWebSocketClient(token, encoding, compression, EnumList(Intent, intents), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache, shards, totalShards)
+    fun build() = DiscordWebSocketClient(token, encoding, compression, FlagList(Intent, intents), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache, shards, totalShards)
 
 }
 

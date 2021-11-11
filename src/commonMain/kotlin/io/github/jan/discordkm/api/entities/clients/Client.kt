@@ -12,7 +12,7 @@ package io.github.jan.discordkm.api.entities.clients
 import co.touchlab.stately.collections.IsoMutableMap
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.BaseEntity
-import io.github.jan.discordkm.api.entities.EnumSerializer
+import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
@@ -27,8 +27,10 @@ import io.github.jan.discordkm.api.entities.lists.MemberList
 import io.github.jan.discordkm.api.entities.lists.ThreadList
 import io.github.jan.discordkm.api.entities.lists.UserList
 import io.github.jan.discordkm.api.media.Image
-import io.github.jan.discordkm.internal.EntityCache
+import io.github.jan.discordkm.internal.caching.EntityCache
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.CacheManager
+import io.github.jan.discordkm.internal.caching.ClientCacheManager
 import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
@@ -49,6 +51,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
     val rest = RestClient(this)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client = this
+    val cacheManager = ClientCacheManager()
 
     override val commandCache = EntityCache<Snowflake, ApplicationCommand>()
 
@@ -128,7 +131,7 @@ enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
     DIRECT_MESSAGE_REACTIONS(13),
     DIRECT_MESSAGE_TYPING(14);
 
-    companion object : EnumSerializer<Intent> {
+    companion object : FlagSerializer<Intent> {
         override val values = values().toList()
 
         val ALL_INTENTS = values

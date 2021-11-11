@@ -10,7 +10,10 @@
 package io.github.jan.discordkm.internal.utils
 
 import com.github.ajalt.colormath.model.RGBInt
-import io.github.jan.discordkm.api.entities.EnumSerializer
+import com.soywiz.klock.DateTimeTz
+import com.soywiz.klock.ISO8601
+import com.soywiz.klock.parse
+import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
@@ -31,7 +34,7 @@ import io.github.jan.discordkm.api.entities.guild.invites.InviteApplication
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
 import io.github.jan.discordkm.api.entities.interactions.commands.ChatInputCommand
 import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.api.entities.misc.FlagList
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.channels.Channel
 import io.github.jan.discordkm.internal.entities.channels.ChannelType
@@ -50,6 +53,7 @@ import io.github.jan.discordkm.internal.entities.guilds.channels.VoiceChannelDat
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
@@ -67,7 +71,7 @@ fun JsonObject.getId(): Snowflake {
     return Snowflake.fromId(getOrThrow<String>("id"))
 }
 fun JsonObject.getColor(key: String) = RGBInt.fromRGBA(getOrThrow(key))
-fun <T : SerializableEnum<T>> JsonObject.getEnums(key: String, serializer: EnumSerializer<T>) = if(get(key)?.jsonPrimitive?.long != null) serializer.decode(get(key)?.jsonPrimitive?.long!!) else EnumList.empty()
+fun <T : SerializableEnum<T>> JsonObject.getEnums(key: String, serializer: FlagSerializer<T>) = if(get(key)?.jsonPrimitive?.long != null) serializer.decode(get(key)?.jsonPrimitive?.long!!) else FlagList.empty()
 fun JsonObject.getRoleTag(key: String): Role.Tag? {
     val json = get("tags")?.jsonObject
     return json?.let { Role.Tag(it["bot_id"]?.jsonPrimitive?.longOrNull, it.jsonObject["integration_id"]?.jsonPrimitive?.longOrNull, it.jsonObject["premium_subscriber"]?.jsonPrimitive?.booleanOrNull) }
@@ -155,3 +159,11 @@ inline fun JsonObject.extractChannel(client: Client, guild: Guild? = null): Chan
 fun <V>JsonObjectBuilder.putOptional(key: String, value: V?) { value?.let { put(key, value.toString()) }}
 
 fun JsonObjectBuilder.putJsonObject(json: JsonObject) = json.forEach { (key, value) -> put(key, value) }
+
+val JsonElement.boolean : Boolean get() = jsonPrimitive.boolean
+val JsonElement.int : Int get() = jsonPrimitive.int
+val JsonElement.long : Long get() = jsonPrimitive.long
+val JsonElement.double : Double get() = jsonPrimitive.double
+val JsonElement.string : String get() = jsonPrimitive.content
+val JsonElement.snowflake : Snowflake get() = Snowflake.fromId(jsonPrimitive.content)
+val JsonElement.isoTimestamp : DateTimeTz get() = ISO8601.DATETIME_UTC_COMPLETE.parse(string)

@@ -9,91 +9,34 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
-import com.github.ajalt.colormath.Color
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
-import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.api.entities.misc.Color
+import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.api.media.Image
-import io.github.jan.discordkm.internal.entities.DiscordImage
-import io.github.jan.discordkm.internal.utils.getColor
-import io.github.jan.discordkm.internal.utils.getEnums
-import io.github.jan.discordkm.internal.utils.getId
-import io.github.jan.discordkm.internal.utils.getOrNull
-import io.github.jan.discordkm.internal.utils.getOrThrow
-import io.github.jan.discordkm.internal.utils.getRoleTag
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.CacheEntity
+import io.github.jan.discordkm.internal.caching.CacheEntry
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
+import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.serializers.RoleSerializer
+import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
 import io.github.jan.discordkm.internal.utils.putOptional
+import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
-import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-interface Role : Mentionable, Reference<Role>, SnowflakeEntity, GuildEntity, PermissionHolder, Nameable {
-
-    override val id: Snowflake
-        get() = data.getId()
-
-    /**
-     * Returns the name of the role
-     */
-    override val name: String
-        get() = data.getOrThrow<String>("name")
-
-    /**
-     * Returns the color of the role
-     */
-    val color: Color
-        get() = data.getColor("color")
-
-    /**
-     * The icon of the role
-     */
-    val iconUrl: String?
-        get() = data.getOrNull<String?>("icon")?.let { DiscordImage.roleIcon(id, it) }
-
-    /**
-     * If this role is pinned in the user listing
-     */
-    val isHoist: Boolean
-        @get:JvmName("isHoist")
-        get() = data.getOrThrow<Boolean>("hoist")
-
-    /**
-     * The position of this role
-     */
-    val position: Int
-        get() = data.getOrThrow<Int>("position")
-
-    /**
-     * The permissions which this role has
-     */
-    override val permissions: EnumList<Permission>
-        get() = data.getEnums("permissions", Permission)
-
-    override fun getPermissionsFor(channel: GuildChannel) = channel.permissionOverrides.first { it.holder is Role && it.holder.id == id }.allow
-
-    /**
-     * Whether this role is managed by an interaction
-     */
-    val isManaged: Boolean
-        @get:JvmName("isManaged")
-        get() = data.getOrThrow<Boolean>("managed")
-
-    /**
-     * Whether this role is mentionable
-     */
-    val isMentionable: Boolean
-        @get:JvmName("isMentionable")
-        get() = data.getOrThrow<Boolean>("mentionable")
-
-    /**
-     * The tags this role has
-     */
-    val tags: Tag?
-        get() = data.getRoleTag("tags")
+open class Role protected constructor(override val id: Snowflake, override val guild: Guild) : Mentionable, Reference<Role>, SnowflakeEntity, GuildEntity, CacheEntity {
 
     override val client
         get() = guild.client
@@ -101,31 +44,73 @@ interface Role : Mentionable, Reference<Role>, SnowflakeEntity, GuildEntity, Per
     override val asMention: String
         get() = "<@&$id>"
 
+    override val cache: RoleCacheEntry?
+        get() = guild.cache?.cacheManager?.roleCache?.get(id)
+
     override fun getValue(ref: Any?, property: KProperty<*>) = guild.roles[id]!!
 
-    /**
-     * Modifies this role
-     *
-     * Requires the permission [Permission.MANAGE_ROLES]
-     */
-    suspend fun modify(modifier: RoleModifier.() -> Unit): Role
+    suspend fun modify(modifier: RoleModifier.() -> Unit) = client.buildRestAction<RoleCacheEntry> {
+        route = Route.Role.MODIFY_ROLE(guild.id, id).patch(RoleModifier().apply(modifier).build())
+        transform { RoleSerializer.deserialize(it.toJsonObject(), guild) }
+    }
 
-    /**
-     * Changes the position of the role
-     *
-     * Requires the permission [Permission.MANAGE_ROLES]
-     */
-    suspend fun setPosition(newPosition: Int): Role
-
-    class Tag(val botId: Long? = null, integrationId: Long? = null, val premiumSubscriber: Boolean? = null)
+    override fun toString() = "Role[id=$id]"
 
     override suspend fun retrieve() = guild.roles.retrieveRoles().first { it.id == id }
+
+    companion object {
+        fun from(id: Snowflake, guild: Guild) = Role(id, guild)
+        fun from(data: JsonObject, guild: Guild) = RoleSerializer.deserialize(data, guild)
+    }
+}
+
+/**
+ * A role cache entry contains all information given by the Discord API
+ * @param guild the guild this role belongs to
+ * @param id the id of this role
+ * @param name the name of this role
+ * @param color the color of this role
+ * @param isHoist whether this role is hoisted
+ * @param position the position of this role
+ * @param permissions the permissions of this role
+ * @param isManagedByAnIntegration whether this role is managed
+ * @param tags The tags this role has
+ * @param unicodeEmoji The unicode emoji this role has
+ * @param iconHash The icon hash of the role
+ */
+data class RoleCacheEntry(
+    override val id: Snowflake,
+    override val permissions: Set<Permission>,
+    override val guild: Guild,
+    override val name: String,
+    val color: Color,
+    val isHoist: Boolean,
+    val iconHash: String?,
+    val unicodeEmoji: String?,
+    val position: Int,
+    val isManagedByAnIntegration: Boolean,
+    val isMentionable: Boolean,
+    val tags: Tag?,
+) : Role(id, guild), PermissionHolder, Nameable, CacheEntry {
+
+    override val client: Client = guild.client
+
+    data class Tag(
+        @SerialName("bot_id") val botId: Snowflake? = null,
+        @SerialName("integration_id") val integrationId: Snowflake? = null,
+        @SerialName("premium_subscriber") val premiumSubscriber: Boolean? = null
+    )
+
+    override fun getPermissionsFor(channel: GuildChannel) = channel.permissionOverrides.first { it.holder is Role && it.holder.id == id }.allow
+
+    override fun toString() = "Role[id=$id, name=$name]"
+
 }
 
 class RoleModifier {
 
     var name: String? = null
-    var permissions: MutableList<Permission> = mutableListOf()
+    var permissions: MutableSet<Permission> = mutableSetOf()
     var color: Color? = null
     var hoist: Boolean? = null
     var mentionable: Boolean? = null
@@ -133,8 +118,8 @@ class RoleModifier {
 
     fun build() = buildJsonObject {
         putOptional("name", name)
-        putOptional("permissions", EnumList(Permission, permissions).rawValue)
-        putOptional("color", color?.toSRGB()?.toRGBInt()?.argb)
+        putOptional("permissions", permissions.rawValue())
+        putOptional("color", color?.rgb)
         putOptional("hoist", hoist)
         putOptional("icon", icon?.encodedData)
         putOptional("mentionable", mentionable)

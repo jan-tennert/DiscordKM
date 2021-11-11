@@ -11,16 +11,16 @@ package io.github.jan.discordkm.api.entities
 
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
-import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.api.entities.misc.FlagList
 
 /**
  * All objects inheriting this interface can have permissions
  */
 interface PermissionHolder : SnowflakeEntity {
 
-    val permissions: EnumList<Permission>
+    val permissions: FlagList<Permission>
 
-    fun getPermissionsFor(channel: GuildChannel) : EnumList<Permission>
+    fun getPermissionsFor(channel: GuildChannel) : FlagList<Permission>
 
 }
 

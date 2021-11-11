@@ -15,4 +15,4 @@ import io.github.jan.discordkm.api.entities.guild.Sticker
 
 class StickerList(override val internalMap: Map<Snowflake, Sticker>) : NameableSnowflakeList<Sticker>
 
-class EmojiList(override val internalMap: Map<Snowflake, Emoji.Emote>) : NameableSnowflakeList<Emoji.Emote>
+class EmoteList(override val internalMap: Map<Snowflake, Emoji.Emote>) : NameableSnowflakeList<Emoji.Emote>

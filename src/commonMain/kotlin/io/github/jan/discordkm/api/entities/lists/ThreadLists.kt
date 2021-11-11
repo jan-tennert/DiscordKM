@@ -38,7 +38,7 @@ class ThreadMemberList(private val thread: Thread, override val internalMap: Map
      */
     suspend fun add(member: Member) = thread.client.buildRestAction<Unit> {
         route = Route.Thread.ADD_THREAD_MEMBER(thread.id, member.id).put()
-        transform { }
+        
     }
 
 
@@ -47,7 +47,7 @@ class ThreadMemberList(private val thread: Thread, override val internalMap: Map
      */
     suspend fun remove(member: Member) = thread.client.buildRestAction<Unit> {
         route = Route.Thread.REMOVE_THREAD_MEMBER(thread.id, member.id).delete()
-        transform { }
+        
     }
 
 

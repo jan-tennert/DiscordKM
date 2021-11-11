@@ -19,7 +19,7 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.VoiceState
 import io.github.jan.discordkm.api.entities.lists.RetrievableRoleList
-import io.github.jan.discordkm.internal.EntityCache
+import io.github.jan.discordkm.internal.caching.EntityCache
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch

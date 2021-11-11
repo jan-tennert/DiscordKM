@@ -5,27 +5,23 @@
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
-
  */
-package io.github.jan.discordkm.api.entities.guild.channels
+package io.github.jan.discordkm.api.entities.misc
 
-import io.github.jan.discordkm.api.entities.guild.channels.modifier.CategoryModifier
-import io.github.jan.discordkm.api.entities.guild.channels.modifier.GuildChannelBuilder
-import io.github.jan.discordkm.api.entities.lists.retrieve
+data class Color(val rgb: Int) {
 
-interface Category : GuildChannel {
+    companion object {
 
-    /**
-     * Modifies this category
-     */
-    suspend fun modify(modifier: CategoryModifier.() -> Unit = {}): Category
-
-    override suspend fun retrieve() = guild.channels.retrieve(id) as Category
-
-    companion object : GuildChannelBuilder<Category, CategoryModifier> {
-
-        override fun create(builder: CategoryModifier.() -> Unit) = CategoryModifier().apply(builder).build()
+        fun fromRGB(r: Int, g: Int, b: Int, a: Int = 255) : Color {
+            val value = a and 0xFF shl 24 or
+                    (r and 0xFF shl 16) or
+                    (g and 0xFF shl 8) or
+                    (b and 0xFF shl 0)
+            return Color(value)
+        }
 
     }
+
+    fun extract() = Triple(rgb shr 16 and 0xFF, rgb shr 8 and 0xFF, rgb shr 0 and 0xFF)
 
 }

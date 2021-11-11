@@ -19,7 +19,7 @@ import io.github.jan.discordkm.api.events.ChannelCreateEvent
 import io.github.jan.discordkm.api.events.ChannelDeleteEvent
 import io.github.jan.discordkm.api.events.ChannelPinUpdateEvent
 import io.github.jan.discordkm.api.events.ChannelUpdateEvent
-import io.github.jan.discordkm.internal.Cache
+import io.github.jan.discordkm.internal.caching.Cache
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.utils.extractChannel
 import io.github.jan.discordkm.internal.utils.getOrNull

@@ -12,7 +12,7 @@ package io.github.jan.discordkm.internal.events
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.MessageDeleteEvent
-import io.github.jan.discordkm.internal.Cache
+import io.github.jan.discordkm.internal.caching.Cache
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.internal.entities.channels.MessageChannelData
 import io.github.jan.discordkm.internal.utils.getOrThrow

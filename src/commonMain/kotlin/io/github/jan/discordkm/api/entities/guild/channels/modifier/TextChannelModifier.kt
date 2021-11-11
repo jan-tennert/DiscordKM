@@ -12,7 +12,7 @@ package io.github.jan.discordkm.api.entities.guild.channels.modifier
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverride
+import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.internal.Check
 import io.github.jan.discordkm.internal.checkRange
@@ -47,7 +47,7 @@ class TextChannelModifier(private val type: Int?) : NonCategoryModifier<GuildTex
 
     override var parentId: Snowflake? = null
     override var position: Int? = null
-    override var permissionOverrides: MutableList<PermissionOverride> = mutableListOf<PermissionOverride>()
+    override var permissionOverrides: MutableList<PermissionOverwrite> = mutableListOf<PermissionOverwrite>()
 
     override fun build() = buildJsonObject {
         putOptional("default_auto_archive_duration", defaultAutoArchiveDuration?.duration?.minutes?.toInt())

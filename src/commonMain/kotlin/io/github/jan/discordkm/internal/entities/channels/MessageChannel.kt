@@ -21,7 +21,7 @@ import io.github.jan.discordkm.api.entities.messages.MessageBuilder
 import io.github.jan.discordkm.api.entities.messages.MessageEmbed
 import io.github.jan.discordkm.api.entities.messages.buildEmbed
 import io.github.jan.discordkm.api.entities.messages.buildMessage
-import io.github.jan.discordkm.internal.EntityCache
+import io.github.jan.discordkm.internal.caching.EntityCache
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post

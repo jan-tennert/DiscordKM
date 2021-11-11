@@ -17,10 +17,10 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverride
+import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.internal.EntityCache
+import io.github.jan.discordkm.internal.caching.EntityCache
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
@@ -47,7 +47,7 @@ open class GuildChannelData(override val guild: Guild, final override val data: 
             }
             val allow = it.jsonObject.getEnums("allow", Permission)
             val deny = it.jsonObject.getEnums("deny", Permission)
-            PermissionOverride(holder, allow, deny)
+            PermissionOverwrite(holder, allow, deny)
         }?.toSet() ?: emptySet()
 
 }

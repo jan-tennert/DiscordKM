@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.entities.guild.channels.modifier
 
 import io.github.jan.discordkm.api.entities.guild.channels.Category
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverride
+import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 
 class CategoryModifier : GuildChannelModifier<Category> {
 
@@ -18,5 +18,5 @@ class CategoryModifier : GuildChannelModifier<Category> {
 
     override var position: Int? = null
 
-    override var permissionOverrides: MutableList<PermissionOverride> = mutableListOf()
+    override var permissionOverrides: MutableList<PermissionOverwrite> = mutableListOf()
 }

@@ -7,31 +7,30 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities
+package io.github.jan.discordkm.internal.caching
 
-import io.github.jan.discordkm.api.entities.misc.EnumList
+import co.touchlab.stately.collections.IsoMutableMap
+import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.internal.DiscordKMInternal
 
-interface EnumSerializer <T : SerializableEnum<T>> {
+enum class Cache {
+    STICKERS,
+    EMOJIS,
+    MEMBERS,
+    CHANNELS,
+    PRESENCES,
+    MESSAGES,
+    ROLES,
+    STAGE_INSTANCES,
+    THREADS,
+    VOICE_STATES;
 
-    val values: List<T>
+    companion object {
 
-    fun decode(value: Long) : EnumList<T> {
-        if (value == 0L) return EnumList.empty()
-        val list = values.filter { (value and it.rawValue) == it.rawValue; }
-        return EnumList(this, list)
+        val STANDARD = listOf(MEMBERS, CHANNELS)
+        val ALL = values().toList()
+
     }
-    fun encode(list: List<T>) : Long {
-        var raw: Long = 0
-        list.forEach { raw = raw or it.rawValue }
-        return raw
-    }
-
-}
-
-interface SerializableEnum <T> {
-
-    val offset: Int
-    val rawValue: Long
-        get() = 1L shl offset
 
 }

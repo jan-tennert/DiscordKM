@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.entities.guild.auditlog
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverride
+import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -62,7 +62,7 @@ class AuditLogChange(
 ) {
 
     /**
-     * Can be a [Snowflake] a boolean, an int, a string, a [PermissionOverride] or a pair of role name and id
+     * Can be a [Snowflake] a boolean, an int, a string, a [PermissionOverwrite] or a pair of role name and id
      */
     @Transient
     val newValue: Any? = if(key != "permission_overrides" && key != "\$add" && key != "\$remove") {
@@ -76,7 +76,7 @@ class AuditLogChange(
     }
 
     /**
-     * Can be a [Snowflake] a boolean, an int, a string, a [PermissionOverride] or a pair of role name and id
+     * Can be a [Snowflake] a boolean, an int, a string, a [PermissionOverwrite] or a pair of role name and id
      */
     @Transient
     val oldValue: Any? = if(key != "permission_overrides" && key != "\$add" && key != "\$remove") {

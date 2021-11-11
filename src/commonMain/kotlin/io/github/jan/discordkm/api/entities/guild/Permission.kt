@@ -9,8 +9,8 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
-import io.github.jan.discordkm.api.entities.EnumSerializer
-import io.github.jan.discordkm.api.entities.SerializableEnum
+import io.github.jan.discordkm.internal.serialization.FlagSerializer
+import io.github.jan.discordkm.internal.serialization.SerializableEnum
 
 /**
  * Roles and Members can have specific permission to restrict their access on the guild
@@ -57,10 +57,8 @@ enum class Permission(override val offset: Int) : SerializableEnum<Permission> {
     START_EMBEDDED_ACTIVITIES(39),
     UNKNOWN(-1);
 
-    companion object : EnumSerializer<Permission> {
+    companion object : FlagSerializer<Permission>(values()) {
         val ALL_PERMISSIONS = values().filter { it != UNKNOWN }
-
-        override val values = values().toList()
     }
 
 }

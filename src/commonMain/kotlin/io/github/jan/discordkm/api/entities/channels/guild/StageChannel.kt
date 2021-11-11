@@ -1,32 +1,25 @@
-/**
- * DiscordKM is a kotlin multiplatform Discord API Wrapper
- * Copyright (C) 2021 Jan Tennert
- *
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+package io.github.jan.discordkm.api.entities.channels.guild
 
- */
-package io.github.jan.discordkm.api.entities.guild.channels
-
+import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.StageInstance
-import io.github.jan.discordkm.api.entities.guild.channels.modifier.GuildChannelBuilder
-import io.github.jan.discordkm.api.entities.guild.channels.modifier.VoiceChannelModifier
-import io.github.jan.discordkm.api.entities.lists.retrieve
+import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 interface StageChannel : VoiceChannel {
 
-    override suspend fun modify(modifier: VoiceChannelModifier.() -> Unit): StageChannel
-
-    override suspend fun retrieve() = guild.channels.retrieve(id) as StageChannel
+    override val type: ChannelType
+        get() = ChannelType.GUILD_STAGE_VOICE
 
     /**
      * Creates a new stage instance in this [StageChannel]
@@ -52,10 +45,24 @@ interface StageChannel : VoiceChannel {
         transform { StageInstance(client, it.toJsonObject()) }
     }
 
-    companion object : GuildChannelBuilder<VoiceChannel, VoiceChannelModifier> {
-
-        override fun create(builder: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(13).apply(builder).build()
-
+    companion object {
+        fun from(id: Snowflake, guild: Guild) = object : StageChannel {
+            override val guild = guild
+            override val id = id
+        }
+        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<StageChannelCacheEntry>(data, guild)
     }
 
 }
+
+class StageChannelCacheEntry(
+    userLimit: Int,
+    regionId: String?,
+    bitrate: Int,
+    videoQualityMode: VoiceChannel.VideoQualityMode,
+    override val guild: Guild,
+    override val id: Snowflake,
+    override val name: String,
+    override val position: Int,
+    override val permissionOverwrites: Set<PermissionOverwrite>
+) : StageChannel, VoiceChannelCacheEntry(userLimit, regionId, bitrate, videoQualityMode, guild, id, name, position, permissionOverwrites)

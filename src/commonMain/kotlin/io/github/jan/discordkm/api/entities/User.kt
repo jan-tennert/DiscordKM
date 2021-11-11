@@ -1,98 +1,31 @@
 package io.github.jan.discordkm.api.entities
 
-import com.github.ajalt.colormath.Color
-import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.CacheEntity
+import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.entities.DiscordImage
-import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.FlagSerializer
+import io.github.jan.discordkm.internal.serialization.SerializableEnum
+import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.extractClientEntity
-import io.github.jan.discordkm.internal.utils.getColor
-import io.github.jan.discordkm.internal.utils.getEnums
-import io.github.jan.discordkm.internal.utils.getId
-import io.github.jan.discordkm.internal.utils.getOrDefault
-import io.github.jan.discordkm.internal.utils.getOrNull
-import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.toJsonObject
-import io.github.jan.discordkm.internal.utils.valueOfIndexOrDefault
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEntity, Nameable {
+open class User protected constructor(override val id: Snowflake, override val client: Client) : Mentionable, SnowflakeEntity, Reference<User>, BaseEntity, CacheEntity {
 
-    override val id: Snowflake
-        get() = data.getId()
     override val asMention: String
         get() = "<@$id>"
-
-    val privateChannel: PrivateChannel?
-
-    /**
-     * The name of the user
-     */
-    override val name: String
-        get() = data.getOrThrow<String>("username")
-
-    /**
-     * The discriminator of the user. Example Test#**__1234__**
-     */
-    val discriminator: String
-        get() = data.getOrThrow<String>("discriminator")
-
-    /**
-     * The avatar url of the user
-     */
-    val avatarUrl: String
-        get() = data.getOrNull<String>("avatar")?.let { DiscordImage.userAvatar(id, it) } ?: DiscordImage.defaultUserAvatar(discriminator.toInt())
-
-    /**
-     * If the user is a bot
-     */
-    val isBot: Boolean
-        @get:JvmName("isBot")
-        get() = data.getOrDefault("bot", false)
-
-    /**
-     * If the user is an official discord system user
-     */
-    val isSystem: Boolean
-        @get:JvmName("isSystem")
-        get() = data.getOrDefault("system", false)
-
-    /**
-     * If the user has two-factor authentication enabled
-     */
-    val hasMfaEnabled: Boolean
-        @get:JvmName("hasMfaEnabled")
-        get() = data.getOrDefault("mfa_enabled", false)
-
-    /**
-     * The banner url of the user if available
-     */
-    val bannerUrl: String?
-        get() = data.getOrNull<String>("banner")?.let { DiscordImage.userBanner(id, it) }
-
-    /**
-     * The user's banner color if available
-     */
-    val accentColor: Color?
-        get() = if(data.getOrNull<Int>("accent_color") != null) data.getColor("accent_color") else null
-
-    /**
-     * The flags on the user's account
-     */
-    val flags: EnumList<UserFlag>
-        get() = data.getEnums("flags", UserFlag)
-
-    /**
-     * The type of nitro subscription on a user's account
-     */
-    val premiumType: PremiumType
-        get() = valueOfIndexOrDefault(data.getOrNull("premium_type"), default = PremiumType.NONE)
+    override val cache: UserCacheEntry?
+        get() = client.cacheManager.userCache[id]
 
     /**
      * Creates a new [PrivateChannel]
@@ -109,16 +42,19 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
         transform { it.toJsonObject().extractClientEntity(client) }
 
         onFinish {
-            (this@User as UserData).privateChannel = it
+           // (this@User as UserData).privateChannel = it
         }
     }
 
-    suspend fun getOrCreatePrivateChannel() = privateChannel ?: createPrivateChannel()
-
-    enum class PremiumType {
+    enum class PremiumType : EnumWithValue<Int> {
         NONE,
         NITRO_CLASSIC,
-        NITRO
+        NITRO;
+
+        override val value: Int
+            get() = ordinal
+
+        companion object : EnumWithValueGetter<PremiumType, Int>(values())
     }
 
     enum class UserFlag(override val offset: Int) : SerializableEnum<UserFlag> {
@@ -138,14 +74,55 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, SerializableEnti
         BOT_HTTP_INTERACTIONS(19),
         UNKNOWN(-1);
 
-        companion object : EnumSerializer<UserFlag> {
-            override val values = values().toList()
-        }
-
+        companion object : FlagSerializer<UserFlag>(values())
     }
 
     override fun getValue(ref: Any?, property: KProperty<*>) = client.users[id]!!
 
     override suspend fun retrieve() = client.users.retrieve(id)
+
+    companion object {
+        fun from(id: Snowflake, client: Client) = User(id, client)
+        fun from(data: JsonObject, client: Client) = UserSerializer.deserialize(data, client)
+    }
+
+}
+
+/**
+ * The user cache entry contains all information given by the Discord API
+ *  @param id The id of the user
+ *  @param name The name of the user
+ *  @param discriminator The discriminator of the user. Example Test#**__1234__**
+ *  @param avatarHash The avatar hash of the user
+ *  @param isBot Whether the user is a bot
+ *  @param isSystem Whether the user is an official discord system user
+ *  @param hasMfaEnabled Whether the user has two-factor authentication enabled
+ *  @param flags The flags on the user's account
+ *  @param premiumType The type of nitro subscription on a user's account
+ *  @param publicFlags The public flags on the user's account
+ */
+data class UserCacheEntry (
+    override val id : Snowflake,
+    override val name: String,
+    val discriminator: String,
+    val avatarHash: String?,
+    val isBot: Boolean,
+    val isSystem: Boolean,
+    val hasMfaEnabled: Boolean,
+    val flags: Set<UserFlag>,
+    val premiumType: PremiumType,
+    val publicFlags: Set<UserFlag>,
+    override val client: Client
+) : User(id, client), CacheEntry, Nameable {
+
+    /**
+     * Whether this user has nitro or not
+     */
+    val hasNitro = premiumType != PremiumType.NONE;
+
+    /**
+     * The avatar url of the user
+     */
+    val avatarUrl = avatarHash?.let { DiscordImage.userAvatar(id, it) }
 
 }

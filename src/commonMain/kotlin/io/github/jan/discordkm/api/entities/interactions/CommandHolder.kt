@@ -13,7 +13,7 @@ import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
 import io.github.jan.discordkm.api.entities.lists.CommandList
-import io.github.jan.discordkm.internal.EntityCache
+import io.github.jan.discordkm.internal.caching.EntityCache
 
 interface CommandHolder : BaseEntity {
 

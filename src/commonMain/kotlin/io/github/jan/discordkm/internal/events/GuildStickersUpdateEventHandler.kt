@@ -10,11 +10,10 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.events.GuildStickersUpdateEvent
-import io.github.jan.discordkm.internal.Cache
+import io.github.jan.discordkm.internal.caching.Cache
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import kotlinx.serialization.json.JsonObject

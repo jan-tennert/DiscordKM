@@ -15,7 +15,7 @@ import io.github.jan.discordkm.api.entities.guild.channels.modifier.ThreadModifi
 import io.github.jan.discordkm.api.entities.lists.ThreadMemberList
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.internal.EntityCache
+import io.github.jan.discordkm.internal.caching.EntityCache
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.guilds.GuildData

@@ -18,7 +18,7 @@ import io.github.jan.discordkm.api.events.ThreadCreateEvent
 import io.github.jan.discordkm.api.events.ThreadDeleteEvent
 import io.github.jan.discordkm.api.events.ThreadMembersUpdateEvent
 import io.github.jan.discordkm.api.events.ThreadUpdateEvent
-import io.github.jan.discordkm.internal.Cache
+import io.github.jan.discordkm.internal.caching.Cache
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.channels.ThreadData
 import io.github.jan.discordkm.internal.utils.getId

@@ -19,19 +19,19 @@ class FormattedRoute internal constructor(val endpoint: String, val method: Http
 class RestAction<T>(val client: Client)  {
 
     lateinit var route: FormattedRoute
-    private lateinit var transform: (String) -> T
+    private lateinit var transformer: (String) -> T
     private var check: () -> Unit = {  }
     private var onFinish: RestActionListener<T> = {}
 
     fun transform(transform: (String) -> T) {
-        this.transform = transform
+        this.transformer = transform
     }
 
     @PublishedApi
     internal suspend fun await(): T {
         check()
         val json = client.rest.custom(route.method, route.endpoint, route.body)
-        val result = transform(json)
+        val result = if(!this::transformer.isInitialized) Unit as T else transformer(json)
         onFinish(result)
         return result
     }

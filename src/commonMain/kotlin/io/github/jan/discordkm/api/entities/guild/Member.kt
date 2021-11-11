@@ -11,7 +11,6 @@ package io.github.jan.discordkm.api.entities.guild
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
-import com.soywiz.klock.parse
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Reference
@@ -22,25 +21,28 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.containers.CacheMemberRoleContainer
+import io.github.jan.discordkm.api.entities.containers.MemberRoleContainer
 import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
-import io.github.jan.discordkm.api.entities.lists.RetrievableRoleList
-import io.github.jan.discordkm.api.entities.misc.EnumList
+import io.github.jan.discordkm.api.entities.misc.FlagList
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.CacheEntity
+import io.github.jan.discordkm.internal.caching.CacheEntry
+import io.github.jan.discordkm.internal.caching.MemberCacheManager
 import io.github.jan.discordkm.internal.entities.DiscordImage
-import io.github.jan.discordkm.internal.entities.UserData
-import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.MemberData
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.extractClientEntity
+import io.github.jan.discordkm.internal.serialization.rawValue
+import io.github.jan.discordkm.internal.serialization.serializers.MemberSerializer
 import io.github.jan.discordkm.internal.utils.extractGuildEntity
-import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
@@ -48,123 +50,12 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty
 
-interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHolder, Nameable {
+open class Member protected constructor(override val id: Snowflake, override val guild: Guild) : Reference<Member>, SnowflakeEntity, GuildEntity, CacheEntity {
 
-    /**
-     * Returns the [UserData] of this member
-     */
-    val user: User
-        get() = data.getValue("user").jsonObject.extractClientEntity(guild.client)
-
-    /**
-     * The voice state of the member retrieved from cache
-     */
-    val voiceState: VoiceState?
-
-    /**
-     * The status of the member
-     */
-    val status: PresenceStatus
-
-    /**
-     * A list of activities the user currently has
-     */
-    val activities: List<Activity>
-
-    override val client: Client
-        get() = guild.client
-
-    override val id: Snowflake
-        get() = user.id
-
-    /**
-     * Whether the member is the owner of the guild
-     */
-    val isOwner: Boolean
-        @get:JvmName("isOwner")
-        get() = (guild.ownerId == id)
-
-    /**
-     * Returns all permissions this user has
-     */
-    override val permissions: EnumList<Permission>
-        get() {
-            val permissions = roles.map { it.permissions.toList() }.flatten().toMutableList()
-            if(isOwner) permissions += Permission.ALL_PERMISSIONS
-            return EnumList(Permission, permissions)
-        }
-
-    /**
-     * Returns the permission for the member in a specific guild channel
-     * @param channel The guild channel
-     * @see GuildChannel
-     */
-    override fun getPermissionsFor(channel: GuildChannel): EnumList<Permission> {
-        if(isOwner) return EnumList(Permission, Permission.ALL_PERMISSIONS)
-        if(Permission.ADMINISTRATOR in permissions)return EnumList(Permission, Permission.ALL_PERMISSIONS)
-        if(channel.permissionOverrides.isEmpty()) return EnumList(Permission, guild.everyoneRole.permissions.toList())
-
-        //*Placeholder*
-        val permissions = mutableSetOf<Permission>()
-        channel.permissionOverrides.forEach {
-            if(it.holder is Role && it.holder in roles) permissions.addAll(it.allow.toList())
-            if(it.holder is Member && it.holder.id == id) permissions.addAll(it.allow.toList())
-        }
-        return EnumList(Permission, permissions.toList())
-    }
-
-    /**
-     * Returns the nickname of the member. If the member doesn't have a nickname it returns his real name
-     */
-    val nickname: String
-        get() = data.getOrDefault("nick", user.name)
-
-    override val name: String
-        get() = nickname
-
-    /**
-     * Returns the roles of the member
-     */
-    val roles: RetrievableRoleList
-
-    /**
-     * The avatar of the member. (Nitro-Exclusive Feature)
-     */
-    val avatarUrl: String?
-        get() = data.getOrNull<String>("avatar")?.let { DiscordImage.memberAvatar(id, guild.id, it) }
-
-    /**
-     * Returns the date when the member joined his guild
-     */
-    val joinedAt: DateTimeTz
-        get() = ISO8601.DATETIME_UTC_COMPLETE.parse(data.getOrThrow("joined_at"))
-
-    /**
-     * Returns the date when the member boosted his guild. Can be null if the user isn't boosting his server
-     */
-    val premiumSince: DateTimeTz?
-        get() = if(data.getOrNull<String>("premium_since") != null) ISO8601.DATETIME_UTC_COMPLETE.parse(data.getOrThrow("premium_since")) else null
-
-    /**
-     * Whether the member is deafened
-     */
-    val isDeafened: Boolean
-        @get:JvmName("isDeafened")
-        get() = data.getOrThrow<Boolean>("deaf")
-
-    /**
-     * Whether the member is muted
-     */
-    val isMuted: Boolean
-        @get:JvmName("isMuted")
-        get() = data.getOrThrow<Boolean>("mute")
-
-    /**
-     * Whether the member hasn't passed the guilds Membership screen requirements
-     */
-    val isPending: Boolean
-        @get:JvmName("isPending")
-        get() = data.getOrDefault("pending", false)
+    override val cache: MemberCacheEntry?
+        get() = guild.cache?.members?.get(id)
+    open val user: User = User.from(id, client)
+    open val roles = MemberRoleContainer(this)
 
     /**
      * Modifies this user
@@ -172,7 +63,6 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
     suspend fun modify(modifier: MemberModifier.() -> Unit) = client.buildRestAction<Member> {
         route = Route.Member.MODIFY_MEMBER(guild.id, id).patch(MemberModifier().apply(modifier).build())
         transform { it.toJsonObject().extractGuildEntity(guild) }
-        onFinish { (guild as GuildData).memberCache[it.id] = it }
     }
 
     /**
@@ -189,9 +79,102 @@ interface Member : Reference<Member>, SnowflakeEntity, GuildEntity, PermissionHo
      */
     suspend fun ban(delDays: Int?) = guild.members.ban(id, delDays)
 
+    companion object {
+        fun from(id: Snowflake, guild: Guild) = Member(id, guild)
+        fun from(data: JsonObject, guild: Guild) = MemberSerializer.deserialize(data, guild)
+    }
+
     override fun getValue(ref: Any?, property: KProperty<*>) = guild.members[id]!!
 
     override suspend fun retrieve() = guild.members.retrieve(id)
+
+}
+
+data class MemberCacheEntry(
+    override val guild: Guild,
+    override val id: Snowflake,
+    override val user: User,
+    val joinedAt: DateTimeTz,
+    val premiumSince: DateTimeTz?,
+    val isDeafened: Boolean,
+    val isMuted: Boolean,
+    val isPending: Boolean,
+    val nickname: String?,
+    val avatarHash: String?,
+) : Member(id, guild), Nameable, PermissionHolder, CacheEntry {
+
+    /**
+     * The voice state of the member retrieved from cache
+     */
+    val voiceState: VoiceState?
+
+    /**
+     * The status of the member
+     */
+    val status: PresenceStatus
+
+    /**
+     * A list of activities the user currently has
+     */
+    val activities: List<Activity>
+
+    val cacheManager = MemberCacheManager()
+
+    override val roles: CacheMemberRoleContainer
+        get() = CacheMemberRoleContainer(this, cacheManager.roleCache.values)
+
+    override val name: String
+        get() = nickname ?: user.cache!!.name
+
+    override val client: Client
+        get() = guild.client
+
+    /**
+     * Whether the member is the owner of the guild
+     */
+    val isOwner: Boolean
+        @get:JvmName("isOwner")
+        get() = guild.cache?.ownerId == id
+
+    /**
+     * The avatar url of the member
+     */
+    val avatarUrl: String?
+        get() = avatarHash?.let { DiscordImage.memberAvatar(id, guild.id, it) }
+
+    /**
+     * Returns all permissions this user has
+     */
+    override val permissions: Set<Permission>
+        get() {
+            if (isOwner) return Permission.ALL_PERMISSIONS.toSet()
+            var permission: Long = guild.cache!!.everyoneRole.cache!!.permissions.rawValue()
+            for (role in roles) {
+                permission = permission or role.permissions.rawValue()
+                if ((permission and Permission.ADMINISTRATOR.rawValue) == Permission.ADMINISTRATOR.rawValue) return Permission.ALL_PERMISSIONS.toSet()
+            }
+            return Permission.decode(permission)
+        }
+
+    /**
+     * Returns the permission for the member in a specific guild channel
+     * @param channel The guild channel
+     * @see GuildChannel
+     */
+    override fun getPermissionsFor(channel: GuildChannel): FlagList<Permission> {
+        if (isOwner) return FlagList(Permission, Permission.ALL_PERMISSIONS)
+        if (Permission.ADMINISTRATOR in permissions) return FlagList(Permission, Permission.ALL_PERMISSIONS)
+        if (channel.permissionOverrides.isEmpty()) return FlagList(Permission, guild.everyoneRole.permissions.toList())
+
+        //*Placeholder*
+        val permissions = mutableSetOf<Permission>()
+        channel.permissionOverrides.forEach {
+            if (it.holder is Role && it.holder in roles) permissions.addAll(it.allow.toList())
+            if (it.holder is Member && it.holder.id == id) permissions.addAll(it.allow.toList())
+        }
+        return FlagList(Permission, permissions.toList())
+    }
+
 
 }
 
@@ -221,12 +204,16 @@ class MemberModifier {
     /**
      * Adds a role to the member
      */
-    fun role(role: Role) { roleIds += role.id }
+    fun role(role: Role) {
+        roleIds += role.id
+    }
 
     /**
      * Moves the member to a voice channel
      */
-    fun moveTo(voiceChannel: VoiceChannel) { channelId = voiceChannel.id }
+    fun moveTo(voiceChannel: VoiceChannel) {
+        channelId = voiceChannel.id
+    }
 
     fun build() = buildJsonObject {
         putOptional("nickname", nickname)

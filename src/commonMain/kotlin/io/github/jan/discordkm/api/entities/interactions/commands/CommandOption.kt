@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.commands
 
-import io.github.jan.discordkm.internal.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName

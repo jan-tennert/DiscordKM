@@ -14,7 +14,7 @@ import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.GuildMemberAddEvent
 import io.github.jan.discordkm.api.events.GuildMemberRemoveEvent
 import io.github.jan.discordkm.api.events.GuildMemberUpdateEvent
-import io.github.jan.discordkm.internal.Cache
+import io.github.jan.discordkm.internal.caching.Cache
 import io.github.jan.discordkm.internal.entities.UserData
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import io.github.jan.discordkm.internal.entities.guilds.MemberData

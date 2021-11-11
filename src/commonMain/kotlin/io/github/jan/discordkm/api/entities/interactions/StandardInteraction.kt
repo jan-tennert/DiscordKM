@@ -50,7 +50,7 @@ open class StandardInteraction(client: Client, data: JsonObject) : Interaction(c
      */
     suspend fun reply(message: DataMessage, ephemeral: Boolean = false) = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(message.buildCallback(4, ephemeral))
-        transform { }
+        
         onFinish { isAcknowledged = true }
     }
 
@@ -124,7 +124,7 @@ open class StandardInteraction(client: Client, data: JsonObject) : Interaction(c
      */
     suspend fun deleteFollowUpMessage(id: Snowflake) = client.buildRestAction<Unit> {
         route = Route.Interaction.DELETE_FOLLOW_UP(applicationId, token, id).delete()
-        transform { }
+        
     }
 
 }

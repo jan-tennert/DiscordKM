@@ -9,13 +9,12 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.events.StageInstanceCreateEvent
 import io.github.jan.discordkm.api.events.StageInstanceDeleteEvent
 import io.github.jan.discordkm.api.events.StageInstanceUpdateEvent
-import io.github.jan.discordkm.internal.Cache
+import io.github.jan.discordkm.internal.caching.Cache
 import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import kotlinx.serialization.json.JsonObject
 

@@ -32,7 +32,7 @@ class NewsChannelData(guild: Guild, data: JsonObject) : GuildTextChannelData(gui
         route = Route.Channel.FOLLOW_CHANNEL(id).post(buildJsonObject {
             put("webhook_channel_id", targetId.long)
         })
-        transform {}
+        
         //check permission
     }
 

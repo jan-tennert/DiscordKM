@@ -9,12 +9,11 @@
  */
 package io.github.jan.discordkm.internal.utils
 
-import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import com.soywiz.klock.minutes
 import com.soywiz.klock.parse
-import io.github.jan.discordkm.api.entities.guild.channels.Thread
+import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
