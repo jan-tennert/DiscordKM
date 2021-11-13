@@ -2,19 +2,38 @@ package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntry
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
-import io.github.jan.discordkm.internal.entities.guilds.channels.ThreadData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import io.github.jan.discordkm.internal.utils.toJsonArray
+import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-class ThreadContainer(override val values: Collection<ThreadCacheEntry>) : NameableSnowflakeContainer<ThreadCacheEntry>
+open class GuildThreadContainer(val guild: Guild) {
+
+    /**
+     * Retrieves all active threads in the guild.
+     */
+    suspend fun retrieveActiveThreads() = guild.client.buildRestAction<List<Thread>> {
+        route = Route.Thread.GET_ACTIVE_THREADS(guild.id).get()
+        transform {
+            it.toJsonObject()["threads"]!!.jsonArray.map { thread ->
+                ChannelSerializer.deserializeChannel<ThreadCacheEntry>(thread.jsonObject, client)
+            }
+        }
+    }
+
+}
+
+class CacheThreadContainer(override val values: Collection<ThreadCacheEntry>) : NameableSnowflakeContainer<ThreadCacheEntry>
+class CacheGuildThreadContainer(guild: Guild, override val values: Collection<ThreadCacheEntry>) : NameableSnowflakeContainer<ThreadCacheEntry>, GuildThreadContainer(guild)
 
 class ThreadMemberContainer(val thread: Thread) {
 

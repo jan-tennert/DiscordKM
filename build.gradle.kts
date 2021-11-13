@@ -137,7 +137,6 @@ kotlin {
                 api("co.touchlab:stately-iso-collections:${Versions.STATELY}")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.COROUTINES}")
                 api("com.soywiz.korlibs.korio:korio:${Versions.KORLIBS}")
-                api("com.github.ajalt.colormath:colormath:${Versions.COLORMATH}")
             }
         }
         val commonTest by getting {

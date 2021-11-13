@@ -29,7 +29,7 @@ object UserSerializer : BaseEntitySerializer<UserCacheEntry> {
         isBot = data["bot"]?.boolean ?: false,
         hasMfaEnabled = data["mfa_enabled"]?.boolean ?: false,
         flags = data["flags"]?.long?.let { User.UserFlag.decode(it) } ?: setOf(),
-        premiumType = data["premium_type"]?.int?.let { User.PremiumType.from(it) } ?: User.PremiumType.NONE,
+        premiumType = data["premium_type"]?.int?.let { User.PremiumType.get(it) } ?: User.PremiumType.NONE,
         publicFlags = data["flags"]?.long?.let { User.UserFlag.decode(it) } ?: setOf(),
         isSystem = data["system"]?.boolean ?: false,
         client = client

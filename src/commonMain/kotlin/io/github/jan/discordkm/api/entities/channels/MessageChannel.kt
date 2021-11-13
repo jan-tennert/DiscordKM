@@ -1,15 +1,13 @@
 package io.github.jan.discordkm.api.entities.channels
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.Permission
-import io.github.jan.discordkm.api.entities.lists.MessageList
+import io.github.jan.discordkm.api.entities.containers.MessageContainer
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.EmbedBuilder
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
+import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 import io.github.jan.discordkm.api.entities.messages.MessageEmbed
 import io.github.jan.discordkm.api.entities.messages.buildEmbed
 import io.github.jan.discordkm.api.entities.messages.buildMessage
@@ -18,15 +16,13 @@ import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.getOrNull
-import io.github.jan.discordkm.internal.utils.toIsoMap
 import io.github.jan.discordkm.internal.utils.toJsonObject
 
 interface MessageChannel : Channel {
 
-    suspend fun send(message: DataMessage) = client.buildRestAction<Message> {
+    suspend fun send(message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
         route = Route.Message.CREATE_MESSAGE(id).post(message.build())
-        transform { Message(this@MessageChannel, it.toJsonObject()) }
+        transform { Message.from(it.toJsonObject(), client) }
     }
 
     suspend fun send(builder: MessageBuilder.() -> Unit) = send(buildMessage(builder))
@@ -44,12 +40,22 @@ interface MessageChannel : Channel {
         route = Route.Channel.START_TYPING(id).post()
     }
 
+    companion object {
+        fun from(id: Snowflake, client: Client) = object : MessageChannel {
+            override val type = ChannelType.UNKNOWN
+            override val id = id
+            override val client = client
+        }
+    }
+
 }
 
-interface MessageChannelCacheEntry: MessageChannel, ChannelCacheEntry{
+interface MessageChannelCacheEntry : MessageChannel, ChannelCacheEntry {
 
     val cacheManager: MessageCacheManager
     val lastMessage: Message?
+    val messages: MessageContainer
+        get() = MessageContainer(cacheManager.messageCache.values, this)
 
     override suspend fun send(message: DataMessage) = super.send(message).also { cacheManager.messageCache[it.id] = it }
 

@@ -10,6 +10,6 @@ open class EnumWithValueGetter <V : EnumWithValue<T>, T>(val values: Collection<
 
     constructor(values: Array<V>) : this(values.toList())
 
-    fun from(value: T) = values.first { it.value == value }
+    operator fun get(value: T) = values.first { it.value == value }
 
 }

@@ -1,4 +1,4 @@
-package io.github.jan.discordkm.api.entities.lists
+package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
@@ -11,13 +11,14 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.toJsonObject
 
-class UserList(val client: Client, override val internalMap: Map<Snowflake, UserCacheEntry>) : NameableSnowflakeList<UserCacheEntry> {
+class UserContainer(val client: Client, override val values: Collection<UserCacheEntry>) : NameableSnowflakeContainer<UserCacheEntry> {
 
+    /**
+     * Retrieves a [User] by its id.
+     */
     suspend fun retrieve(id: Snowflake) = client.buildRestAction<User> {
         route = Route.User.GET_USER(id).get()
         transform { it.toJsonObject().extractClientEntity(client) }
-        onFinish { client.userCache[it.id] = it }
     }
 
 }
-

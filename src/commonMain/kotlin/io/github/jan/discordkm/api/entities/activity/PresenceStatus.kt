@@ -10,17 +10,27 @@
 package io.github.jan.discordkm.api.entities.activity
 
 import io.github.jan.discordkm.DiscordEnum
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
+import kotlinx.serialization.Serializable
 
 /**
  * A user status says whether the user is online, idling, offline etc.
  */
-enum class PresenceStatus(val status: String) : DiscordEnum<String, PresenceStatus> {
+enum class PresenceStatus(override val value: String) : EnumWithValue<String> {
     ONLINE("online"),
     DO_NOT_DISTURB("dnd"),
     IDLE("idle"),
     INVISIBLE("invisible"),
     OFFLINE("offline");
 
-    override operator fun get(key: String) = PresenceStatus.values().first { it.status == key }
+    companion object : EnumWithValueGetter<PresenceStatus, String>(values())
 
 }
+
+@Serializable
+class ClientStatus(
+    val desktop: String?,
+    val mobile: String?,
+    val web: String?
+)

@@ -100,3 +100,4 @@ open class GuildMemberContainer(val guild: Guild) {
 }
 
 class CacheGuildMemberContainer(guild: Guild, override val values: Collection<MemberCacheEntry>) : GuildMemberContainer(guild), NameableSnowflakeContainer<MemberCacheEntry>
+class CacheMemberContainer(override val values: Collection<MemberCacheEntry>) : NameableSnowflakeContainer<MemberCacheEntry>

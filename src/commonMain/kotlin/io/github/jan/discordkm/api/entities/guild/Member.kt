@@ -20,12 +20,13 @@ import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.containers.CacheMemberRoleContainer
 import io.github.jan.discordkm.api.entities.containers.MemberRoleContainer
-import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
-import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
-import io.github.jan.discordkm.api.entities.misc.FlagList
+import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -87,6 +88,8 @@ open class Member protected constructor(override val id: Snowflake, override val
     override fun getValue(ref: Any?, property: KProperty<*>) = guild.members[id]!!
 
     override suspend fun retrieve() = guild.members.retrieve(id)
+
+    override fun fromCache() = guild.cache?.cacheManager?.memberCache?.get(id)
 
 }
 
@@ -161,18 +164,18 @@ data class MemberCacheEntry(
      * @param channel The guild channel
      * @see GuildChannel
      */
-    override fun getPermissionsFor(channel: GuildChannel): FlagList<Permission> {
-        if (isOwner) return FlagList(Permission, Permission.ALL_PERMISSIONS)
-        if (Permission.ADMINISTRATOR in permissions) return FlagList(Permission, Permission.ALL_PERMISSIONS)
-        if (channel.permissionOverrides.isEmpty()) return FlagList(Permission, guild.everyoneRole.permissions.toList())
+    override fun getPermissionsFor(channel: GuildChannelCacheEntry): Set<Permission> {
+        if (isOwner) return Permission.ALL_PERMISSIONS.toSet()
+        if (Permission.ADMINISTRATOR in permissions) return Permission.ALL_PERMISSIONS.toSet()
+        if (channel.permissionOverwrites.isEmpty()) return guild.cache!!.everyoneRole.cache!!.permissions.toSet()
 
         //*Placeholder*
         val permissions = mutableSetOf<Permission>()
-        channel.permissionOverrides.forEach {
-            if (it.holder is Role && it.holder in roles) permissions.addAll(it.allow.toList())
-            if (it.holder is Member && it.holder.id == id) permissions.addAll(it.allow.toList())
+        channel.permissionOverwrites.forEach {
+            if (it.type == PermissionOverwrite.HolderType.ROLE && it.holderId in roles.map { it.id }) permissions.addAll(it.allow.toList())
+            if (it.type == PermissionOverwrite.HolderType.MEMBER && it.holderId == id) permissions.addAll(it.allow.toList())
         }
-        return FlagList(Permission, permissions.toList())
+        return permissions.toSet()
     }
 
 
@@ -222,75 +225,5 @@ class MemberModifier {
         putOptional("deaf", deaf)
         putOptional("channel_id", channelId)
     }
-
-}
-
-interface VoiceState : SerializableEntity {
-
-    val guildId: Snowflake?
-        get() = data.getOrNull("guild_id")
-
-    val guild: Guild?
-        get() = client.guilds[guildId ?: Snowflake.empty()]
-
-    val channelId: Snowflake?
-        get() = data.getOrNull("channel_id")
-
-    val channel: VoiceChannel?
-        get() = client.channels[channelId ?: Snowflake.empty()] as? VoiceChannel
-
-    val userId: Snowflake
-        get() = data.getOrThrow("user_id")
-
-    val member: Member?
-        get() = data["member"]?.jsonObject?.let { MemberData(client.guilds[guildId!!]!!, it) }
-
-    val sessionId: String
-        get() = data.getOrThrow("session_id")
-
-    val isDeafendbyGuld: Boolean
-        get() = data.getOrThrow("deaf")
-
-    val isMutedbyGuild: Boolean
-        get() = data.getOrThrow("mute")
-
-    val isMuted: Boolean
-        get() = data.getOrThrow("self_mute")
-
-    val isDeafend: Boolean
-        get() = data.getOrThrow("self_deaf")
-
-    val isStreaming: Boolean
-        get() = data["self_stream"]?.jsonPrimitive?.booleanOrNull ?: false
-
-    val hasCameraEnabled: Boolean
-        get() = data.getOrThrow("self_video")
-
-    val isMutedByBot: Boolean
-        get() = data.getOrThrow("supress")
-
-    val isInVoiceChannel: Boolean
-        get() = channelId != null
-
-    /**
-     * The time at which the user requested to speak or was invited to speak. Only if the user is in a [StageChannel]
-     */
-    val requestToSpeakTimestamp: DateTimeTz?
-        get() = ISO8601.DATETIME_UTC_COMPLETE.tryParse(data.getOrNull<String>("request_to_speak_timestamp") ?: "")
-
-    /**
-     * Invites this [member] to speak in a [StageChannel]
-     */
-    suspend fun inviteToSpeak()
-
-    /**
-     * Accepts the speak request from this [member] if he has one
-     */
-    suspend fun acceptSpeakRequest()
-
-    /**
-     * Declines the speak request from this [member] if he has one
-     */
-    suspend fun declineSpeakRequest()
 
 }

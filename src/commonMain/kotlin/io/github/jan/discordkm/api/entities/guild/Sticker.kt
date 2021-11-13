@@ -9,108 +9,72 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
+import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
+import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.entities.DiscordImage
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrDefault
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.valueOfIndex
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmName
 
 /**
- * A sticker can be from discord or from a guild
+ * Represents a Sticker. Can be a default sticker or a guild sticker
+ * @param packId The id of the pack this sticker belongs to
+ * @param id The id of the sticker
+ * @param name The name of the sticker
+ * @param description The description of the sticker
+ * @param tags The tags of the sticker
+ * @param formatType The format type of the sticker (PNG, APNG, LOTTIE)
+ * @param sortValue The standard sticker's sort order within its pack
+ * @param isAvailable Whether the sticker is available. Can be false if the guild server boost tier changed
+ * @param type The type of the sticker (DEFAULT, GUILD)
  */
-class Sticker(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity, Nameable {
+class Sticker(
+    val packId: Snowflake?,
+    val name: String,
+    val description: String?,
+    val tags : List<String>,
+    val type: StickerType,
+    val formatType: FormatType,
+    val isAvailable: Boolean,
+    val guild: Guild?,
+    val sortValue: Int?,
+    override val client: Client,
+    override val id: Snowflake
+) : BaseEntity, SnowflakeEntity {
 
-    override val id = data.getId()
-
-    /**
-     * If the sticker is a standard sticker, they come from a pack
-     */
-    val packId = data.getOrNull<Long>("pack_id")
-
-    /**
-     * The name of the sticker
-     */
-    override val name = data.getOrThrow<String>("name")
-
-    /**
-     * The description of the sticker
-     */
-    val description = data.getOrNull<String>("description")
-
-    /**
-     * "For guild stickers, the Discord name of a unicode emoji representing the sticker's expression. for standard stickers, a comma-separated list of related expressions."
-     */
-    val tags = data.getOrThrow<String>("tags").split(",")
-
-    /**
-     * [Type] of the sticker
-     */
-    val type = valueOfIndex<StickerType>(data.getOrThrow("type"), 1)
-
-    /**
-     * [FormatType] of the sticker
-     */
-    val formatType = valueOfIndex<FormatType>(data.getOrThrow("format_type"), 1)
-
-    /**
-     * The url of the sticker. This can be a png or a lottie
-     */
     val url = DiscordImage.sticker(id, formatType)
 
-    /**
-     * If this sticker is available, can be null due to loss of server boosts
-     */
-    @get:JvmName("isAvailable")
-    val isAvailable = data.getOrNull<Boolean>("available")
-
-    /**
-     * Returns a guild id if this sticker is from a guild
-     */
-    val guildId = data.getOrNull<Long>("guild_id")
-
-    //user
-
-    /**
-     * The standard sticker's sort order within its pack
-     */
-    val sortValue = data.getOrDefault("sort_value", 0)
-
-    override fun toString() = "Sticker[name=$name,id=$id,description=$description]"
-
-    override fun equals(other: Any?): Boolean {
-        if(other !is Sticker) return false
-        return other.id == id
-    }
-    
-    /**
-     * Represents a [Sticker Item Object](https://discord.com/developers/docs/resources/sticker#sticker-item-object)
-     */
-    class Item(data: JsonObject) : SnowflakeEntity {
-
-        val formatType = valueOfIndex<FormatType>(data.getOrThrow("format_type"), 1)
-
-        val name = data.getOrThrow<String>("name")
-
-        override val id = data.getId()
-
-    }
-
-    enum class FormatType {
+    enum class FormatType : EnumWithValue<Int> {
         PNG,
         APNG,
-        LOTTIE
+        LOTTIE;
+
+        override val value: Int
+            get() = ordinal + 1
+
+        companion object : EnumWithValueGetter<FormatType, Int>(values())
     }
 
+    class Item(val name: String, override val id: Snowflake, val formatType: FormatType) : SnowflakeEntity
 }
 
-enum class StickerType {
+enum class StickerType : EnumWithValue<Int> {
     STANDARD,
-    GUILD
+    GUILD;
+
+    override val value: Int
+        get() = ordinal + 1
+
+    companion object : EnumWithValueGetter<StickerType, Int>(values())
 }

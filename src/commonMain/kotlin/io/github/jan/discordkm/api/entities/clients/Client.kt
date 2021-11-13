@@ -9,27 +9,20 @@
  */
 package io.github.jan.discordkm.api.entities.clients
 
-import co.touchlab.stately.collections.IsoMutableMap
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.BaseEntity
-import io.github.jan.discordkm.internal.serialization.FlagSerializer
-import io.github.jan.discordkm.api.entities.SerializableEnum
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
+import io.github.jan.discordkm.api.entities.containers.CacheGuildContainer
+import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
+import io.github.jan.discordkm.api.entities.containers.CacheThreadContainer
+import io.github.jan.discordkm.api.entities.containers.CommandContainer
+import io.github.jan.discordkm.api.entities.containers.UserContainer
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
-import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
-import io.github.jan.discordkm.api.entities.lists.ChannelList
-import io.github.jan.discordkm.api.entities.lists.CommandList
-import io.github.jan.discordkm.api.entities.lists.GuildList
-import io.github.jan.discordkm.api.entities.lists.MemberList
-import io.github.jan.discordkm.api.entities.lists.ThreadList
-import io.github.jan.discordkm.api.entities.lists.UserList
 import io.github.jan.discordkm.api.media.Image
-import io.github.jan.discordkm.internal.caching.EntityCache
 import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.caching.CacheManager
 import io.github.jan.discordkm.internal.caching.ClientCacheManager
 import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
 import io.github.jan.discordkm.internal.get
@@ -37,6 +30,8 @@ import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.RestClient
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.FlagSerializer
+import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.coroutines.CoroutineScope
@@ -47,33 +42,27 @@ import kotlin.coroutines.CoroutineContext
 
 sealed class Client(val token: String, val loggingLevel: Logger.Level) : CoroutineScope, CommandHolder, BaseEntity {
 
-    internal val guildCache = EntityCache<Snowflake, Guild>()
     val rest = RestClient(this)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client = this
     val cacheManager = ClientCacheManager()
 
-    override val commandCache = EntityCache<Snowflake, ApplicationCommand>()
-
-    override val commands: CommandList
-        get() = CommandList("/applications/${selfUser.id}/commands", this, commandCache.values.associateBy { it.id })
-
     lateinit var selfUser: User
         internal set
-    val guilds: GuildList
-        get() = GuildList(this, guildCache.values.associateBy { it.id })
-    val channels: ChannelList
-        get() = ChannelList(this, guilds.map { it.channels.toList() }.flatten().associateBy { it.id })
 
-    private val members: MemberList
-        get() = MemberList(guilds.map { it.members.toList() }.flatten().associateBy { it.id })
+    override val commands: CommandContainer
+        get() = CommandContainer(this, "/applications/${selfUser.id}/commands", cacheManager.globalCommandCache.values)
+    val guilds: CacheGuildContainer
+        get() = CacheGuildContainer(cacheManager.guildCache.values)
+    val channels: CacheChannelContainer
+        get() = CacheChannelContainer(cacheManager.guildCache.map { it.value.channels.values }.flatten())
+    val members: CacheMemberContainer
+        get() = CacheMemberContainer(cacheManager.guildCache.map { it.value.members.values }.flatten())
 
-    internal val userCache
-        get() = EntityCache(IsoMutableMap { members.map { it.user }.associateBy { it.id }.toMutableMap()})
-    val users: UserList
-        get() = UserList(this, userCache.values.associateBy { it.id })
-    val threads: ThreadList
-        get() = ThreadList(guilds.map { it.threads.toList() }.flatten().associateBy { it.id })
+    val users: UserContainer
+        get() = UserContainer(this, cacheManager.userCache.values)
+    val threads: CacheThreadContainer
+        get() = CacheThreadContainer(cacheManager.guildCache.map { it.value.threads.values }.flatten())
 
     /**
      * Retrieves a guild template
@@ -131,11 +120,7 @@ enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
     DIRECT_MESSAGE_REACTIONS(13),
     DIRECT_MESSAGE_TYPING(14);
 
-    companion object : FlagSerializer<Intent> {
-        override val values = values().toList()
-
-        val ALL_INTENTS = values
-    }
+    companion object : FlagSerializer<Intent>(values())
 
 }
 

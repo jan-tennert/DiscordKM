@@ -1,8 +1,9 @@
-package io.github.jan.discordkm.api.entities.lists
+package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.interactions.Interaction
+import io.github.jan.discordkm.api.entities.interactions.InteractionOption
 
-class OptionList(private val raw: List<Interaction.InteractionOption>) : Iterable<Interaction.InteractionOption> {
+class OptionList(private val raw: List<InteractionOption>) : Iterable<InteractionOption> {
 
     operator fun get(name: String) = raw.first { it.name == name }
 

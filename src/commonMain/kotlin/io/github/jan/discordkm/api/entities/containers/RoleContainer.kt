@@ -78,4 +78,4 @@ open class MemberRoleContainer(val member: Member) {
 
 }
 
-class CacheMemberRoleContainer(member: Member, override val values: Collection<Role>) : MemberRoleContainer(member), SnowflakeContainer<Role>
+class CacheMemberRoleContainer(member: Member, override val values: Collection<RoleCacheEntry>) : MemberRoleContainer(member), SnowflakeContainer<RoleCacheEntry>

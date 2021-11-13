@@ -9,10 +9,16 @@
  */
 package io.github.jan.discordkm.api.entities.interactions
 
+import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.UserCacheEntry
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
+import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
@@ -23,13 +29,19 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 
-class ComponentInteraction(client: Client, data: JsonObject) : StandardInteraction(client, data) {
-
-    /**
-     * The message which contains this component
-     */
-    val message: Message
-        get() = Message(channel!!, data.getValue("message").jsonObject)
+open class ComponentInteraction(
+    override val client: Client,
+    override val id: Snowflake,
+    applicationId: Snowflake,
+    type: InteractionType,
+    guild: Guild?,
+    channel: MessageChannel,
+    member: MemberCacheEntry?,
+    user: UserCacheEntry,
+    token: String,
+    version: Int,
+    val message: MessageCacheEntry
+) : Interaction(client, id, applicationId, type, guild, channel, member, user, token, version) {
 
     /**
      * Responds to this interaction with no changes. Use this if you don't want to reply or anything

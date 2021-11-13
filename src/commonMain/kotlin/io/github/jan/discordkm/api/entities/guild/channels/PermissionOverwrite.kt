@@ -18,7 +18,6 @@ import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.long
-import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -54,7 +53,7 @@ class PermissionOverwrite(
             Snowflake(data["id"]!!.long),
             Permission.decode(data["allow"]!!.long).toMutableSet(),
             Permission.decode(data["deny"]!!.long).toMutableSet(),
-            HolderType.from(data["type"]!!.int)
+            HolderType.get(data["type"]!!.int)
         )
     }
 

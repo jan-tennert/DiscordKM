@@ -11,6 +11,8 @@ interface Category : GuildChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_CATEGORY
+    override val cache: CategoryCacheEntry?
+        get() = guild.cache?.cacheManager?.channelCache?.get(id) as? CategoryCacheEntry
 
     companion object {
         fun from(id: Snowflake, guild: Guild) = object : Category {

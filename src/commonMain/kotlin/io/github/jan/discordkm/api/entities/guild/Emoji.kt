@@ -9,11 +9,13 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
+import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrThrow
@@ -35,33 +37,35 @@ class Emoji(
 
     /**
      * An emote is an emoji which is only available on a specific guild
+     *
+     * @param id The id of the emote
+     * @param name The name of the emote
+     * @param isAnimated Whether the emote is animated
+     * @param isAvailable Whether the emote is available on the guild (can be unavailable when the server boost tier changed)
+     * @param roles The roles which can use the emote
+     * @param creator The user who created the emote
+     * @param requiresColons Whether this emoji must be wrapped in colons
+     * @param isManagedByAnIntegration Whether this emoji is managed by an integration
      */
-    class Emote @PublishedApi internal constructor(override val data: JsonObject, override val client: Client) : SnowflakeEntity, SerializableEntity, Nameable {
+    class Emote @PublishedApi internal constructor(
+        override val client: Client,
+        override val id: Snowflake,
+        override val name: String,
+        val creator: User,
+        val requiresColons: Boolean,
+        val isManagedByAnIntegration: Boolean,
+        val isAnimated: Boolean,
+        val isAvailable: Boolean,
+        val roles: List<Role>
+    ) : SnowflakeEntity, BaseEntity, Nameable {
 
-        override val id = data.getId()
-        override val name = data.getOrThrow<String>("name")
+        fun toEmoji() = Emoji(id, name, isAnimated)
 
-        /**
-         * Whether this emote is animated (= is a gif)
-         */
-        @get:JvmName("isAnimated")
-        val isAnimated = data.getOrThrow<Boolean>("animated")
-        //allowed users?
-        //managed?
-        //require colons?
-
-        /**
-         * If the emoji is available, can be null due to loss of server boosts
-         */
-        @get:JvmName("isAvailable")
-        val isAvailable = data.getOrThrow<Boolean>("available")
-
-        fun toEmoji() = Emoji(name = name, id = id)
     }
 
     companion object {
 
-        fun fromEmoji(unicode: String)= Emoji(name = unicode)
+        fun fromEmoji(unicode: String) = Emoji(name = unicode)
 
         fun fromEmote(name: String, id: Snowflake) = Emoji(name = name, id = id)
 
@@ -69,6 +73,6 @@ class Emoji(
 
     }
 
-    override val asMention = if(id != null) "$id:$name" else name
+    override val asMention = if (id != null) "$id:$name" else name
 
 }

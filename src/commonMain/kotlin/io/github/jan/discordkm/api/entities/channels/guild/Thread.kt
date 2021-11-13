@@ -9,6 +9,7 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.containers.ThreadMemberContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.messages.Message
@@ -32,6 +33,11 @@ import kotlinx.serialization.json.jsonObject
 import kotlin.jvm.JvmInline
 
 interface Thread : GuildMessageChannel {
+
+    val members: ThreadMemberContainer
+        get() = ThreadMemberContainer(this)
+    override val cache: ThreadCacheEntry?
+        get() = guild.cache?.cacheManager?.channelCache?.get(id) as? ThreadCacheEntry
 
     /**
      * Joins this thread.
@@ -89,7 +95,7 @@ interface Thread : GuildMessageChannel {
             override val type = type
         }
 
-        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<ThreadCacheEntry>(data, guild)
+        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<ThreadCacheEntry>(data, guild.client)
     }
 
     /**
@@ -105,6 +111,7 @@ interface Thread : GuildMessageChannel {
             val THREE_DAYS = ThreadDuration(3.days)
             val WEEK = ThreadDuration(1.weeks)
 
+            @PublishedApi
             internal fun raw(duration: TimeSpan) = ThreadDuration(duration)
         }
 

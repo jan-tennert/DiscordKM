@@ -16,8 +16,11 @@ import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
+import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.api.media.Image
@@ -57,6 +60,8 @@ open class Role protected constructor(override val id: Snowflake, override val g
     override fun toString() = "Role[id=$id]"
 
     override suspend fun retrieve() = guild.roles.retrieveRoles().first { it.id == id }
+
+    override fun fromCache() = guild.cache?.cacheManager?.roleCache?.get(id)
 
     companion object {
         fun from(id: Snowflake, guild: Guild) = Role(id, guild)
@@ -101,7 +106,7 @@ data class RoleCacheEntry(
         @SerialName("premium_subscriber") val premiumSubscriber: Boolean? = null
     )
 
-    override fun getPermissionsFor(channel: GuildChannel) = channel.permissionOverrides.first { it.holder is Role && it.holder.id == id }.allow
+    override fun getPermissionsFor(channel: GuildChannelCacheEntry) = channel.permissionOverwrites.first { it.type == PermissionOverwrite.HolderType.ROLE && it.holderId == id }.allow
 
     override fun toString() = "Role[id=$id, name=$name]"
 

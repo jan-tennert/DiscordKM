@@ -20,6 +20,8 @@ interface StageChannel : VoiceChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_STAGE_VOICE
+    override val cache: StageChannelCacheEntry?
+        get() = guild.cache?.cacheManager?.channelCache?.get(id) as? StageChannelCacheEntry
 
     /**
      * Creates a new stage instance in this [StageChannel]

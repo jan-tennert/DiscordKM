@@ -4,7 +4,7 @@ import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
-import io.github.jan.discordkm.api.entities.containers.ThreadContainer
+import io.github.jan.discordkm.api.entities.containers.GuildThreadContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
@@ -68,12 +68,12 @@ interface GuildTextChannel : GuildMessageChannel {
 
 sealed interface GuildTextChannelCacheEntry : GuildTextChannel, GuildMessageChannelCacheEntry, IPositionable {
 
-    val threads: ThreadContainer
+    val threads: GuildThreadContainer
         get() = guild.cache?.cacheManager?.threadCache?.filter { it.value.parent.id == id }?.values?.let {
-            ThreadContainer(
+            GuildThreadContainer(
                 it
             )
-        } ?: ThreadContainer(emptyList())
+        } ?: GuildThreadContainer(emptyList())
     val isNSFW: Boolean
     val topic: String
     val defaultAutoArchiveDuration: Thread.ThreadDuration

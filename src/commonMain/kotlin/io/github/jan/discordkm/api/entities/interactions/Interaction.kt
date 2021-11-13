@@ -9,123 +9,77 @@
  */
 package io.github.jan.discordkm.api.entities.interactions
 
+import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Nameable
-import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.UserCacheEntry
+import io.github.jan.discordkm.api.entities.channels.Channel
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.Member
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
-import io.github.jan.discordkm.api.entities.lists.retrieve
-import io.github.jan.discordkm.internal.entities.UserData
-import io.github.jan.discordkm.internal.entities.channels.Channel
-import io.github.jan.discordkm.internal.entities.channels.MessageChannel
-import io.github.jan.discordkm.internal.entities.channels.MessageChannelData
-import io.github.jan.discordkm.internal.entities.guilds.MemberData
-import io.github.jan.discordkm.internal.utils.getOrNull
-import io.github.jan.discordkm.internal.utils.getOrThrow
-import io.github.jan.discordkm.internal.utils.valueOfIndex
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 
-open class Interaction(override val client: Client, override val data: JsonObject) : SerializableEntity {
+open class Interaction(
+    override val client: Client,
+    override val id: Snowflake,
+    val applicationId: Snowflake,
+    val type: InteractionType,
+    val guild: Guild?,
+    val channel: MessageChannel,
+    val member: MemberCacheEntry?,
+    val user: UserCacheEntry,
+    val token: String,
+    val version: Int
+) : SnowflakeEntity, BaseEntity {
 
-    /**
-     * The interaction token
-     */
-    val token: String
-        get() = data.getOrThrow("token")
-
-    /**
-     * The [InteractionType]
-     */
-    val type: InteractionType
-        get() = valueOfIndex(data.getOrThrow("type"), 1)
-
-    /**
-     * The interaction id
-     */
-    val id: Snowflake
-        get() = data.getOrThrow("id")
-
-    /**
-     * The application id
-     */
-    val applicationId: Snowflake
-        get() = data.getOrThrow("application_id")
-
-    /**
-     * The guild id, if this was sent in a guild
-     */
-    val guildId: Snowflake?
-        get() = data.getOrNull("guild_id")
-
-    /**
-     * The member, if a guild member was involved in this interaction
-     */
-    val member: Member?
-        get() = data["member"]?.let { MemberData(client.guilds[guildId!!]!!, it.jsonObject) }
-
-    /**
-     * The channel id, if this interaction was sent in a channel
-     */
-    val channelId: Snowflake?
-        get() = data.getOrNull("channel_id")
-
-    /**
-     * The user, if this interaction was sent in a private channel
-     */
-    val user: User?
-        get() = data["user"]?.let { UserData(client, it.jsonObject) }
-
-    /**
-     * The channel, if this interaction was sent in a channel. The channel will be loaded from the cache
-     */
-    val channel: MessageChannel?
-        get() = channelId?.let { (client.channels[it] ?: client.threads[it] ?: MessageChannelData.fromId(client, it)) as MessageChannel }
-
-
-    /**
-     * Whether this interaction was already acknowledged
-     */
-    var isAcknowledged: Boolean = false
+    var isAcknowledged = false
         internal set
 
-    class InteractionOption(override val name: String, val type: CommandOption.OptionType, val value: Any) : Nameable {
+}
 
-        val user: User
-            get() = value as User
+class InteractionOption(override val name: String, val type: CommandOption.OptionType, val value: Any) : Nameable {
 
-        val int: Int
-            get() = value as Int
+    val user: User
+        get() = value as User
 
-        val double: Double
-            get() = value as Double
+    val int: Int
+        get() = value as Int
 
-        val channel: Channel
-            get() = value as Channel
+    val double: Double
+        get() = value as Double
 
-        val mentionable: Mentionable
-            get() = value as Mentionable
+    val channel: Channel
+        get() = value as Channel
 
-        val role: Role
-            get() = value as Role
+    val mentionable: Mentionable
+        get() = value as Mentionable
 
-        val string: String
-            get() = value.toString()
+    val role: Role
+        get() = value as Role
 
-        val boolean: Boolean
-            get() = value as Boolean
+    val string: String
+        get() = value.toString()
 
-    }
+    val boolean: Boolean
+        get() = value as Boolean
 
-    enum class InteractionType {
-        PING,
-        APPLICATION_COMMAND,
-        MESSAGE_COMPONENT,
-        APPLICATION_COMMAND_AUTOCOMPLETE
-    }
+}
 
+enum class InteractionType : EnumWithValue<Int> {
+    PING,
+    APPLICATION_COMMAND,
+    MESSAGE_COMPONENT,
+    APPLICATION_COMMAND_AUTOCOMPLETE;
+
+    override val value: Int
+        get() = ordinal + 1
+
+    companion object : EnumWithValueGetter<InteractionType, Int>(values())
 }

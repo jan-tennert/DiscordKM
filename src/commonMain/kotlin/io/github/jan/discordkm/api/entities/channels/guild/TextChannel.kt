@@ -14,6 +14,8 @@ interface TextChannel : GuildTextChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_TEXT
+    override val cache: TextChannelCacheEntry?
+        get() = guild.cache?.cacheManager?.channelCache?.get(id) as? TextChannelCacheEntry
 
     companion object {
         fun from(id: Snowflake, guild: Guild) = object : TextChannel {

@@ -4,9 +4,18 @@ import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.channels.guild.Category
+import io.github.jan.discordkm.api.entities.channels.guild.NewsChannel
+import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
+import io.github.jan.discordkm.api.entities.channels.guild.TextChannel
+import io.github.jan.discordkm.api.entities.channels.guild.Thread
+import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.interactions.commands.ChannelTypeSerializer
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.CacheEntity
+import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -14,10 +23,11 @@ import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.Serializable
 
-interface Channel : SnowflakeEntity, BaseEntity, Mentionable {
+interface Channel : SnowflakeEntity, BaseEntity, Mentionable, CacheEntity {
 
     override val asMention: String
         get() = "<#$id>"
+    override val cache: ChannelCacheEntry?
 
     val type: ChannelType
 
@@ -28,14 +38,27 @@ interface Channel : SnowflakeEntity, BaseEntity, Mentionable {
         route = Route.Channel.DELETE_CHANNEL(id).delete()
     }
 
-    fun <T : Channel>fromCache() = client.channels //TODO: Make list
+    companion object {
+        fun from(id: Snowflake, type: ChannelType, client: Client, guild: Guild? = null) = when (type) {
+            ChannelType.GUILD_TEXT -> TextChannel.from(id, guild!!)
+            ChannelType.GUILD_VOICE -> VoiceChannel.from(id, guild!!)
+            ChannelType.GUILD_CATEGORY -> Category.from(id, guild!!)
+            ChannelType.GUILD_NEWS -> NewsChannel.from(id, guild!!)
+            ChannelType.GUILD_NEWS_THREAD -> Thread.from(id, guild!!, ChannelType.GUILD_NEWS_THREAD)
+            ChannelType.GUILD_PUBLIC_THREAD -> Thread.from(id, guild!!, ChannelType.GUILD_PUBLIC_THREAD)
+            ChannelType.GUILD_PRIVATE_THREAD -> Thread.from(id, guild!!, ChannelType.GUILD_PRIVATE_THREAD)
+            ChannelType.GUILD_STAGE_VOICE -> StageChannel.from(id, guild!!)
+            else -> throw IllegalArgumentException("Unknown channel type: $type")
+        }
+    }
 
 }
 
-interface ChannelCacheEntry : Channel
+interface ChannelCacheEntry : Channel, CacheEntry
 
 @Serializable(with = ChannelTypeSerializer::class)
 enum class ChannelType(override val value: Int) : EnumWithValue<Int>{
+    UNKNOWN(-1),
     GUILD_TEXT(0),
     DM(1),
     GUILD_VOICE(2),

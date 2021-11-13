@@ -1,6 +1,7 @@
 package io.github.jan.discordkm.api.entities.channels.guild
 
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.ChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
@@ -15,6 +16,8 @@ interface VoiceChannel : GuildChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_VOICE
+    override val cache: VoiceChannelCacheEntry?
+        get() = guild.cache?.cacheManager?.channelCache?.get(id) as? VoiceChannelCacheEntry
 
     /**
      * Joins this voice channel over the websocket
@@ -36,8 +39,14 @@ interface VoiceChannel : GuildChannel {
         fun from(id: Snowflake, guild: Guild) = object : VoiceChannel {
             override val guild = guild
             override val id = id
+            override val type: ChannelType
+                get() = if(guild.cache?.cacheManager?.channelCache?.get(id) is StageChannelCacheEntry) {
+                    ChannelType.GUILD_STAGE_VOICE
+                } else {
+                    ChannelType.GUILD_VOICE
+                }
         }
-        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<VoiceChannelCacheEntry>(data, guild)
+        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<VoiceChannelCacheEntry>(data, guild.client)
     }
 
 }

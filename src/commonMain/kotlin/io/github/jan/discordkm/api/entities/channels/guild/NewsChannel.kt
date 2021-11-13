@@ -20,6 +20,8 @@ interface NewsChannel: GuildTextChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_NEWS
+    override val cache: NewsChannelCacheEntry?
+        get() = guild.cache?.cacheManager?.channelCache?.get(id) as? NewsChannelCacheEntry
 
     /**
      * Follows the news channel which means messages which are sent in this channel can be published to send the message to every channel which is following this channel.

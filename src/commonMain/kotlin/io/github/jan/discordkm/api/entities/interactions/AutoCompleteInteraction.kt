@@ -9,7 +9,12 @@
  */
 package io.github.jan.discordkm.api.entities.interactions
 
+import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.UserCacheEntry
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.OptionBuilder
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.check
@@ -21,8 +26,18 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
-class AutoCompleteInteraction<T>(client: Client, data: JsonObject)  : Interaction(client, data) {
-
+open class AutoCompleteInteraction<T>(
+    override val client: Client,
+    override val id: Snowflake,
+    applicationId: Snowflake,
+    type: InteractionType,
+    guild: Guild?,
+    channel: MessageChannel,
+    member: MemberCacheEntry?,
+    user: UserCacheEntry,
+    token: String,
+    version: Int
+) : Interaction(client, id, applicationId, type, guild, channel, member, user, token, version) {
     /**
      * Replies to the [AutoCompleteInteraction] with the given choices.
      */
