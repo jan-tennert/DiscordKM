@@ -9,32 +9,28 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
+import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
-import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
-import io.github.jan.discordkm.api.entities.guild.channels.Thread
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.ThreadCreateEvent
 import io.github.jan.discordkm.api.events.ThreadDeleteEvent
 import io.github.jan.discordkm.api.events.ThreadMembersUpdateEvent
 import io.github.jan.discordkm.api.events.ThreadUpdateEvent
-import io.github.jan.discordkm.internal.caching.Cache
-import io.github.jan.discordkm.internal.entities.guilds.GuildData
-import io.github.jan.discordkm.internal.entities.guilds.channels.ThreadData
-import io.github.jan.discordkm.internal.utils.getId
-import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.int
+import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 class ThreadCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadCreateEvent> {
 
     override fun handle(data: JsonObject): ThreadCreateEvent {
-        val guildId = data.getOrThrow<Snowflake>("guild_id")
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
-        val thread = ThreadData(guild, data)
-        if(Cache.THREADS in client.enabledCache) (guild as GuildData).threadCache[thread.id] = thread
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val thread = Thread(data, guild)
+        guild.cache?.cacheManager?.threadCache?.set(thread.id, thread)
         return ThreadCreateEvent(thread)
     }
 
@@ -43,10 +39,10 @@ class ThreadCreateEventHandler(val client: DiscordWebSocketClient) : InternalEve
 class ThreadUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadUpdateEvent> {
 
     override fun handle(data: JsonObject): ThreadUpdateEvent {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
-        val thread = ThreadData(guild, data)
-        val oldThread = guild.threads[thread.id]
-        if(Cache.THREADS in client.enabledCache) (guild as GuildData).threadCache[thread.id] = thread
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val thread = Thread(data, guild)
+        val oldThread = guild.cache?.threads?.get(thread.id)
+        guild.cache?.cacheManager?.threadCache?.set(thread.id, thread)
         return ThreadUpdateEvent(thread, oldThread)
     }
 
@@ -55,16 +51,12 @@ class ThreadUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEve
 class ThreadDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadDeleteEvent> {
 
     override fun handle(data: JsonObject): ThreadDeleteEvent {
-        val guildId = data.getOrThrow<Snowflake>("guild_id")
-        val guild = client.guilds[guildId]!!
-        val id = data.getId()
-        val audience = data.getValue("audience").jsonObject
-        val channelId = audience.getOrThrow<Snowflake>("parent_id")
-        val channel = guild.channels[channelId]!! as GuildTextChannel
-        val memberIds = audience.getValue("member_ids").jsonArray.map { Snowflake.fromId(it.jsonPrimitive.content) }
-        val members = memberIds.map { guild.members[it]!! }
-        if(Cache.THREADS in client.enabledCache) (guild as GuildData).threadCache.remove(channelId)
-        return ThreadDeleteEvent(client, id, guildId, guild, channelId, channel, memberIds, members)
+        val threadId = data["id"]!!.snowflake
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val stageChannel = StageChannel(data["parent_id"]!!.snowflake, guild)
+        val type = ChannelType[data["type"]!!.int]
+        guild.cache?.cacheManager?.threadCache?.remove(threadId)
+        return ThreadDeleteEvent(client, threadId, guild, stageChannel, type)
     }
 
 }
@@ -72,18 +64,13 @@ class ThreadDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEve
 class ThreadMembersUpdateEventHandler(val client: Client) : InternalEventHandler<ThreadMembersUpdateEvent> {
 
     override fun handle(data: JsonObject): ThreadMembersUpdateEvent {
-        val threadId = data.getId()
-        val thread = client.threads[threadId]!!
-        val memberCount = data.getOrThrow<Int>("member_count")
-        val addedMembers = data["added_members"]?.jsonArray?.map { json -> Thread.ThreadMember(thread.guild, json.jsonObject) } ?: emptyList()
-        val removedMembers = data["removed_member_ids"]?.jsonArray?.map { Snowflake.fromId(it.jsonPrimitive.content) } ?: emptyList()
-        addedMembers.forEach {
-            (thread as ThreadData).memberCache[it.id] = it
-        }
-        removedMembers.forEach {
-            (thread as ThreadData).memberCache.remove(it)
-        }
-        return ThreadMembersUpdateEvent(threadId, thread, memberCount, addedMembers, removedMembers)
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val thread = Thread(data["id"]!!.snowflake, guild, ChannelType.GUILD_PUBLIC_THREAD)
+        val memberCount = data["member_count"]!!.int
+        val addedMembers = data["added_members"]!!.jsonArray.map { Thread.ThreadMember(it.jsonObject, guild) }
+        val removedMembers = data["removed_member_ids"]!!.jsonArray.map { it.snowflake }
+        //cache members
+        return ThreadMembersUpdateEvent(thread, memberCount, addedMembers, removedMembers)
     }
 
 }

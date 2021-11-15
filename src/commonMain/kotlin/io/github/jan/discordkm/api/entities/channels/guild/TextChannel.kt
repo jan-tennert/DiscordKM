@@ -3,6 +3,7 @@ package io.github.jan.discordkm.api.entities.channels.guild
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.messages.Message
@@ -18,11 +19,11 @@ interface TextChannel : GuildTextChannel {
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? TextChannelCacheEntry
 
     companion object {
-        fun from(id: Snowflake, guild: Guild) = object : TextChannel {
+        operator fun invoke(id: Snowflake, guild: Guild) = object : TextChannel {
             override val guild = guild
             override val id = id
         }
-        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<TextChannelCacheEntry>(data, guild)
+        operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<TextChannelCacheEntry>(data, guild)
     }
 
 }
@@ -33,7 +34,7 @@ class TextChannelCacheEntry(
     override val permissionOverwrites: Set<PermissionOverwrite>,
     override val slowModeTime: TimeSpan,
     override val isNSFW: Boolean,
-    override val topic: String,
+    override val topic: String?,
     override val defaultAutoArchiveDuration: Thread.ThreadDuration,
     override val parent: Category?,
     override val id: Snowflake,

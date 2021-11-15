@@ -32,18 +32,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-open class StandardInteraction(
-    override val client: Client,
-    override val id: Snowflake,
-    applicationId: Snowflake,
-    type: InteractionType,
-    guild: Guild?,
-    channel: MessageChannel,
-    member: MemberCacheEntry?,
-    user: UserCacheEntry,
-    token: String,
-    version: Int
-) : Interaction(client, id, applicationId, type, guild, channel, member, user, token, version) {
+open class StandardInteraction(client: Client, data: JsonObject) : Interaction(client, data) {
 
     /**
      * Replies to this interaction without a message
@@ -87,7 +76,7 @@ open class StandardInteraction(
      */
     suspend fun editOriginalMessage(message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
         route = Route.Interaction.EDIT_ORIGINAL(applicationId, token).patch(message.build())
-        transform { Message.from(it.toJsonObject(), client) }
+        transform { Message(it.toJsonObject(), client) }
     }
 
     /**
@@ -110,7 +99,7 @@ open class StandardInteraction(
     suspend fun sendFollowUpMessage(message: DataMessage, ephemeral: Boolean = false) =
         client.buildRestAction<Message> {
             route = Route.Interaction.CREATE_FOLLOW_UP(applicationId, token).post(message.build(ephemeral))
-            transform { Message.from(it.toJsonObject(), client) }
+            transform { Message(it.toJsonObject(), client) }
         }
 
     /**
@@ -130,7 +119,7 @@ open class StandardInteraction(
      */
     suspend fun editFollowUpMessage(id: Snowflake, message: DataMessage) = client.buildRestAction<Message> {
         route = Route.Interaction.EDIT_FOLLOW_UP(applicationId, token, id).patch(message.build())
-        transform { Message.from(it.toJsonObject(), client) }
+        transform { Message(it.toJsonObject(), client) }
     }
 
     /**
@@ -138,7 +127,7 @@ open class StandardInteraction(
      */
     suspend fun getFollowUpMessage(id: Snowflake) = client.buildRestAction<Message> {
         route = Route.Interaction.GET_FOLLOW_UP(applicationId, token, id).get()
-        transform { Message.from(it.toJsonObject(), client) }
+        transform { Message(it.toJsonObject(), client) }
     }
 
     /**

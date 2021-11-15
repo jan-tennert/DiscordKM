@@ -9,30 +9,36 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.internal.entities.channels.MessageChannel
+import io.github.jan.discordkm.api.entities.channels.Channel
+import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Emoji
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.events.MessageReactionEmojiRemoveEvent
+import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import io.github.jan.discordkm.internal.utils.get
 
 class MessageReactionEmojiRemoveEventHandler(val client: Client) : InternalEventHandler<MessageReactionEmojiRemoveEvent> {
 
     override fun handle(data: JsonObject): MessageReactionEmojiRemoveEvent {
-        val channelId = data.getOrThrow<Snowflake>("channel_id")
-        val channel = (client.channels[channelId] ?: client.threads[channelId]) as MessageChannel
-        val messageId = data.getOrThrow<Snowflake>("message_id")
+        val channel = MessageChannel(data["channel_id"]!!.snowflake, client)
         val emojiObject = data.getValue("emoji").jsonObject
+        val guild = data["guild_id", true]?.snowflake?.let { Guild(it, client) }
         val emoji = if(emojiObject.getOrNull<Snowflake>("id") == null) {
             Emoji.fromEmoji(emojiObject.getOrThrow("name"))
         } else {
-            Emoji.fromEmote(Emoji.Emote(emojiObject, client))
+            Emoji.fromEmote(GuildSerializer.deserializeGuildEmote(emojiObject, client))
         }
-        val guildId = data.getOrNull<Snowflake>("guild_id")
-        return MessageReactionEmojiRemoveEvent(client, messageId, channelId, channel, emoji, guildId)
+        val message = Message(data["message_id"]!!.snowflake, channel)
+        return MessageReactionEmojiRemoveEvent(client, channel, emoji, guild, message)
     }
 
 }

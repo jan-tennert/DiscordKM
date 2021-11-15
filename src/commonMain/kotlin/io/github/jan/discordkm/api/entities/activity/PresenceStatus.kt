@@ -30,7 +30,7 @@ enum class PresenceStatus(override val value: String) : EnumWithValue<String> {
 
 @Serializable
 class ClientStatus(
-    val desktop: String?,
-    val mobile: String?,
-    val web: String?
+    val desktop: String? = null,
+    val mobile: String? = null,
+    val web: String? = null
 )

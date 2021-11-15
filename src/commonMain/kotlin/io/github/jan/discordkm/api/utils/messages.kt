@@ -10,10 +10,10 @@
 package io.github.jan.discordkm.api.utils
 
 import com.soywiz.klock.TimeSpan
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.events.MessageCreateEvent
-import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -25,12 +25,12 @@ suspend fun MessageChannel.awaitMessages(
     if(timeout != null) {
         withTimeoutOrNull(timeout.millisecondsLong) {
             while(messages.size != amount && isActive) {
-                messages.add((client as DiscordWebSocketClient).awaitEvent<MessageCreateEvent> { it.channelId == id }.message)
+                messages.add((client as DiscordWebSocketClient).awaitEvent<MessageCreateEvent> { it.channel.id == id }.message)
             }
         }
     } else {
         while(messages.size != amount) {
-            messages.add((client as DiscordWebSocketClient).awaitEvent<MessageCreateEvent> { it.channelId == id }.message)
+            messages.add((client as DiscordWebSocketClient).awaitEvent<MessageCreateEvent> { it.channel.id == id }.message)
         }
     }
     return messages

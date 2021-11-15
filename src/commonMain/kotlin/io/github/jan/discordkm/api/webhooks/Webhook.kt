@@ -115,10 +115,10 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
 
         fun fromUrl(url: String): WebhookExecutor {
             val groups = WEBHOOK_PATTERN.matchEntire(url)?.groups?.drop(1) ?: throw IllegalArgumentException("Invalid webhook url: $url")
-            return from(Snowflake.fromId(groups[0]!!.value), groups[1]!!.value)
+            return invoke(Snowflake.fromId(groups[0]!!.value), groups[1]!!.value)
         }
 
-        fun from(id: Snowflake, token: String) = object : WebhookExecutor {
+        operator fun invoke(id: Snowflake, token: String) = object : WebhookExecutor {
 
             override val id = id
 

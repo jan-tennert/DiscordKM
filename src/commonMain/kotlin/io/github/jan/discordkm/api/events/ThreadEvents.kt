@@ -10,11 +10,11 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
+import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Member
-import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
-import io.github.jan.discordkm.api.entities.guild.channels.Thread
 
 interface ThreadEvent : Event {
 
@@ -40,15 +40,11 @@ class ThreadUpdateEvent(override val thread: Thread, val oldThread: Thread?) : T
 class ThreadDeleteEvent(
     override val client: Client,
     val threadId: Snowflake,
-    val guildId: Snowflake,
     val guild: Guild,
-    val parentId: Snowflake,
-    val parent: GuildTextChannel,
-    val threadMemberIds: List<Snowflake>,
-    val threadMembers: List<Member>
+    val stageChannel: StageChannel,
+    val type: ChannelType
 ) : Event
 class ThreadMembersUpdateEvent(
-    val threadId: Snowflake,
     override val thread: Thread,
     val memberCount: Int,
     val addedMembers: List<Thread.ThreadMember>,

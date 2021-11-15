@@ -14,17 +14,18 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.events.GuildDeleteEvent
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
 class GuildDeleteEventHandler(val client: Client, private val LOGGER: Logger) :
     InternalEventHandler<GuildDeleteEvent> {
 
     override fun handle(data: JsonObject): GuildDeleteEvent {
+        val id = data["id"]!!.snowflake
         if(data.contains("unavailable")) {
-            LOGGER.warn { "The guild \"${data.getOrThrow<Long>("id")}\" is unavailable due to an outage" }
+            LOGGER.warn { "The guild \"$id\" is unavailable due to an outage" }
         }
-        val id = data.getOrThrow<Snowflake>("id")
-        client.guildCache.remove(id)
+        client.cacheManager.guildCache.remove(id)
         return GuildDeleteEvent(client, id)
     }
 

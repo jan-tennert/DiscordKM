@@ -9,8 +9,8 @@
  */
 package io.github.jan.discordkm.api.entities.messages
 
-import com.github.ajalt.colormath.Color
 import com.soywiz.klock.DateTimeTz
+import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.utils.ColorSerializer
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer

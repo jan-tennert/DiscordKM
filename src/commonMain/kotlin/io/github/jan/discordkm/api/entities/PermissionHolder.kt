@@ -9,18 +9,21 @@
  */
 package io.github.jan.discordkm.api.entities
 
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Permission
-import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
-import io.github.jan.discordkm.api.entities.misc.FlagList
+import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 
 /**
  * All objects inheriting this interface can have permissions
  */
 interface PermissionHolder : SnowflakeEntity {
 
-    val permissions: FlagList<Permission>
+    val permissions: Set<Permission>
 
-    fun getPermissionsFor(channel: GuildChannel) : FlagList<Permission>
+    fun getPermissionsFor(channel: GuildChannelCacheEntry) : Set<Permission>
+
+    val type: PermissionOverwrite.HolderType
 
 }
 

@@ -10,9 +10,10 @@
 package io.github.jan.discordkm.api.events
 
 import com.soywiz.klock.DateTimeTz
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
-import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
 
 interface ChannelEvent : Event {
 
@@ -27,17 +28,17 @@ interface ChannelEvent : Event {
  * Sent when a (guild) channel was created
  *
  */
-class ChannelCreateEvent(override val channel: GuildChannel) : ChannelEvent
+class ChannelCreateEvent(override val channel: GuildChannelCacheEntry) : ChannelEvent
 
 /**
  * Sent when a (guild) channel was updated
  */
-class ChannelUpdateEvent(override val channel: GuildChannel, val oldChannel: GuildChannel?) : ChannelEvent
+class ChannelUpdateEvent(override val channel: GuildChannelCacheEntry, val oldChannel: GuildChannelCacheEntry?) : ChannelEvent
 
 /**
  * Sent when a (guild) channel was deleted
  */
-class ChannelDeleteEvent(override val channel: GuildChannel) : ChannelEvent
+class ChannelDeleteEvent(override val channel: GuildChannelCacheEntry) : ChannelEvent
 
 /**
  * Sent when the pins of a message channel get updated

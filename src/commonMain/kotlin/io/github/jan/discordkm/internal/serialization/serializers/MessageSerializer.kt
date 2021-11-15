@@ -1,5 +1,6 @@
 package io.github.jan.discordkm.internal.serialization.serializers
 
+import com.soywiz.klock.DateTimeTz
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
@@ -10,6 +11,7 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.interactions.Interaction
+import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
@@ -32,33 +34,33 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import io.github.jan.discordkm.internal.utils.get
 
 object MessageSerializer : BaseEntitySerializer<MessageCacheEntry> {
     override fun deserialize(data: JsonObject, value: Client): MessageCacheEntry {
-        val guild = data["guild_id"]?.snowflake?.let { Guild.from(it, value) }
+        val guild = data["guild_id", true]?.snowflake?.let { Guild(it, value) }
+        val author = data["author"]?.jsonObject?.let { User(it, value) }
         return MessageCacheEntry(
             id = data["id"]!!.snowflake,
-            channel = MessageChannel.from(data["channel_id"]!!.snowflake, value),
-            author = data["author"]!!.let { User.from(it.jsonObject, value) },
-            content = data["content"]!!.string,
-            timestamp = data["timestamp"]!!.isoTimestamp,
-            editedTimestamp = data["edited_timestamp"]?.isoTimestamp,
-            isTTSMessage = data["tts"]!!.boolean,
-            mentions = data["mentions"]!!.jsonObject.map { User.from(it.value.jsonObject, value) },
-            mentionsEveryone = data["mention_everyone"]!!.boolean,
-            attachments = data["attachments"]!!.jsonObject.map { Json.decodeFromJsonElement(it.value.jsonObject) },
-            embeds = data["embeds"]!!.jsonObject.map { Json.decodeFromJsonElement(it.value.jsonObject) },
-            // reactions = data["reactions"]!!.jsonObject.map { Json.decodeFromJsonElement(it.value.jsonObject) },
-            nonce = data["nonce"]?.string,
-            isPinned = data["pinned"]!!.boolean,
-            webhookId = data["webhook_id"]?.snowflake,
-            type = MessageType.get(data["type"]!!.int),
+            channel = MessageChannel(data["channel_id"]!!.snowflake, value),
+            author = author,
+            content = data["content"]?.string ?: "",
+            timestamp = data["timestamp"]?.isoTimestamp ?: DateTimeTz.nowLocal(),
+            editedTimestamp = data["edited_timestamp", true]?.isoTimestamp,
+            isTTSMessage = data["tts"]?.boolean ?: false,
+            mentions = data["mentions"]?.jsonArray?.map { User(it.jsonObject, value) } ?: emptyList(),
+            mentionsEveryone = data["mention_everyone"]?.boolean ?: false,
+            attachments = data["attachments"]?.jsonArray?.map { Json.decodeFromJsonElement(it.jsonObject) } ?: emptyList(),
+            embeds = data["embeds"]?.jsonArray?.map { Json.decodeFromJsonElement(it.jsonObject) } ?: emptyList(),
+            nonce = data["nonce", true]?.string,
+            isPinned = data["pinned"]?.boolean ?: false,
+            webhookId = data["webhook_id", true]?.snowflake,
+            type = data["type"]?.int?.let { MessageType[it] } ?: MessageType.DEFAULT,
             activity = data["activity"]?.let { Json.decodeFromJsonElement(it.jsonObject) },
-            // application = data["application"]?.let { Json.decodeFromJsonElement(it.jsonObject) },
             reference = data["message_reference"]?.let { Json.decodeFromJsonElement(it.jsonObject) },
             flags = Message.Flag.decode(data["flags"]!!.long),
             guild = guild,
-            member = data["member"]?.let { Member.from(it.jsonObject, guild!!) },
+            member = author?.id?.let { guild?.cache?.members?.get(it) },
             components = data["components"]?.let { json ->
                 json.jsonArray.map { row ->
                     val internalComponents = row.jsonObject["components"]!!.jsonArray.map { component ->
@@ -78,32 +80,36 @@ object MessageSerializer : BaseEntitySerializer<MessageCacheEntry> {
                 }
             } ?: emptyList(),
             interaction = data["interaction"]?.let { deserializeMessageInteraction(it.jsonObject, value)},
-            thread = data["thread"]?.jsonObject?.let { Thread.from(it, guild!!) },
-            mentionedChannels = data["mention_channels"]?.jsonArray?.let { mentionedChannels ->
+            thread = data["thread"]?.jsonObject?.let { Thread(it, guild!!) },
+            mentionedChannels = data["mention_channels", true]?.jsonArray?.let { mentionedChannels ->
                 mentionedChannels.map { deserializeChannelMention(it.jsonObject, guild!!) }
             } ?: emptyList(),
-            stickers = data["stickers"]?.jsonArray?.let { stickers ->
+            stickers = data["stickers", true]?.jsonArray?.let { stickers ->
                 stickers.map { sticker ->
-                    StickerSerializer.deserialize(sticker.jsonObject, value)
+                    GuildSerializer.deserializeSticker(sticker.jsonObject, value)
                 }
             } ?: emptyList(),
-            mentionedRoles = data["mention_roles"]?.jsonArray?.let { mentionedRoles ->
-                mentionedRoles.map { Role.from(it.jsonObject, guild!!) }
+            mentionedRoles = data["mention_roles", true]?.jsonArray?.let { mentionedRoles ->
+                mentionedRoles.map { Role(it.jsonObject, guild!!) }
             } ?: emptyList(),
-            referencedMessage = data["referenced_message"]?.let { deserialize(it.jsonObject, value) },
-        )
+            referencedMessage = data["referenced_message", true]?.let { deserialize(it.jsonObject, value) },
+        ).apply {
+            data["reactions"]?.jsonArray?.let { reactions ->
+                cacheManager.reactionCache.putAll(reactions.map { Json.decodeFromJsonElement(it.jsonObject) })
+            }
+        }
     }
 
     private fun deserializeMessageInteraction(data: JsonObject, client: Client) = Message.MessageInteraction(
         data["id"]!!.snowflake,
-        Interaction.InteractionType.from(data["type"]!!.int),
+        InteractionType[data["type"]!!.int],
         data["name"]!!.string,
-        User.from(data["user"]!!.jsonObject, client),
+        User(data["user"]!!.jsonObject, client),
     )
 
-    private fun deserializeChannelMention(data: JsonObject, guild: Guild) = Channel.from(
+    private fun deserializeChannelMention(data: JsonObject, guild: Guild) = Channel(
         data["id"]!!.snowflake,
-        ChannelType.get(data["type"]!!.int),
+        ChannelType[data["type"]!!.int],
         guild.client,
         guild
     )

@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.commands.builders
 
+import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
@@ -18,10 +19,8 @@ import io.github.jan.discordkm.api.events.AutoCompleteEvent
 import io.github.jan.discordkm.api.events.CommandEvent
 import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.internal.DiscordKMUnstable
-import io.github.jan.discordkm.internal.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement

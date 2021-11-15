@@ -11,9 +11,9 @@ package io.github.jan.discordkm.api.entities.guild.channels.modifier
 
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.guild.channels.GuildTextChannel
+import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
+import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
-import io.github.jan.discordkm.api.entities.guild.channels.Thread
 import io.github.jan.discordkm.internal.Check
 import io.github.jan.discordkm.internal.checkRange
 import io.github.jan.discordkm.internal.utils.putJsonObject

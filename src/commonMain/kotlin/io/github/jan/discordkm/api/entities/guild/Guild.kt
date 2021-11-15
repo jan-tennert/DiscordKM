@@ -28,6 +28,7 @@ import io.github.jan.discordkm.api.entities.containers.CacheGuildChannelContaine
 import io.github.jan.discordkm.api.entities.containers.CacheGuildMemberContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildRoleContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildThreadContainer
+import io.github.jan.discordkm.api.entities.containers.CommandContainer
 import io.github.jan.discordkm.api.entities.containers.EmoteContainer
 import io.github.jan.discordkm.api.entities.containers.GuildChannelContainer
 import io.github.jan.discordkm.api.entities.containers.GuildMemberContainer
@@ -39,7 +40,7 @@ import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLogAction
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteBuilder
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
-import io.github.jan.discordkm.api.entities.lists.EmoteList
+import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -59,6 +60,7 @@ import io.github.jan.discordkm.internal.serialization.serializers.GuildSerialize
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.putOptional
+import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.Serializable
@@ -72,7 +74,7 @@ import kotlin.reflect.KProperty
 /**
  * A guild can contain channels and members.
  */
-interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity {
+interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, CommandHolder {
 
     override val cache: GuildCacheEntry?
         get() = client.cacheManager.guildCache[id]
@@ -86,6 +88,8 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity {
         get() = GuildChannelContainer(this)
     val emotes: EmoteContainer
         get() = EmoteContainer(this)
+    override val commands: CommandContainer
+        get() = CommandContainer(this, "/applications/${client.selfUser.id}/guilds/$id")
 
     /**
      * Retrieves the audit log for this guild.
@@ -335,25 +339,11 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity {
 
     }
 
-
-    /*class Ban(val guild: Guild, val data: JsonObject) : SerializableEntity {
-
-        val client = guild.client
-
-        /**
-         * The reason why a member was banned from their guild
-         */
-        val reason = data.getOrNull<String>("reason")
-
-        /**
-         * The user who was banned
-         */
-        val user = data.getOrThrow<String>("user").toJsonObject().extractClientEntity<User>(client)
-
-    }*/
     /**
-     * Contains information about a banned guild member
-     * See [Discord Docs](https://discord.com/developers/docs/resources/guild#ban-object) for more information
+     * Represents a ban on a guild
+     *
+     * @property user The user that was banned
+     * @property reason The reason for the ban
      */
     class Ban(
         override val guild: Guild,
@@ -378,7 +368,12 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity {
         val clientStatus: ClientStatus,
         val status: PresenceStatus,
         val activities: List<Activity>
-    )
+    ) : BaseEntity {
+
+        override val client: Client
+            get() = user.client
+
+    }
 
     /**
      * The welcome screen which is shown, when a new user joins the guild
@@ -417,7 +412,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity {
     }
 
     companion object {
-        fun from(id: Snowflake, client: Client) = object : Guild {
+        operator fun invoke(id: Snowflake, client: Client) = object : Guild {
             override val id = id
             override val client = client
         }
@@ -476,7 +471,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity {
  * @See Guild.SystemChannelFlag
  * @see Guild.Feature
  */
-data class GuildCacheEntry(
+class GuildCacheEntry(
     override val id: Snowflake,
     override val client: Client,
     override val name: String,
@@ -508,27 +503,32 @@ data class GuildCacheEntry(
     val publicUpdatesChannelId: Snowflake?,
     val ownerId: Snowflake,
     val welcomeScreen: Guild.WelcomeScreen?,
-    val discoveryHash: String?,
+    val discoveryHash: String?
 ) : Guild, Nameable, CacheEntry {
 
+    //cache
     val cacheManager = GuildCacheManager()
+
+    //containers
     override val roles: CacheGuildRoleContainer
-        get() = CacheGuildRoleContainer(this, cacheManager.roleCache.values)
+        get() = CacheGuildRoleContainer(this, cacheManager.roleCache.safeValues)
     override val members: CacheGuildMemberContainer
-        get() = CacheGuildMemberContainer(this, cacheManager.memberCache.values)
+        get() = CacheGuildMemberContainer(this, cacheManager.memberCache.safeValues)
     override val threads: CacheGuildThreadContainer
-        get() = CacheGuildThreadContainer(this, cacheManager.threadCache.values)
+        get() = CacheGuildThreadContainer(this, cacheManager.threadCache.safeValues)
     override val channels: CacheGuildChannelContainer
-        get() = CacheGuildChannelContainer(this, cacheManager.channelCache.values)
+        get() = CacheGuildChannelContainer(this, cacheManager.channelCache.safeValues)
     val voiceStates: Map<Snowflake, VoiceStateCacheEntry>
-        get() = cacheManager.voiceStates
+        get() = cacheManager.voiceStates.safeValues.associateBy { it.user.id }
     val presences: Map<Snowflake, Guild.GuildPresenceCacheEntry>
-        get() = cacheManager.presences
+        get() = cacheManager.presences.safeValues.associateBy { it.user.id }
+    val stageInstances: Map<Snowflake, StageInstanceCacheEntry>
+        get() = cacheManager.stageInstanceCache.safeValues.associateBy { it.id }
     override val emotes: CacheEmoteContainer
-        get() = CacheEmoteContainer(this,  cacheManager.emoteCache.values)
+        get() = CacheEmoteContainer(this,  cacheManager.emoteCache.safeValues)
 
     val everyoneRole: Role
-        get() = cacheManager.roleCache.filter { it.value.name == "@everyone" }.values.first()
+        get() = cacheManager.roleCache.safeValues.first { it.name == "@everyone" }
 
     /**
      * The discovery image shown on the discovery tab

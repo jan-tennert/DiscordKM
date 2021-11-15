@@ -10,21 +10,21 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.Channel
+import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.MessageDeleteEvent
-import io.github.jan.discordkm.internal.caching.Cache
-import io.github.jan.discordkm.internal.entities.channels.MessageChannel
-import io.github.jan.discordkm.internal.entities.channels.MessageChannelData
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
 class MessageDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<MessageDeleteEvent> {
 
     override fun handle(data: JsonObject): MessageDeleteEvent {
-        val channelId = data.getOrThrow<Snowflake>("channel_id")
-        val channel = (client.channels[channelId] ?: client.threads[channelId] ?: MessageChannelData.fromId(client, channelId)) as MessageChannel
+        val channel = MessageChannel(data["channel_id"]!!.snowflake, client)
         val messageId = data.getOrThrow<Snowflake>("id")
-        if(Cache.MESSAGES in client.enabledCache) channel.messageCache.remove(messageId)
+        channel.cache?.cacheManager?.messageCache?.remove(messageId)
         return MessageDeleteEvent(client, messageId, channel)
     }
 

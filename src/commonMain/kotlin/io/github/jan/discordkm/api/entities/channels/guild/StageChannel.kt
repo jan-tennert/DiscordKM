@@ -2,6 +2,7 @@ package io.github.jan.discordkm.api.entities.channels.guild
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
@@ -35,8 +36,7 @@ interface StageChannel : VoiceChannel {
             put("topic", topic)
             put("privacy_level", if(public) StageInstance.PrivacyLevel.PUBLIC.ordinal else StageInstance.PrivacyLevel.GUILD_ONLY.ordinal)
         })
-        transform { StageInstance(client, it.toJsonObject()) }
-        onFinish {  }
+        transform { StageInstance(it.toJsonObject(), client) }
     }
 
     /**
@@ -44,15 +44,15 @@ interface StageChannel : VoiceChannel {
      */
     suspend fun retrieveInstance() = client.buildRestAction<StageInstance> {
         route = Route.StageInstance.GET_INSTANCE(id).get()
-        transform { StageInstance(client, it.toJsonObject()) }
+        transform { StageInstance(it.toJsonObject(), client) }
     }
 
     companion object {
-        fun from(id: Snowflake, guild: Guild) = object : StageChannel {
+        operator fun invoke(id: Snowflake, guild: Guild) = object : StageChannel {
             override val guild = guild
             override val id = id
         }
-        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<StageChannelCacheEntry>(data, guild)
+        operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<StageChannelCacheEntry>(data, guild)
     }
 
 }

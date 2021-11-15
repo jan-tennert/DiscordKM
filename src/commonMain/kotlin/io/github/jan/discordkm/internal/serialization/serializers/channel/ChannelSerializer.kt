@@ -21,6 +21,7 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
+import io.github.jan.discordkm.internal.serialization.GuildEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.snowflake
@@ -30,10 +31,11 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import io.github.jan.discordkm.internal.utils.get
 
-object ChannelSerializer : BaseEntitySerializer<Channel> {
+object ChannelSerializer : GuildEntitySerializer<Channel> {
 
-    override fun deserialize(data: JsonObject, value: Client) = when(ChannelType.get(data["type"]!!.int)) {
+    override fun deserialize(data: JsonObject, value: Guild) = when(ChannelType[data["type"]!!.int]) {
         ChannelType.GUILD_TEXT -> deserializeChannel<TextChannelCacheEntry>(data, value)
         ChannelType.DM -> TODO()
         ChannelType.GUILD_VOICE -> deserializeChannel<VoiceChannelCacheEntry>(data, value)
@@ -48,32 +50,31 @@ object ChannelSerializer : BaseEntitySerializer<Channel> {
         else -> TODO()
     }
 
-    inline fun <reified T : ChannelCacheEntry>deserializeChannel(data: JsonObject, client: Client) : T {
+    inline fun <reified T : ChannelCacheEntry>deserializeChannel(data: JsonObject, guild: Guild) : T {
         val id = data["id"]!!.snowflake
-        val name = data["name"]?.string //guild
+        val name = data["name", true]?.string //guild
         val type = ChannelType.get(data["type"]!!.int)
-        val position = data["position"]?.int //guild
-        val permissionOverwrites = data["permission_overwrites"]?.jsonArray?.map { PermissionOverwrite.from(it.jsonObject) }?.toSet()
-        val nsfw = data["nsfw"]?.boolean //guild
-        val guild = data["guild_id"]?.snowflake?.let { Guild.from(it, client) }
-        val topic = data["topic"]?.string //guild
-        val lastMessageId = data["last_message_id"]?.snowflake?.let { Message.from(it, Channel.from(id, type, client, guild) as MessageChannel) } //message channel
-        val bitrate = data["bitrate"]?.int //voice channel
-        val userLimit = data["user_limit"]?.int //voice channel
-        val recipients = data["recipients"]?.string //dm
-        val defaultAutoArchiveDuration = data["default_auto_archive_duration"]?.int?.minutes?.let { Thread.ThreadDuration.raw(it) } //thread
-        val slowModeTime = data["rate_limit_per_user"]?.int?.seconds //guild
-        val parentId = data["parent_id"]?.snowflake //parent for channel
-        val regionId = data["rtc_region"]?.string //guild
-        val videoQualityMode = data["video_quality_mode"]?.int?.let { VoiceChannel.VideoQualityMode.get(it) } //guild
-
+        val position = data["position", true]?.int //guild
+        val permissionOverwrites = data["permission_overwrites"]?.jsonArray?.map { PermissionOverwrite(it.jsonObject) }?.toSet()
+        val nsfw = data["nsfw", true]?.boolean //guild
+        val guild = data["guild_id", true]?.snowflake?.let { Guild(it, guild.client) } ?: guild
+        val topic = data["topic", true]?.string //guild
+        val lastMessageId = data["last_message_id", true]?.snowflake?.let { Message(it, Channel(id, type, guild.client, guild) as MessageChannel) } //message channel
+        val bitrate = data["bitrate", true]?.int //voice channel
+        val userLimit = data["user_limit", true]?.int //voice channel
+        val recipients = data["recipients", true]?.string //dm
+        val defaultAutoArchiveDuration = data["default_auto_archive_duration", true]?.int?.minutes?.let { Thread.ThreadDuration.raw(it) } //thread
+        val slowModeTime = data["rate_limit_per_user", true]?.int?.seconds //guild
+        val parentId = data["parent_id", true]?.snowflake //parent for channel
+        val regionId = data["rtc_region", true]?.string //guild
+        val videoQualityMode = data["video_quality_mode", true]?.int?.let { VoiceChannel.VideoQualityMode.get(it) } //guild
         return when(T::class) {
-            TextChannelCacheEntry::class -> TextChannelCacheEntry(guild!!, position!!, permissionOverwrites!!, slowModeTime!!, nsfw!!, topic!!, defaultAutoArchiveDuration!!, Category.from(parentId!!, guild), id, lastMessageId, name!!)
-            NewsChannelCacheEntry::class -> NewsChannelCacheEntry(guild!!, position!!, permissionOverwrites!!, slowModeTime!!, nsfw!!, topic!!, defaultAutoArchiveDuration!!, Category.from(parentId!!, guild), id, lastMessageId, name!!)
-            StageChannelCacheEntry::class -> StageChannelCacheEntry(userLimit!!, regionId!!, bitrate!!, videoQualityMode!!, guild!!, id, name!!, position!!, permissionOverwrites!!)
-            VoiceChannelCacheEntry::class -> VoiceChannelCacheEntry(userLimit!!, regionId!!, bitrate!!, videoQualityMode!!, guild!!, id, name!!, position!!, permissionOverwrites!!)
-            CategoryCacheEntry::class -> CategoryCacheEntry(guild!!, position!!, permissionOverwrites!!, id, name!!)
-            ThreadCacheEntry::class -> ThreadCacheEntry(guild!!, permissionOverwrites!!, slowModeTime!!, GuildTextChannel.from(parentId!!, guild), id, lastMessageId, name!!, type, Json.decodeFromJsonElement(data["thread_metadata"]!!))
+            TextChannelCacheEntry::class -> TextChannelCacheEntry(guild, position!!, permissionOverwrites!!, slowModeTime!!, nsfw ?: false, topic, defaultAutoArchiveDuration ?: Thread.ThreadDuration.DAY, Category(parentId!!, guild), id, lastMessageId, name!!)
+            NewsChannelCacheEntry::class -> NewsChannelCacheEntry(guild, position!!, permissionOverwrites!!, slowModeTime!!, nsfw ?: false, topic, defaultAutoArchiveDuration ?: Thread.ThreadDuration.DAY, Category(parentId!!, guild), id, lastMessageId, name!!)
+            StageChannelCacheEntry::class -> StageChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild!!, id, name!!, position!!, permissionOverwrites!!)
+            VoiceChannelCacheEntry::class -> VoiceChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild!!, id, name!!, position!!, permissionOverwrites!!)
+            CategoryCacheEntry::class -> CategoryCacheEntry(guild, position!!, permissionOverwrites!!, id, name!!)
+            ThreadCacheEntry::class -> ThreadCacheEntry(guild, permissionOverwrites ?: emptySet(), slowModeTime!!, GuildTextChannel(parentId!!, guild), id, lastMessageId, name!!, type, Json.decodeFromJsonElement(data["thread_metadata"]!!))
             else -> TODO()
         } as T
     }

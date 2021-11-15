@@ -20,7 +20,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 
-class CommandContainer(private val holder: CommandHolder, val baseURL: String, override val values: Collection<ApplicationCommand>) : NameableSnowflakeContainer<ApplicationCommand> {
+open class CommandContainer(private val holder: CommandHolder, private val baseURL: String) {
 
     /**
      * Creates a new application command
@@ -28,7 +28,6 @@ class CommandContainer(private val holder: CommandHolder, val baseURL: String, o
     suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.post(baseURL, builder.build())
         transform { it.toJsonObject().extractApplicationCommand(client) }
-        onFinish { holder.commandCache[it.id] = it }
     }
 
     /**
@@ -52,7 +51,6 @@ class CommandContainer(private val holder: CommandHolder, val baseURL: String, o
     suspend fun retrieveCommands() = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.get(baseURL)
         transform { it.toJsonArray().map { json -> json.jsonObject.extractApplicationCommand(client) } }
-        onFinish { holder.commandCache.internalMap.clear(); holder.commandCache.internalMap.putAll(it.associateBy { command -> command.id }) }
     }
 
     /**
@@ -61,16 +59,14 @@ class CommandContainer(private val holder: CommandHolder, val baseURL: String, o
     suspend fun retrieve(id: Snowflake) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.get("$baseURL/$id")
         transform { it.toJsonObject().extractApplicationCommand(client) }
-        onFinish { holder.commandCache[it.id] = it }
     }
 
     /**
-     * Modifies a application command
+     * Modifies an application command
      */
     suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.patch("$baseURL/$id", builder.build())
         transform { it.toJsonObject().extractApplicationCommand(client) }
-        onFinish { holder.commandCache[it.id] = it }
     }
 
     /**
@@ -78,7 +74,6 @@ class CommandContainer(private val holder: CommandHolder, val baseURL: String, o
      */
     suspend fun delete(id: Snowflake) = holder.client.buildRestAction<Unit> {
         route = RestAction.delete("$baseURL/$id")
-        onFinish { holder.commandCache.remove(id) }
     }
 
     /**
@@ -87,7 +82,6 @@ class CommandContainer(private val holder: CommandHolder, val baseURL: String, o
     suspend fun overrideCommands(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.put(baseURL, Json.encodeToJsonElement(CommandBulkOverride().apply(commands).commands.map { it.build() }))
         transform { it.toJsonArray().map { json -> json.jsonObject.extractApplicationCommand(client) } }
-        onFinish { holder.commandCache.internalMap.clear(); holder.commandCache.internalMap.putAll(it.associateBy { command -> command.id }) }
     }
 
 }

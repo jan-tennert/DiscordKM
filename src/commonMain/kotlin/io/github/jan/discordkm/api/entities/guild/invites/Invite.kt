@@ -14,15 +14,22 @@ import com.soywiz.klock.ISO8601
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.channels.Channel
+import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.ISO8601Serializer
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.int
+import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.valueOfIndexOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -52,30 +59,30 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
     /**
      * The guild, if it is an invite to a guild channel
      */
-    val guild = client.guilds[data["guild"]?.jsonObject?.getOrThrow<Snowflake>("id") ?: Snowflake.empty()]
+    val guild = data["guild"]?.jsonObject?.get("id")?.snowflake?.let { Guild(it, client) }
 
     /**
      * The channel this invite is for
      */
-    val channel = guild?.channels?.get(data["guild"]?.jsonObject?.getOrThrow<Snowflake>("id") ?: Snowflake.empty())
+    val channel = Channel(data["channel"]!!.jsonObject["id"]!!.snowflake, ChannelType[data["channel"]!!.jsonObject["type"]!!.int], client, guild)
 
     /**
      * The inviter who created this invite
      */
-    val inviter = data["inviter"]?.jsonObject?.extractClientEntity<User>(client)
+    val inviter = data["inviter"]?.jsonObject?.let { User(it, client) }
 
     /**
      * The type of the invite
      */
-    val type = valueOfIndexOrNull<TargetType>(data.getOrNull<Int>("type"))
+    val type = TargetType[data["type"]!!.int]
 
     /**
      * The target user for this invite, if this an invite to a stream
      */
-    val targetUser = data["target_user"]?.jsonObject?.extractClientEntity<User>(client)
+    val targetUser = data["target_user"]?.jsonObject?.let { User(it, client) }
 
     //TODO: add remaining parameters
-    val application = data["target_application"]?.jsonObject?.extractClientEntity<InviteApplication>(client)
+    val application = data["target_application"]?.jsonObject?.let { InviteApplication(client, it) }
 
     /**
      * The invite expiration date
@@ -116,7 +123,7 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
         val createdAt: DateTimeTz
     )
 
-    enum class TargetType {
+    enum class TargetType : EnumWithValue<Int> {
         STREAM {
             override fun create(targetId: Snowflake) = Target(targetId, STREAM)
         },
@@ -124,7 +131,12 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
             override fun create(targetId: Snowflake) = Target(targetId, EMBEDDED_APPLICATION)
         };
 
+        override val value: Int
+            get() = ordinal + 1
+
         abstract fun create(targetId: Snowflake) : Target
+
+        companion object : EnumWithValueGetter<TargetType, Int>(values())
     }
 
 }

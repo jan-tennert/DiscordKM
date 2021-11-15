@@ -5,7 +5,7 @@ import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.entities.DiscordImage
-import io.github.jan.discordkm.internal.entities.channels.PrivateChannel
+import io.github.jan.discordkm.api.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
@@ -82,8 +82,8 @@ open class User protected constructor(override val id: Snowflake, override val c
     override suspend fun retrieve() = client.users.retrieve(id)
 
     companion object {
-        fun from(id: Snowflake, client: Client) = User(id, client)
-        fun from(data: JsonObject, client: Client) = UserSerializer.deserialize(data, client)
+        operator fun invoke(id: Snowflake, client: Client) = User(id, client)
+        operator fun invoke(data: JsonObject, client: Client) = UserSerializer.deserialize(data, client)
     }
 
 }

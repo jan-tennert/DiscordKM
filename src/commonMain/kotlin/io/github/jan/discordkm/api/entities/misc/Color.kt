@@ -8,6 +8,10 @@
  */
 package io.github.jan.discordkm.api.entities.misc
 
+import io.github.jan.discordkm.internal.utils.ColorSerializer
+import kotlinx.serialization.Serializable
+
+@Serializable(with = ColorSerializer::class)
 data class Color(val rgb: Int) {
 
     companion object {

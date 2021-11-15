@@ -9,11 +9,11 @@
  */
 package io.github.jan.discordkm.api.events
 
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.Intent
-import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 
 /**
  * Sent when someone updates his message
@@ -22,8 +22,6 @@ import io.github.jan.discordkm.api.entities.messages.Message
  */
 class MessageUpdateEvent(
     override val client: Client,
-    val message: Message,
-    override val messageId: Snowflake,
-    override val channelId: Snowflake,
+    override val message: MessageCacheEntry,
     override val channel: MessageChannel
 ) : MessageEvent

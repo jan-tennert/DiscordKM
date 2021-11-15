@@ -11,23 +11,22 @@ package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.events.RoleCreateEvent
 import io.github.jan.discordkm.api.events.RoleDeleteEvent
 import io.github.jan.discordkm.api.events.RoleUpdateEvent
-import io.github.jan.discordkm.internal.caching.Cache
-import io.github.jan.discordkm.internal.entities.guilds.GuildData
-import io.github.jan.discordkm.internal.entities.guilds.RoleData
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
 class RoleCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleCreateEvent> {
 
     override fun handle(data: JsonObject): RoleCreateEvent {
-        val guildId = data.getOrThrow<Snowflake>("guild_id")
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
-        val role = RoleData(guild, data.getValue("role").jsonObject)
-        if(Cache.ROLES in client.enabledCache) (guild as GuildData).roleCache[role.id] = role
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val role = Role(data["role"]!!.jsonObject, guild)
+        guild.cache?.cacheManager?.roleCache?.set(role.id, role)
         return RoleCreateEvent(role)
     }
 
@@ -36,10 +35,10 @@ class RoleCreateEventHandler(val client: DiscordWebSocketClient) : InternalEvent
 class RoleUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleUpdateEvent> {
 
     override fun handle(data: JsonObject): RoleUpdateEvent {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
-        val role = RoleData(guild, data.getValue("role").jsonObject)
-        val oldRole = guild.roles[role.id]
-        if(Cache.ROLES in client.enabledCache) (guild as GuildData).roleCache[role.id] = role
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val role = Role(data["role"]!!.jsonObject, guild)
+        val oldRole = guild.cache?.cacheManager?.roleCache?.get(role.id)
+        guild.cache?.cacheManager?.roleCache?.set(role.id, role)
         return RoleUpdateEvent(role, oldRole)
     }
 
@@ -48,9 +47,9 @@ class RoleUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEvent
 class RoleDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleDeleteEvent> {
 
     override fun handle(data: JsonObject): RoleDeleteEvent {
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")]!!
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
         val roleId = data.getOrThrow<Snowflake>("role_id")
-        if(Cache.ROLES in client.enabledCache) (guild as GuildData).roleCache.remove(roleId)
+        guild.cache?.cacheManager?.roleCache?.remove(roleId)
         return RoleDeleteEvent(client, roleId)
     }
 

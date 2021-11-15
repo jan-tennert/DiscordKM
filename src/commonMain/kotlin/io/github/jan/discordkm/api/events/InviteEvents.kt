@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.events
 
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
@@ -27,4 +28,4 @@ class InviteCreateEvent(val invite: Invite) : Event {
 /**
  * Sent when an invite was deleted
  */
-class InviteDeleteEvent(val channel: Invitable, override val guild: Guild, val inviteCode: String) : GuildEvent
+class InviteDeleteEvent(val channel: GuildChannel, override val guild: Guild, val inviteCode: String) : GuildEvent

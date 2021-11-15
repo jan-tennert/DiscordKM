@@ -9,31 +9,31 @@
  */
 package io.github.jan.discordkm.api.entities.guild.auditlog
 
+import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.channels.guild.Thread
+import io.github.jan.discordkm.api.entities.containers.CacheThreadContainer
+import io.github.jan.discordkm.api.entities.containers.UserContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
-import io.github.jan.discordkm.api.entities.lists.ThreadList
-import io.github.jan.discordkm.api.entities.lists.UserList
 import io.github.jan.discordkm.api.webhooks.Webhook
-import io.github.jan.discordkm.internal.entities.UserData
-import io.github.jan.discordkm.internal.entities.guilds.channels.ThreadData
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-class AuditLog(override val data: JsonObject, override val guild: Guild) : GuildEntity {
+class AuditLog(override val data: JsonObject, override val guild: Guild) : GuildEntity, SerializableEntity {
 
     /**
      * A list of users in this audit log
      */
-    val users = UserList(client, data.getValue("users").jsonArray.map { UserData(client, it.jsonObject) as User }.associateBy { it.id })
+    val users = UserContainer(client, data.getValue("users").jsonArray.map { User(it.jsonObject, client) })
 
     /**
      * A list of threads in this audit log
      */
-    val threads = ThreadList(data.getValue("threads").jsonArray.map { ThreadData(guild, it.jsonObject) }.associateBy { it.id })
+    val threads = CacheThreadContainer(data.getValue("threads").jsonArray.map { Thread(it.jsonObject, guild) })
 
     /**
      * A list of webhooks in this audit log

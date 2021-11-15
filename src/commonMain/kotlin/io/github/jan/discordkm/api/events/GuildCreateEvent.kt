@@ -11,10 +11,11 @@ package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
 
 /**
  * Sent when a new guild was created
  *
  * Requires the intent [Intent.GUILDS]
  */
-class GuildCreateEvent(val guild: Guild, override val client: Client) : Event
+class GuildCreateEvent(val guild: GuildCacheEntry, override val client: Client) : Event

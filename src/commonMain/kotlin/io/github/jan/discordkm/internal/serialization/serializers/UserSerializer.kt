@@ -18,6 +18,8 @@ import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.long
 import kotlinx.serialization.json.JsonObject
+import io.github.jan.discordkm.internal.utils.get
+
 
 object UserSerializer : BaseEntitySerializer<UserCacheEntry> {
 
@@ -26,12 +28,12 @@ object UserSerializer : BaseEntitySerializer<UserCacheEntry> {
         name = data["username"].toString(),
         discriminator = data["discriminator"].toString(),
         avatarHash = data["avatar"]?.toString(),
-        isBot = data["bot"]?.boolean ?: false,
-        hasMfaEnabled = data["mfa_enabled"]?.boolean ?: false,
-        flags = data["flags"]?.long?.let { User.UserFlag.decode(it) } ?: setOf(),
-        premiumType = data["premium_type"]?.int?.let { User.PremiumType.get(it) } ?: User.PremiumType.NONE,
-        publicFlags = data["flags"]?.long?.let { User.UserFlag.decode(it) } ?: setOf(),
-        isSystem = data["system"]?.boolean ?: false,
+        isBot = data["bot", true]?.boolean ?: false,
+        hasMfaEnabled = data["mfa_enabled", true]?.boolean ?: false,
+        flags = data["flags", true]?.long?.let { User.UserFlag.decode(it) } ?: setOf(),
+        premiumType = data["premium_type", true]?.int?.let { User.PremiumType.get(it) } ?: User.PremiumType.NONE,
+        publicFlags = data["flags", true]?.long?.let { User.UserFlag.decode(it) } ?: setOf(),
+        isSystem = data["system", true]?.boolean ?: false,
         client = client
     )
 

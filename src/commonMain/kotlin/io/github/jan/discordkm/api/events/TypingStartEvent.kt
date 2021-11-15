@@ -11,11 +11,11 @@ package io.github.jan.discordkm.api.events
 
 import com.soywiz.klock.DateTimeTz
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
-import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 
 /**
  * Sent when a user starts typing in a channel

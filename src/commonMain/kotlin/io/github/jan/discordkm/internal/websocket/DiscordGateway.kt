@@ -60,6 +60,7 @@ import io.github.jan.discordkm.internal.events.VoiceStateUpdateEventHandler
 import io.github.jan.discordkm.internal.events.WebhooksUpdateEventHandler
 import io.github.jan.discordkm.internal.serialization.IdentifyPayload
 import io.github.jan.discordkm.internal.serialization.Payload
+import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.serialization.send
 import io.github.jan.discordkm.internal.utils.LoggerOutput
 import io.github.jan.discordkm.internal.utils.generateWebsocketURL
@@ -194,7 +195,7 @@ class DiscordGateway(
                             }))
                         } else {
                             LOGGER.debug { "Authenticate..." }
-                            send(IdentifyPayload(client.token, client.intents.rawValue, status, activity, shardId, totalShards))
+                            send(IdentifyPayload(client.token, client.intents.rawValue(), status, activity, shardId, totalShards))
                         }
                     }
                 }

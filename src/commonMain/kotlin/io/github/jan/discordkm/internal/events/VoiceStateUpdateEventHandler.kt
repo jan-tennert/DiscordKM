@@ -9,28 +9,20 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.VoiceStateUpdateEvent
-import io.github.jan.discordkm.internal.caching.Cache
-import io.github.jan.discordkm.internal.entities.guilds.GuildData
-import io.github.jan.discordkm.internal.entities.guilds.VoiceStateData
-import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.serialization.serializers.VoiceStateSerializer
+import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
 class VoiceStateUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<VoiceStateUpdateEvent> {
 
     override fun handle(data: JsonObject): VoiceStateUpdateEvent {
-        val voiceState = VoiceStateData(client, data)
-        val guildId = data.getOrThrow<Snowflake>("guild_id")
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
-        val oldVoiceState = guild.voiceStates.firstOrNull { it.userId == voiceState.userId }
-        guild.let {
-            if(Cache.VOICE_STATES in client.enabledCache) {
-                (it as GuildData).voiceStateCache.remove(voiceState.userId)
-                (it as GuildData).voiceStateCache[voiceState.userId] =  voiceState
-            }
-        }
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val voiceState = VoiceStateSerializer.deserialize(data, guild)
+        val oldVoiceState = guild.cache?.cacheManager?.voiceStates?.get(voiceState.user.id)
+        guild.cache?.cacheManager?.voiceStates?.set(voiceState.user.id, voiceState)
         return VoiceStateUpdateEvent(client, voiceState, oldVoiceState)
     }
 

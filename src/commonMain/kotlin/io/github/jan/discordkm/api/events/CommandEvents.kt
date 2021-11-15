@@ -9,11 +9,11 @@
  */
 package io.github.jan.discordkm.api.events
 
+import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.containers.OptionContainer
 import io.github.jan.discordkm.api.entities.interactions.StandardInteraction
-import io.github.jan.discordkm.api.entities.lists.OptionList
 import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.internal.entities.UserData
 
 interface CommandEvent : InteractionCreateEvent {
     val commandName: String
@@ -23,7 +23,7 @@ interface CommandEvent : InteractionCreateEvent {
 /**
  * Sent when someone enters the slash command
  */
-class SlashCommandEvent(override val client: Client, override val interaction: StandardInteraction, override val commandName: String, val options: OptionList, val subCommand: String? = null, val subCommandGroup: String? = null) :
+class SlashCommandEvent(override val client: Client, override val interaction: StandardInteraction, override val commandName: String, val options: OptionContainer, val subCommand: String? = null, val subCommandGroup: String? = null) :
     CommandEvent
 
 /**
@@ -35,5 +35,5 @@ class MessageCommandEvent(override val client: Client, override val interaction:
 /**
  * Sent when someone clicks on a user context menu command
  */
-class UserCommandEvent(override val client: Client, override val interaction: StandardInteraction, override val commandName: String, val targetUser: UserData) :
+class UserCommandEvent(override val client: Client, override val interaction: StandardInteraction, override val commandName: String, val targetUser: UserCacheEntry) :
     CommandEvent

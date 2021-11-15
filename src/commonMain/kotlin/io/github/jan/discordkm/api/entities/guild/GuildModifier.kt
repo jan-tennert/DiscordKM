@@ -6,6 +6,7 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.DiscordKMInternal
+import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.utils.ifNotEmpty
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.JsonArray
@@ -47,7 +48,7 @@ class GuildModifier : Modifier {
         putOptional("discovery_splash", discoverySplashImage?.encodedData)
         putOptional("banner", bannerImage?.encodedData)
         putOptional("system_channel_id", systemChannelId)
-        systemChannelFlags.ifNotEmpty { put("system_channel_flags", Guild.SystemChannelFlag.encode(systemChannelFlags.toList())) }
+        systemChannelFlags.ifNotEmpty { put("system_channel_flags", systemChannelFlags.rawValue()) }
         putOptional("rules_channel_id", rulesChannelId)
         putOptional("public_updates_channel_id", publicUpdatesChannelId)
         putOptional("preferred_locale", preferredLocale)

@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
 
@@ -24,7 +25,7 @@ sealed interface BanEvent : GuildEvent {
  *
  * Requires the intent [Intent.GUILD_BANS]
  */
-class GuildBanAddEvent(override val guild: Guild, override val user: User) :
+class GuildBanAddEvent(override val guild: Guild, override val user: UserCacheEntry) :
     BanEvent
 
 /**
@@ -32,5 +33,5 @@ class GuildBanAddEvent(override val guild: Guild, override val user: User) :
  *
  * Requires the intent [Intent.GUILD_BANS]
  */
-class GuildBanRemoveEvent(override val guild: Guild, override val user: User) :
+class GuildBanRemoveEvent(override val guild: Guild, override val user: UserCacheEntry) :
     BanEvent

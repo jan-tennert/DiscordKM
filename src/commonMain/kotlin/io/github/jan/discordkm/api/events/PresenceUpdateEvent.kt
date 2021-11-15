@@ -15,7 +15,7 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 /**
  * Sent when the presence of a user gets updated
  */
-class PresenceUpdateEvent(val presence: Guild.GuildPresence, val oldPresence: Guild.GuildPresence?) : Event {
+class PresenceUpdateEvent(val presence: Guild.GuildPresenceCacheEntry, val oldPresence: Guild.GuildPresenceCacheEntry?) : Event {
 
     override val client: Client
         get() = presence.client

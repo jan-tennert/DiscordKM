@@ -9,73 +9,35 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
-import io.github.jan.discordkm.api.entities.Reference
-import io.github.jan.discordkm.api.entities.SerializableEntity
+import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.channels.StageChannel
-import io.github.jan.discordkm.api.entities.lists.getGuildChannel
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
-import io.github.jan.discordkm.internal.entities.guilds.GuildData
-import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.getId
-import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.serialization.serializers.StageInstanceSerializer
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
-import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
-import kotlin.jvm.JvmName
-import kotlin.reflect.KProperty
 
-class StageInstance(override val client: Client, override val data: JsonObject) : SerializableEntity, Reference<StageInstance>, SnowflakeEntity {
+interface StageInstance : SnowflakeEntity, BaseEntity {
 
-    override val id = data.getId()
-    val guildId = data.getOrThrow<Snowflake>("guild_id")
-    val guild: Guild
-        get() = client.guilds[guildId]!!
-
-    /**
-     * The stage channel where the stage instance is in
-     */
-    val stageChannelId = data.getOrThrow<Snowflake>("channel_id")
-
-    /**
-     * The stage channel where the stage instance is in
-     */
-    val stageChannel
-        get() = guild.channels.getGuildChannel<StageChannel>(stageChannelId)
-
-    /**
-     * The topic of the stage instance
-     */
-    val topic = data.getOrThrow<String>("topic")
-
-    /**
-     * The [PrivacyLevel] of the stage instance
-     */
-    val privacyLevel = valueOfIndex<PrivacyLevel>(data.getOrThrow("privacy_level"), 1)
-
-    /**
-     * Whether stage discovery is enabled
-     */
-    @get:JvmName("isDiscovery")
-    val isDiscovery = data.getOrThrow<Boolean>("discoverable_disabled")
-
-    override fun getValue(ref: Any?, property: KProperty<*>) = guild.stageInstances.first { it.id == id }
+    val stageChannel: StageChannel
+    override val client: Client
+        get() = stageChannel.client
 
     /**
      * Deletes this stage instance
      */
     suspend fun delete() = client.buildRestAction<Unit> {
-        route = Route.StageInstance.DELETE_INSTANCE(stageChannelId).delete()
-        transform {  }
-        onFinish { (guild as GuildData).stageInstanceCache.remove(id) }
+        route = Route.StageInstance.DELETE_INSTANCE(stageChannel.id).delete()
     }
 
     /**
@@ -83,20 +45,44 @@ class StageInstance(override val client: Client, override val data: JsonObject) 
      * @param topic The new topic for this stage instance
      * @param privacyLevel The new privacy level for this stage instance
      */
-    suspend fun modify(topic: String? = null, privacyLevel: PrivacyLevel? = null) = client.buildRestAction<StageInstance> {
-        route = Route.StageInstance.MODIFY_INSTANCE(stageChannelId).patch(buildJsonObject {
+    suspend fun modify(topic: String? = null, privacyLevel: StageInstance.PrivacyLevel? = null) = client.buildRestAction<StageInstanceCacheEntry> {
+        route = Route.StageInstance.MODIFY_INSTANCE(stageChannel.id).patch(buildJsonObject {
             putOptional("topic", topic)
-            putOptional("privacy_level", privacyLevel?.ordinal)
+            putOptional("privacy_level", privacyLevel?.value)
         })
-        transform { StageInstance(client, it.toJsonObject()) }
-        onFinish { (guild as GuildData).stageInstanceCache[id] = it }
+        transform { StageInstance(it.toJsonObject(), client) }
     }
 
-    override suspend fun retrieve() = stageChannel.retrieveInstance()
-
-    enum class PrivacyLevel {
+    enum class PrivacyLevel : EnumWithValue<Int> {
         PUBLIC,
-        GUILD_ONLY
+        GUILD_ONLY;
+
+        override val value: Int
+            get() = ordinal + 1
+
+        companion object : EnumWithValueGetter<PrivacyLevel, Int>(values())
     }
+
+    companion object {
+        operator fun invoke(id: Snowflake, channel: StageChannel) = object : StageInstance {
+            override val id = id
+            override val stageChannel = channel
+        }
+        operator fun invoke(data: JsonObject, client: Client) = StageInstanceSerializer.deserialize(data, client)
+    }
+
+}
+
+class StageInstanceCacheEntry(
+    override val guild: Guild,
+    override val id: Snowflake,
+    val topic: String,
+    override val stageChannel: StageChannel,
+    val privacyLevel: StageInstance.PrivacyLevel,
+    val isDiscoveryEnabled: Boolean
+) : StageInstance, GuildEntity {
+
+    override val client: Client
+        get() = stageChannel.client
 
 }

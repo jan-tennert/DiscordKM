@@ -27,7 +27,7 @@ open class EmoteContainer(val guild: Guild) {
      */
     suspend fun retrieveEmote(id: Snowflake) = guild.client.buildRestAction<Emoji.Emote> {
         route = Route.Emoji.GET_GUILD_EMOJI(guild.id, id).get()
-        transform { GuildSerializer.deserializeGuildEmote(it.toJsonObject(), guild) }
+        transform { GuildSerializer.deserializeGuildEmote(it.toJsonObject(), client) }
     }
 
     /**
@@ -35,7 +35,7 @@ open class EmoteContainer(val guild: Guild) {
      */
     suspend fun retrieveEmotes() = guild.client.buildRestAction<List<Emoji.Emote>> {
         route = Route.Emoji.GET_GUILD_EMOJIS(guild.id).get()
-        transform { it.toJsonArray().map { e -> GuildSerializer.deserializeGuildEmote(e.jsonObject, guild) } }
+        transform { it.toJsonArray().map { e -> GuildSerializer.deserializeGuildEmote(e.jsonObject, client) } }
     }
 
     /**
@@ -50,7 +50,7 @@ open class EmoteContainer(val guild: Guild) {
             put("image", image.encodedData)
             putJsonArray("roles") { allowedRoleIds.forEach { add(it.string) } }
         })
-        transform { GuildSerializer.deserializeGuildEmote(it.toJsonObject(), guild) }
+        transform { GuildSerializer.deserializeGuildEmote(it.toJsonObject(), client) }
     }
 
     /**
@@ -63,7 +63,7 @@ open class EmoteContainer(val guild: Guild) {
             putOptional("name", name)
             putJsonArray("roles") { allowedRoleIds?.forEach { add(it.string) } }
         })
-        transform { GuildSerializer.deserializeGuildEmote(it.toJsonObject(), guild) }
+        transform { GuildSerializer.deserializeGuildEmote(it.toJsonObject(), client) }
     }
 
     /**

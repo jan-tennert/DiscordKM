@@ -26,18 +26,8 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
-open class AutoCompleteInteraction<T>(
-    override val client: Client,
-    override val id: Snowflake,
-    applicationId: Snowflake,
-    type: InteractionType,
-    guild: Guild?,
-    channel: MessageChannel,
-    member: MemberCacheEntry?,
-    user: UserCacheEntry,
-    token: String,
-    version: Int
-) : Interaction(client, id, applicationId, type, guild, channel, member, user, token, version) {
+class AutoCompleteInteraction<T>(client: Client, data: JsonObject)  : Interaction(client, data) {
+
     /**
      * Replies to the [AutoCompleteInteraction] with the given choices.
      */

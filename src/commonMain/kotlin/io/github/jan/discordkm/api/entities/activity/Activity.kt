@@ -55,9 +55,13 @@ data class Activity(
      */
     @Serializable
     data class Assets(
+        @SerialName("large_image")
         val largeImage: String? = null,
+        @SerialName("large_text")
         val largeText: String? = null,
+        @SerialName("small_image")
         val smallImage: String? = null,
+        @SerialName("small_text")
         val smallText: String? = null
     )
 
@@ -101,7 +105,7 @@ class Presence internal constructor(val type: ActivityType, val name: String, pr
 class PresenceModifier(var status: PresenceStatus = PresenceStatus.ONLINE, var activity: Presence? = null, var afk: Boolean = false, var idleTime: DateTimeTz? = null) {
 
     fun build() = buildJsonObject {
-        put("status", status.status)
+        put("status", status.value)
         put("since", idleTime?.utc?.unixMillis)
         put("afk", afk)
         putJsonArray("activities") {

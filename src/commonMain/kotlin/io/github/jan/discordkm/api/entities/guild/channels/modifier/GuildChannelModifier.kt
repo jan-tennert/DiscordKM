@@ -12,11 +12,10 @@ package io.github.jan.discordkm.api.entities.guild.channels.modifier
 import io.github.jan.discordkm.api.entities.Modifier
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.guild.Category
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.Permission
-import io.github.jan.discordkm.api.entities.guild.channels.Category
-import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
-import io.github.jan.discordkm.api.entities.misc.FlagList
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.JsonObject
@@ -41,7 +40,7 @@ sealed interface GuildChannelModifier <C : GuildChannel> : Modifier {
     val permissionOverrides: MutableList<PermissionOverwrite>
 
     fun addPermissionOverride(holder: PermissionHolder, allow: Set<Permission> = emptySet(), deny: Set<Permission> = emptySet()) {
-        permissionOverrides += PermissionOverwrite(holder, FlagList(Permission, allow.toList()), FlagList(Permission, deny.toList()))
+        permissionOverrides += PermissionOverwrite(holder.id, allow.toMutableSet(), deny.toMutableSet(), holder.type)
     }
 
     override fun build() = buildJsonObject {

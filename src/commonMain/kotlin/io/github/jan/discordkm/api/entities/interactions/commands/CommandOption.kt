@@ -10,6 +10,8 @@
 package io.github.jan.discordkm.api.entities.interactions.commands
 
 import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -38,7 +40,7 @@ data class CommandOption(
     val autocomplete: Boolean? = null
 ) {
 
-    enum class OptionType {
+    enum class OptionType : EnumWithValue<Int> {
         SUB_COMMAND,
         SUB_COMMAND_GROUP,
         STRING,
@@ -49,7 +51,12 @@ data class CommandOption(
         ROLE,
         MENTIONABLE,
         NUMBER,
-        ATTACHMENT
+        ATTACHMENT;
+
+        override val value: Int
+            get() = ordinal + 1
+
+        companion object : EnumWithValueGetter<OptionType, Int>(values())
     }
 
 }
@@ -61,7 +68,7 @@ object ChannelTypeSerializer : KSerializer<ChannelType> {
     override val descriptor = PrimitiveSerialDescriptor("ChannelType", PrimitiveKind.INT)
 
     override fun serialize(encoder: Encoder, value: ChannelType) {
-        encoder.encodeInt(value.id)
+        encoder.encodeInt(value.value)
     }
 
 

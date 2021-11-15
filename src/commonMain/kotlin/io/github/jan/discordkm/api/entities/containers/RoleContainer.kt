@@ -26,7 +26,7 @@ open class GuildRoleContainer(val guild: Guild) {
      */
     suspend fun retrieveRoles()  = guild.client.buildRestAction<List<RoleCacheEntry>> {
         route = Route.Role.GET_ROLES(guild.id).get()
-        transform { it.toJsonArray().map { data -> Role.from(data.jsonObject, guild) } }
+        transform { it.toJsonArray().map { data -> Role(data.jsonObject, guild) } }
         onFinish { roles ->
             val cache = guild.cache?.cacheManager?.roleCache
             cache?.clear()
@@ -78,4 +78,4 @@ open class MemberRoleContainer(val member: Member) {
 
 }
 
-class CacheMemberRoleContainer(member: Member, override val values: Collection<RoleCacheEntry>) : MemberRoleContainer(member), SnowflakeContainer<RoleCacheEntry>
+class CacheMemberRoleContainer(member: Member, override val values: Collection<Role>) : MemberRoleContainer(member), SnowflakeContainer<Role>

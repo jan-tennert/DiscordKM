@@ -14,15 +14,13 @@ import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.events.StageInstanceCreateEvent
 import io.github.jan.discordkm.api.events.StageInstanceDeleteEvent
 import io.github.jan.discordkm.api.events.StageInstanceUpdateEvent
-import io.github.jan.discordkm.internal.caching.Cache
-import io.github.jan.discordkm.internal.entities.guilds.GuildData
 import kotlinx.serialization.json.JsonObject
 
 class StageInstanceCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<StageInstanceCreateEvent> {
 
     override fun handle(data: JsonObject): StageInstanceCreateEvent {
-        val stageInstance = StageInstance(client, data)
-        if(Cache.STAGE_INSTANCES in client.enabledCache) (stageInstance.guild as GuildData).stageInstanceCache[stageInstance.id] = stageInstance
+        val stageInstance = StageInstance(data, client)
+        stageInstance.guild.cache?.cacheManager?.stageInstanceCache?.set(stageInstance.id, stageInstance)
         return StageInstanceCreateEvent(stageInstance)
     }
 
@@ -31,9 +29,9 @@ class StageInstanceCreateEventHandler(val client: DiscordWebSocketClient) : Inte
 class StageInstanceUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<StageInstanceUpdateEvent> {
 
     override fun handle(data: JsonObject): StageInstanceUpdateEvent {
-        val stageInstance = StageInstance(client, data)
-        val oldStageInstance = stageInstance.guild.stageInstances.firstOrNull { it.id == stageInstance.id }
-        if(Cache.STAGE_INSTANCES in client.enabledCache) (stageInstance.guild as GuildData).stageInstanceCache[stageInstance.id] = stageInstance
+        val stageInstance = StageInstance(data, client)
+        val oldStageInstance = stageInstance.guild.cache?.stageInstances?.get(stageInstance.id)
+        stageInstance.guild.cache?.cacheManager?.stageInstanceCache?.set(stageInstance.id, stageInstance)
         return StageInstanceUpdateEvent(stageInstance, oldStageInstance)
     }
 
@@ -42,8 +40,8 @@ class StageInstanceUpdateEventHandler(val client: DiscordWebSocketClient) : Inte
 class StageInstanceDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<StageInstanceDeleteEvent> {
 
     override fun handle(data: JsonObject): StageInstanceDeleteEvent {
-        val stageInstance = StageInstance(client, data)
-        if(Cache.STAGE_INSTANCES in client.enabledCache) (stageInstance.guild as GuildData).stageInstanceCache.remove(stageInstance.id)
+        val stageInstance = StageInstance(data, client)
+        stageInstance.guild.cache?.cacheManager?.stageInstanceCache?.remove(stageInstance.id)
         return StageInstanceDeleteEvent(stageInstance)
     }
 

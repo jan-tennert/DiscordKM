@@ -10,11 +10,8 @@
 package io.github.jan.discordkm.api.entities.guild
 
 import com.soywiz.klock.DateTimeTz
-import com.soywiz.klock.ISO8601
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
-import io.github.jan.discordkm.api.entities.Reference
-import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
@@ -32,30 +29,22 @@ import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.caching.MemberCacheManager
 import io.github.jan.discordkm.internal.entities.DiscordImage
-import io.github.jan.discordkm.internal.entities.guilds.MemberData
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.serialization.serializers.MemberSerializer
-import io.github.jan.discordkm.internal.utils.extractGuildEntity
-import io.github.jan.discordkm.internal.utils.getOrNull
-import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmName
-import kotlin.reflect.KProperty
 
-open class Member protected constructor(override val id: Snowflake, override val guild: Guild) : Reference<Member>, SnowflakeEntity, GuildEntity, CacheEntity {
+open class Member protected constructor(override val id: Snowflake, override val guild: Guild) : SnowflakeEntity, GuildEntity, CacheEntity {
 
     override val cache: MemberCacheEntry?
         get() = guild.cache?.members?.get(id)
-    open val user: User = User.from(id, client)
+    open val user: User
+        get() = User(id, client)
     open val roles = MemberRoleContainer(this)
 
     /**
@@ -63,7 +52,7 @@ open class Member protected constructor(override val id: Snowflake, override val
      */
     suspend fun modify(modifier: MemberModifier.() -> Unit) = client.buildRestAction<Member> {
         route = Route.Member.MODIFY_MEMBER(guild.id, id).patch(MemberModifier().apply(modifier).build())
-        transform { it.toJsonObject().extractGuildEntity(guild) }
+        transform { Member(it.toJsonObject(), guild) }
     }
 
     /**
@@ -81,15 +70,9 @@ open class Member protected constructor(override val id: Snowflake, override val
     suspend fun ban(delDays: Int?) = guild.members.ban(id, delDays)
 
     companion object {
-        fun from(id: Snowflake, guild: Guild) = Member(id, guild)
-        fun from(data: JsonObject, guild: Guild) = MemberSerializer.deserialize(data, guild)
+        operator fun invoke(id: Snowflake, guild: Guild) = Member(id, guild)
+        operator fun invoke(data: JsonObject, guild: Guild) = MemberSerializer.deserialize(data, guild)
     }
-
-    override fun getValue(ref: Any?, property: KProperty<*>) = guild.members[id]!!
-
-    override suspend fun retrieve() = guild.members.retrieve(id)
-
-    override fun fromCache() = guild.cache?.cacheManager?.memberCache?.get(id)
 
 }
 
@@ -109,17 +92,20 @@ data class MemberCacheEntry(
     /**
      * The voice state of the member retrieved from cache
      */
-    val voiceState: VoiceState?
+    val voiceState: VoiceStateCacheEntry?
+        get() = guild.cache?.voiceStates?.get(id)
 
     /**
      * The status of the member
      */
     val status: PresenceStatus
+        get() = guild.cache?.presences?.get(id)?.status ?: PresenceStatus.OFFLINE
 
     /**
      * A list of activities the user currently has
      */
     val activities: List<Activity>
+        get() = guild.cache?.presences?.get(id)?.activities ?: emptyList()
 
     val cacheManager = MemberCacheManager()
 
@@ -150,13 +136,14 @@ data class MemberCacheEntry(
      */
     override val permissions: Set<Permission>
         get() {
-            if (isOwner) return Permission.ALL_PERMISSIONS.toSet()
+            TODO()
+            /*if (isOwner) return Permission.ALL_PERMISSIONS.toSet()
             var permission: Long = guild.cache!!.everyoneRole.cache!!.permissions.rawValue()
             for (role in roles) {
                 permission = permission or role.permissions.rawValue()
                 if ((permission and Permission.ADMINISTRATOR.rawValue) == Permission.ADMINISTRATOR.rawValue) return Permission.ALL_PERMISSIONS.toSet()
             }
-            return Permission.decode(permission)
+            return Permission.decode(permission)*/
         }
 
     /**
@@ -177,6 +164,8 @@ data class MemberCacheEntry(
         }
         return permissions.toSet()
     }
+
+    override val type = PermissionOverwrite.HolderType.MEMBER
 
 
 }

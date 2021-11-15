@@ -15,11 +15,10 @@ import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
-import io.github.jan.discordkm.api.entities.misc.FlagList
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.events.ShardCreateEvent
-import io.github.jan.discordkm.internal.caching.Cache
+import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
@@ -36,12 +35,12 @@ class DiscordWebSocketClient internal constructor(
     token: String,
     private val encoding: Encoding,
     private val compression: Compression,
-    val intents: FlagList<Intent>,
+    val intents: Set<Intent>,
     loggingLevel: Logger.Level,
     private val status: PresenceStatus,
     private val activity: Presence?,
     private val reconnectDelay: TimeSpan = 5.seconds,
-    internal val enabledCache: List<Cache>,
+    internal val enabledCache: List<CacheFlag>,
     private val shards: List<Int> = emptyList(),
     private val totalShards: Int = -1
 ) : Client(token, loggingLevel) {
@@ -135,7 +134,7 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
     /**
      * The cache specifies which entities should be cached.
      */
-    var enabledCache = Cache.ALL.toMutableList()
+    var enabledCache = CacheFlag.ALL.toMutableList()
     private val shards = mutableListOf<Int>()
 
     /**
@@ -153,7 +152,7 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
      */
     fun activity(builder: PresenceModifier.() -> Unit) { activity = PresenceModifier().apply(builder) }
 
-    fun build() = DiscordWebSocketClient(token, encoding, compression, FlagList(Intent, intents), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache, shards, totalShards)
+    fun build() = DiscordWebSocketClient(token, encoding, compression, intents.toSet(), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache, shards, totalShards)
 
 }
 

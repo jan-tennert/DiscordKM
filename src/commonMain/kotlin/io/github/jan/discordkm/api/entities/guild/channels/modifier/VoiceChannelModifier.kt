@@ -10,8 +10,8 @@
 package io.github.jan.discordkm.api.entities.guild.channels.modifier
 
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
-import io.github.jan.discordkm.api.entities.guild.channels.VoiceChannel
 import io.github.jan.discordkm.api.entities.misc.NullableLimitedInt
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import io.github.jan.discordkm.internal.utils.putOptional

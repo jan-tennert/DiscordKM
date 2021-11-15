@@ -20,9 +20,11 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 
 interface MessageChannel : Channel {
 
+    override val cache: MessageChannelCacheEntry?
+
     suspend fun send(message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
         route = Route.Message.CREATE_MESSAGE(id).post(message.build())
-        transform { Message.from(it.toJsonObject(), client) }
+        transform { Message(it.toJsonObject(), client) }
     }
 
     suspend fun send(builder: MessageBuilder.() -> Unit) = send(buildMessage(builder))
@@ -41,10 +43,13 @@ interface MessageChannel : Channel {
     }
 
     companion object {
-        fun from(id: Snowflake, client: Client) = object : MessageChannel {
-            override val type = ChannelType.UNKNOWN
-            override val id = id
-            override val client = client
+        operator fun invoke(id: Snowflake, client: Client): MessageChannel = object : MessageChannel {
+            override val id: Snowflake = id
+            override val client: Client = client
+            override val type: ChannelType
+                get() = cache?.type ?: ChannelType.UNKNOWN
+            override val cache: MessageChannelCacheEntry?
+                get() = client.channels[id] as? MessageChannelCacheEntry
         }
     }
 

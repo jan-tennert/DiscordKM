@@ -39,15 +39,16 @@ interface Channel : SnowflakeEntity, BaseEntity, Mentionable, CacheEntity {
     }
 
     companion object {
-        fun from(id: Snowflake, type: ChannelType, client: Client, guild: Guild? = null) = when (type) {
-            ChannelType.GUILD_TEXT -> TextChannel.from(id, guild!!)
-            ChannelType.GUILD_VOICE -> VoiceChannel.from(id, guild!!)
-            ChannelType.GUILD_CATEGORY -> Category.from(id, guild!!)
-            ChannelType.GUILD_NEWS -> NewsChannel.from(id, guild!!)
-            ChannelType.GUILD_NEWS_THREAD -> Thread.from(id, guild!!, ChannelType.GUILD_NEWS_THREAD)
-            ChannelType.GUILD_PUBLIC_THREAD -> Thread.from(id, guild!!, ChannelType.GUILD_PUBLIC_THREAD)
-            ChannelType.GUILD_PRIVATE_THREAD -> Thread.from(id, guild!!, ChannelType.GUILD_PRIVATE_THREAD)
-            ChannelType.GUILD_STAGE_VOICE -> StageChannel.from(id, guild!!)
+        operator fun invoke(id: Snowflake, type: ChannelType, client: Client, guild: Guild? = null) = when (type) {
+            ChannelType.GUILD_TEXT -> TextChannel(id, guild!!)
+            ChannelType.GUILD_VOICE -> VoiceChannel(id, guild!!)
+            ChannelType.GUILD_CATEGORY -> Category(id, guild!!)
+            ChannelType.GUILD_NEWS -> NewsChannel(id, guild!!)
+            ChannelType.GUILD_NEWS_THREAD -> Thread(id, guild!!, ChannelType.GUILD_NEWS_THREAD)
+            ChannelType.GUILD_PUBLIC_THREAD -> Thread(id, guild!!, ChannelType.GUILD_PUBLIC_THREAD)
+            ChannelType.GUILD_PRIVATE_THREAD -> Thread(id, guild!!, ChannelType.GUILD_PRIVATE_THREAD)
+            ChannelType.GUILD_STAGE_VOICE -> StageChannel(id, guild!!)
+            ChannelType.UNKNOWN -> client.channels[id]!!
             else -> throw IllegalArgumentException("Unknown channel type: $type")
         }
     }

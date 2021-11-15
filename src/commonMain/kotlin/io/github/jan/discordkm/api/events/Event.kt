@@ -11,31 +11,20 @@ package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.interactions.Interaction
 import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.entities.channels.MessageChannel
-import io.github.jan.discordkm.internal.get
-import io.github.jan.discordkm.internal.invoke
-import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.toJsonObject
 
 interface Event : BaseEntity
 
 sealed interface MessageEvent : Event {
 
-    val messageId: Snowflake
+    val message: Message
 
-    val channelId: Snowflake
 
     val channel: MessageChannel
-
-    suspend fun retrieveMessage() = client.buildRestAction<Message> {
-        route = Route.Message.GET_MESSAGE(channelId, messageId).get()
-        transform { Message(channel, it.toJsonObject()) }
-    }
 
 }
 

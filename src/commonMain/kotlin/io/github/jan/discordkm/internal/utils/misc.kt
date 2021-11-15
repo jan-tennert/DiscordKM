@@ -24,3 +24,9 @@ fun <K, V> Map<K, V>.toIsoMap() = IsoMutableMap { this@toIsoMap.toMutableMap() }
 fun <T>Collection<T>.ifNotEmpty(action: () -> Unit) = if(isNotEmpty()) action() else Unit
 
 inline fun <T> checkAndReturn(check: () -> T) = check()
+
+val <K, V> IsoMutableMap<K, V>.safeValues: List<V> get() {
+    val list = mutableListOf<V>()
+    values.forEach { list.add(it) }
+    return list
+}

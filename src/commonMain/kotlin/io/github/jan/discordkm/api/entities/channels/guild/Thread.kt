@@ -62,10 +62,10 @@ interface Thread : GuildMessageChannel {
     )  : SnowflakeEntity {
 
         companion object {
-            fun from(data: JsonObject, guild: Guild) = ThreadMember(
+            operator fun invoke(data: JsonObject, guild: Guild) = ThreadMember(
                 guild = guild,
-                user = User.from(data["user_id"]!!.snowflake, guild.client),
-                thread = from(data["id"]!!.snowflake, guild, ChannelType.GUILD_PUBLIC_THREAD),
+                user = User(data["user_id"]!!.snowflake, guild.client),
+                thread = invoke(data["id"]!!.snowflake, guild, ChannelType.GUILD_PUBLIC_THREAD),
                 joinedAt = data["joined_at"]!!.isoTimestamp
             )
         }
@@ -89,13 +89,13 @@ interface Thread : GuildMessageChannel {
     )
 
     companion object {
-        fun from(id: Snowflake, guild: Guild, type: ChannelType) = object : Thread {
+        operator fun invoke(id: Snowflake, guild: Guild, type: ChannelType) = object : Thread {
             override val guild = guild
             override val id = id
-            override val type = type
+            override val type = guild.cache?.threads?.get(id)?.type ?: type
         }
 
-        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<ThreadCacheEntry>(data, guild.client)
+        operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<ThreadCacheEntry>(data, guild)
     }
 
     /**

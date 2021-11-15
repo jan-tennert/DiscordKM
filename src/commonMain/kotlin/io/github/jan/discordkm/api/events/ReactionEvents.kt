@@ -9,13 +9,14 @@
  */
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Emoji
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
-import io.github.jan.discordkm.internal.entities.channels.MessageChannel
+import io.github.jan.discordkm.api.entities.messages.Message
 
 
 /**
@@ -26,19 +27,11 @@ import io.github.jan.discordkm.internal.entities.channels.MessageChannel
 class MessageReactionRemoveEvent(
     override val client: Client,
     override val channel: MessageChannel,
-    override val messageId: Snowflake,
     val emoji: Emoji,
-    override val channelId: Snowflake,
-    val userId: Snowflake,
     val user: User,
-    val guildId: Snowflake?
-) : MessageEvent {
-
-
-    suspend fun retrieveGuild() = client.guilds.retrieve(guildId!!)
-
-}
-
+    val guild: Guild?,
+    override val message: Message
+) : MessageEvent
 /**
  * Sent when someone removes all messages from a message
  *
@@ -46,16 +39,10 @@ class MessageReactionRemoveEvent(
  */
 class MessageReactionRemoveAllEvent(
     override val client: Client,
-    override val messageId: Snowflake,
-    override val channelId: Snowflake,
     override val channel: MessageChannel,
-    val guildId: Snowflake?
-) : MessageEvent {
-
-
-    suspend fun retrieveGuild() = client.guilds.retrieve(guildId!!)
-
-}
+    val guild: Guild?,
+    override val message: Message
+) : MessageEvent
 
 /**
  * Sent when every reaction with the same emojis are deleted
@@ -64,18 +51,11 @@ class MessageReactionRemoveAllEvent(
  */
 class MessageReactionEmojiRemoveEvent(
     override val client: Client,
-    override val messageId: Snowflake,
-    override val channelId: Snowflake,
     override val channel: MessageChannel,
     val emoji: Emoji,
-    val guildId: Snowflake?,
-) : MessageEvent {
-
-
-    suspend fun retrieveGuild() = client.guilds.retrieve(guildId!!)
-
-}
-
+    val guild: Guild?,
+    override val message: Message,
+) : MessageEvent
 /**
  * Sent when reacts to a message
  *
@@ -84,16 +64,9 @@ class MessageReactionEmojiRemoveEvent(
 class MessageReactionAddEvent(
     override val client: Client,
     override val channel: MessageChannel,
-    override val messageId: Snowflake,
     val emoji: Emoji,
-    override val channelId: Snowflake,
-    val userId: Snowflake,
     val user: User,
     val member: Member?,
-    val guildId: Snowflake?
-) : MessageEvent {
-
-
-    suspend fun retrieveGuild() = client.guilds.retrieve(guildId!!)
-
-}
+    val guild: Guild?,
+    override val message: Message
+) : MessageEvent

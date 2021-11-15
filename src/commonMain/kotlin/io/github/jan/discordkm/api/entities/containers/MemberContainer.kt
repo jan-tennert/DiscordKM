@@ -7,13 +7,10 @@ import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
-import io.github.jan.discordkm.internal.exceptions.PermissionException
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.serialization.serializers.MemberSerializer
-import io.github.jan.discordkm.internal.utils.extractGuildEntity
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
@@ -27,7 +24,7 @@ open class GuildMemberContainer(val guild: Guild) {
      */
     suspend fun retrieve(id: Snowflake) = guild.client.buildRestAction<MemberCacheEntry> {
         route = Route.Member.GET_MEMBER(guild.id, id).get()
-        transform { Member.from(it.toJsonObject(), guild) }
+        transform { Member(it.toJsonObject(), guild) }
     }
 
     /**
@@ -42,7 +39,7 @@ open class GuildMemberContainer(val guild: Guild) {
             put("limit", limit)
             putOptional("after", after)
         }
-        transform { members -> members.toJsonArray().map { Member.from(it.jsonObject, guild) } }
+        transform { members -> members.toJsonArray().map { Member(it.jsonObject, guild) } }
         check {
             if(limit < 1 || limit > 1000) throw IllegalArgumentException("The member limit has to be between 1 and 1000")
         }

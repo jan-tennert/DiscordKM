@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.guild.channels.modifier
 
-import io.github.jan.discordkm.api.entities.guild.channels.Category
+import io.github.jan.discordkm.api.entities.channels.guild.Category
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 
 class CategoryModifier : GuildChannelModifier<Category> {

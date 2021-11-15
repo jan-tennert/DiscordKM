@@ -12,17 +12,12 @@ package io.github.jan.discordkm.api.entities.guild
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
-import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.channels.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.misc.Color
-import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
@@ -30,16 +25,16 @@ import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.serialization.serializers.RoleSerializer
-import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
-import kotlin.reflect.KProperty
 
-open class Role protected constructor(override val id: Snowflake, override val guild: Guild) : Mentionable, Reference<Role>, SnowflakeEntity, GuildEntity, CacheEntity {
+open class Role protected constructor(override val id: Snowflake, override val guild: Guild) : Mentionable, SnowflakeEntity, GuildEntity, CacheEntity {
 
     override val client
         get() = guild.client
@@ -50,8 +45,6 @@ open class Role protected constructor(override val id: Snowflake, override val g
     override val cache: RoleCacheEntry?
         get() = guild.cache?.cacheManager?.roleCache?.get(id)
 
-    override fun getValue(ref: Any?, property: KProperty<*>) = guild.roles[id]!!
-
     suspend fun modify(modifier: RoleModifier.() -> Unit) = client.buildRestAction<RoleCacheEntry> {
         route = Route.Role.MODIFY_ROLE(guild.id, id).patch(RoleModifier().apply(modifier).build())
         transform { RoleSerializer.deserialize(it.toJsonObject(), guild) }
@@ -59,13 +52,9 @@ open class Role protected constructor(override val id: Snowflake, override val g
 
     override fun toString() = "Role[id=$id]"
 
-    override suspend fun retrieve() = guild.roles.retrieveRoles().first { it.id == id }
-
-    override fun fromCache() = guild.cache?.cacheManager?.roleCache?.get(id)
-
     companion object {
-        fun from(id: Snowflake, guild: Guild) = Role(id, guild)
-        fun from(data: JsonObject, guild: Guild) = RoleSerializer.deserialize(data, guild)
+        operator fun invoke(id: Snowflake, guild: Guild) = Role(id, guild)
+        operator fun invoke(data: JsonObject, guild: Guild) = RoleSerializer.deserialize(data, guild)
     }
 }
 
@@ -100,6 +89,7 @@ data class RoleCacheEntry(
 
     override val client: Client = guild.client
 
+    @Serializable
     data class Tag(
         @SerialName("bot_id") val botId: Snowflake? = null,
         @SerialName("integration_id") val integrationId: Snowflake? = null,
@@ -109,6 +99,8 @@ data class RoleCacheEntry(
     override fun getPermissionsFor(channel: GuildChannelCacheEntry) = channel.permissionOverwrites.first { it.type == PermissionOverwrite.HolderType.ROLE && it.holderId == id }.allow
 
     override fun toString() = "Role[id=$id, name=$name]"
+
+    override val type = PermissionOverwrite.HolderType.ROLE
 
 }
 

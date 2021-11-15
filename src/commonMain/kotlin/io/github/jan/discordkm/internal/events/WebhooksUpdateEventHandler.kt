@@ -9,19 +9,18 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.guild.GuildMessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.channels.GuildMessageChannel
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.WebhooksUpdateEvent
-import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
 class WebhooksUpdateEventHandler(val client: Client) : InternalEventHandler<WebhooksUpdateEvent> {
 
     override fun handle(data: JsonObject): WebhooksUpdateEvent {
-        val guildId = data.getOrThrow<Snowflake>("guild_id")
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
-        val channel = client.channels[data.getOrThrow<Snowflake>("channel_id")]!! as GuildMessageChannel
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val channel = GuildMessageChannel(data["channel_id"]!!.snowflake, guild)
         return WebhooksUpdateEvent(guild, channel)
     }
 

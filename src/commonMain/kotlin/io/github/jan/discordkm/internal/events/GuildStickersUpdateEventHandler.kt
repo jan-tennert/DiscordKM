@@ -9,26 +9,22 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
-import io.github.jan.discordkm.api.entities.guild.Sticker
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.GuildStickersUpdateEvent
-import io.github.jan.discordkm.internal.caching.Cache
-import io.github.jan.discordkm.internal.entities.guilds.GuildData
-import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
+import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 
 class GuildStickersUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildStickersUpdateEvent> {
 
     override fun handle(data: JsonObject): GuildStickersUpdateEvent {
-        val stickers = data.getValue("stickers").jsonArray.map { Sticker(data, client) }
-        val guildId = data.getOrThrow<Snowflake>("guild_id")
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
-        if(Cache.STICKERS in client.enabledCache) {
-            val cache = (guild as GuildData).stickerCache
-            cache.internalMap.clear()
-            stickers.forEach { cache[it.id] = it }
+        val stickers = data["stickers"]!!.jsonArray.map { GuildSerializer.deserializeSticker(data, client) }
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        guild.cache?.cacheManager?.let {
+            it.stickerCache.clear()
+            it.stickerCache.putAll(stickers.associateBy { s -> s.id })
         }
         return GuildStickersUpdateEvent(guild, stickers)
     }

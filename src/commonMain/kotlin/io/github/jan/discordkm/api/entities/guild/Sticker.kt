@@ -14,6 +14,7 @@ import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.utils.EnumWithValue
@@ -49,6 +50,7 @@ class Sticker(
     val isAvailable: Boolean,
     val guild: Guild?,
     val sortValue: Int?,
+    val creator: User?,
     override val client: Client,
     override val id: Snowflake
 ) : BaseEntity, SnowflakeEntity {

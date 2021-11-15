@@ -12,6 +12,7 @@ package io.github.jan.discordkm.internal.events
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.GuildCreateEvent
+import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import kotlinx.serialization.json.JsonObject
 
@@ -19,8 +20,8 @@ internal class GuildCreateEventHandler(val client: Client) :
     InternalEventHandler<GuildCreateEvent> {
 
     override fun handle(data: JsonObject): GuildCreateEvent {
-        val guild = data.extractClientEntity<Guild>(client)
-        client.guildCache[guild.id] = guild
+        val guild = GuildSerializer.deserialize(data, client)
+        client.cacheManager.guildCache[guild.id] = guild
         return GuildCreateEvent(guild, client)
     }
 

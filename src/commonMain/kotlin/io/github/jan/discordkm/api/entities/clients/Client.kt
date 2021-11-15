@@ -33,6 +33,7 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.utils.extractClientEntity
+import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,18 +52,18 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level) : Corouti
         internal set
 
     override val commands: CommandContainer
-        get() = CommandContainer(this, "/applications/${selfUser.id}/commands", cacheManager.globalCommandCache.values)
+        get() = CommandContainer(this, "/applications/${selfUser.id}/commands")
     val guilds: CacheGuildContainer
-        get() = CacheGuildContainer(cacheManager.guildCache.values)
+        get() = CacheGuildContainer(this, cacheManager.guildCache.toMap().values)
     val channels: CacheChannelContainer
-        get() = CacheChannelContainer(cacheManager.guildCache.map { it.value.channels.values }.flatten())
+        get() = CacheChannelContainer(cacheManager.guildCache.safeValues.map { it.channels.values }.flatten())
     val members: CacheMemberContainer
-        get() = CacheMemberContainer(cacheManager.guildCache.map { it.value.members.values }.flatten())
+        get() = CacheMemberContainer(cacheManager.guildCache.safeValues.map { it.members.values }.flatten())
 
     val users: UserContainer
-        get() = UserContainer(this, cacheManager.userCache.values)
+        get() = UserContainer(this, cacheManager.userCache.safeValues)
     val threads: CacheThreadContainer
-        get() = CacheThreadContainer(cacheManager.guildCache.map { it.value.threads.values }.flatten())
+        get() = CacheThreadContainer(cacheManager.guildCache.safeValues.map { it.threads.values }.flatten())
 
     /**
      * Retrieves a guild template

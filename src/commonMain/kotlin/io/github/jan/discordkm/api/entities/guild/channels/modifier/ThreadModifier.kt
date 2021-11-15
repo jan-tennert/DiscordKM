@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.entities.guild.channels.modifier
 
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Modifier
-import io.github.jan.discordkm.api.entities.guild.channels.Thread
+import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.internal.Check
 import io.github.jan.discordkm.internal.check
 import io.github.jan.discordkm.internal.checkRange

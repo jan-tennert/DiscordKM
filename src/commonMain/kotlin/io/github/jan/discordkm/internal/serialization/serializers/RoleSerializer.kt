@@ -14,6 +14,8 @@ import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
+import io.github.jan.discordkm.internal.utils.get
+import io.github.jan.discordkm.internal.utils.get
 
 object RoleSerializer : GuildEntitySerializer<RoleCacheEntry> {
 
@@ -27,8 +29,8 @@ object RoleSerializer : GuildEntitySerializer<RoleCacheEntry> {
         isManagedByAnIntegration = data["managed"]!!.boolean,
         isMentionable = data["mentionable"]!!.boolean,
         guild = value,
-        iconHash = data["icon"]?.string,
-        unicodeEmoji = data["unicode_emoji"]?.string,
+        iconHash = data["icon", true]?.string,
+        unicodeEmoji = data["unicode_emoji", true]?.string,
         tags = data["tags"]?.let { Json.decodeFromJsonElement(it) },
     )
 

@@ -56,7 +56,7 @@ fun IdentifyPayload(token: String, intents: Long, status: PresenceStatus, activi
         put("\$device", "Discord.KM")
     })
     putJsonObject("presence") {
-        put("status", status.status)
+        put("status", status.value)
 
         activity?.let {
             putJsonArray("activities") {

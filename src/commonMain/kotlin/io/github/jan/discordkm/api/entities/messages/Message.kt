@@ -31,6 +31,8 @@ import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.media.Attachment
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.CacheEntity
+import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.caching.ReactionCacheManager
 import io.github.jan.discordkm.internal.delete
@@ -54,7 +56,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.jvm.JvmName
 
-interface Message : SnowflakeEntity, BaseEntity {
+interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
 
     override val id: Snowflake
     override val client: Client
@@ -64,6 +66,8 @@ interface Message : SnowflakeEntity, BaseEntity {
     val channel: MessageChannel
     val reactions: ReactionContainer
         get() = ReactionContainer(this)
+    override val cache: MessageCacheEntry?
+        get() = channel.cache?.cacheManager?.messageCache?.get(id)
 
     /**
      * Crossposts this message if it was sent in a [NewsChannel]
@@ -86,7 +90,7 @@ interface Message : SnowflakeEntity, BaseEntity {
      */
     suspend fun edit(message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
         route = Route.Message.EDIT_MESSAGE(channel.id, id).patch(Json.encodeToString(message))
-        transform { from(it.toJsonObject(), client) }
+        transform { invoke(it.toJsonObject(), client) }
     }
 
     /**
@@ -126,7 +130,7 @@ interface Message : SnowflakeEntity, BaseEntity {
             put("name", name)
             put("auto_archive_duration", autoArchiveDuration.duration.minutes.toInt())
         })
-        transform { Thread.from(it.toJsonObject(), guild!!) }
+        transform { Thread(it.toJsonObject(), guild!!) }
     }
 
     /**
@@ -174,11 +178,11 @@ interface Message : SnowflakeEntity, BaseEntity {
     )
 
     companion object {
-        fun from(id: Snowflake, channel: MessageChannel) = object : Message {
+        operator fun invoke(id: Snowflake, channel: MessageChannel) = object : Message {
             override val channel = channel
             override val id = id
         }
-        fun from(data: JsonObject, client: Client) = MessageSerializer.deserialize(data, client)
+        operator fun invoke(data: JsonObject, client: Client) = MessageSerializer.deserialize(data, client)
     }
 }
 
@@ -211,7 +215,7 @@ data class MessageCacheEntry(
     override val id: Snowflake,
     override val guild: Guild? = null,
     override val channel: MessageChannel,
-    val author: User,
+    val author: User?,
     val member: Member?,
     val content: String,
     val timestamp: DateTimeTz,
@@ -235,7 +239,7 @@ data class MessageCacheEntry(
     val reference: Message.Reference?,
     val referencedMessage: MessageCacheEntry?,
     val webhookId: Snowflake?
-) : Message {
+) : Message, CacheEntry {
 
     val cacheManager = ReactionCacheManager()
 

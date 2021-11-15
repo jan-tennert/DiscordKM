@@ -25,7 +25,7 @@ open class GuildThreadContainer(val guild: Guild) {
         route = Route.Thread.GET_ACTIVE_THREADS(guild.id).get()
         transform {
             it.toJsonObject()["threads"]!!.jsonArray.map { thread ->
-                ChannelSerializer.deserializeChannel<ThreadCacheEntry>(thread.jsonObject, client)
+                ChannelSerializer.deserializeChannel<ThreadCacheEntry>(thread.jsonObject, guild)
             }
         }
     }
@@ -42,7 +42,7 @@ class ThreadMemberContainer(val thread: Thread) {
      */
     suspend fun retrieveMembers() = thread.client.buildRestAction<List<Thread.ThreadMember>> {
         route = Route.Thread.GET_THREAD_MEMBERS(thread.id).get()
-        transform { it.toJsonArray().map { t -> Thread.ThreadMember.from(t.jsonObject, thread.guild) } }
+        transform { it.toJsonArray().map { t -> Thread.ThreadMember(t.jsonObject, thread.guild) } }
     }
 
     /**

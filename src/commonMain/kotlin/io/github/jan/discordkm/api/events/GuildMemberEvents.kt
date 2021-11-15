@@ -14,6 +14,7 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
+import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 
 interface MemberEvent : Event {
 
@@ -28,14 +29,14 @@ interface MemberEvent : Event {
  *
  * Requires the intent [Intent.GUILD_MEMBERS]
  */
-class GuildMemberAddEvent(override val member: Member) : MemberEvent
+class GuildMemberAddEvent(override val member: MemberCacheEntry) : MemberEvent
 
 /**
  * Sent when a member gets updated
  *
  * Requires the intent [Intent.GUILD_MEMBERS]
  */
-class GuildMemberUpdateEvent(override val member: Member) : MemberEvent
+class GuildMemberUpdateEvent(override val member: MemberCacheEntry) : MemberEvent
 
 /**
  * Sent when a member leaves his guild

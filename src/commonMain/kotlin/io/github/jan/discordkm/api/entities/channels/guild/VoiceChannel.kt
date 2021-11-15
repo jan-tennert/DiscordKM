@@ -36,7 +36,7 @@ interface VoiceChannel : GuildChannel {
     }
 
     companion object {
-        fun from(id: Snowflake, guild: Guild) = object : VoiceChannel {
+        operator fun invoke(id: Snowflake, guild: Guild) = object : VoiceChannel {
             override val guild = guild
             override val id = id
             override val type: ChannelType
@@ -46,7 +46,7 @@ interface VoiceChannel : GuildChannel {
                     ChannelType.GUILD_VOICE
                 }
         }
-        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<VoiceChannelCacheEntry>(data, guild.client)
+        operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<VoiceChannelCacheEntry>(data, guild)
     }
 
 }

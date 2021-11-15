@@ -75,7 +75,7 @@ class MessageBuilder {
 
     fun allowedMentions(builder: AllowedMentions.() -> Unit) { allowedMentions = AllowedMentions().apply(builder) }
 
-    fun import(message: Message) = import(message.copy())
+   // fun import(message: Message) = import(message.copy())
 
     fun actionRow(builder: RowBuilder.() -> Unit) { actionRows += RowBuilder().apply(builder).build() }
 

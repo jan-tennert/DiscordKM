@@ -1,8 +1,7 @@
 package io.github.jan.discordkm.internal.utils
 
-import com.github.ajalt.colormath.Color
-import com.github.ajalt.colormath.model.RGBInt
+import io.github.jan.discordkm.api.entities.misc.Color
 
-fun Color.toJvmColor() = java.awt.Color(this.toSRGB().r, this.toSRGB().g, this.toSRGB().b)
+fun Color.toJvmColor() = java.awt.Color(extract().first, extract().second, extract().third)
 
-fun java.awt.Color.toColormathColor() = RGBInt.fromRGBA(rgb.toUInt()) as Color
+fun java.awt.Color.toColor() = Color(rgb)

@@ -7,9 +7,11 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.internal.entities.channels
+package io.github.jan.discordkm.api.entities.channels
 
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -18,8 +20,5 @@ interface PrivateChannel : MessageChannel {
 
     override val type: ChannelType
         get() = ChannelType.DM
-
-    val user: User?
-        get() = data["recipients"]?.jsonArray?.map { it.jsonObject.extractClientEntity<User>(client) }?.get(0)
 
 }

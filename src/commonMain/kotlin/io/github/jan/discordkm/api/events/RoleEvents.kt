@@ -13,10 +13,11 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Role
+import io.github.jan.discordkm.api.entities.guild.RoleCacheEntry
 
 interface RoleEvent : GuildEvent {
 
-    val role: Role
+    val role: RoleCacheEntry
     override val guild: Guild
         get() = role.guild
 
@@ -25,12 +26,12 @@ interface RoleEvent : GuildEvent {
 /**
  * Sent when a role was created
  */
-class RoleCreateEvent(override val role: Role) : RoleEvent
+class RoleCreateEvent(override val role: RoleCacheEntry) : RoleEvent
 
 /**
  * Sent when a role was updated
  */
-class RoleUpdateEvent(override val role: Role, val oldRole: Role?) : RoleEvent
+class RoleUpdateEvent(override val role: RoleCacheEntry, val oldRole: RoleCacheEntry?) : RoleEvent
 
 /**
  * Sent when a role was deleted

@@ -31,7 +31,7 @@ internal class ReadyEventHandler(val client: DiscordWebSocketClient) : InternalE
         }
         val guilds = mutableListOf<Guild.Unavailable>()
         data.getValue("guilds").jsonArray.map { Guild.Unavailable(it.jsonObject.getValue("id").jsonPrimitive.long) }.forEach { guilds += it }
-        client.selfUser = data.getValue("user").jsonObject.extractClientEntity<User>(client)
+        client.selfUser = User(data["user"]!!.jsonObject, client)
         return ReadyEvent(guilds, client, shardId)
     }
 }

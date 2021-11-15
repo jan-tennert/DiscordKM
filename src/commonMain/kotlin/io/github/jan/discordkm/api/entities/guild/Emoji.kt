@@ -51,12 +51,12 @@ class Emoji(
         override val client: Client,
         override val id: Snowflake,
         override val name: String,
-        val creator: User,
+        val creator: User?,
         val requiresColons: Boolean,
         val isManagedByAnIntegration: Boolean,
         val isAnimated: Boolean,
         val isAvailable: Boolean,
-        val roles: List<Role>
+        val roles: List<Snowflake>
     ) : SnowflakeEntity, BaseEntity, Nameable {
 
         fun toEmoji() = Emoji(id, name, isAnimated)

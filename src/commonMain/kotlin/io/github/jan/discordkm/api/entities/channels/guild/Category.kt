@@ -2,6 +2,7 @@ package io.github.jan.discordkm.api.entities.channels.guild
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
@@ -15,11 +16,11 @@ interface Category : GuildChannel {
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? CategoryCacheEntry
 
     companion object {
-        fun from(id: Snowflake, guild: Guild) = object : Category {
+        operator fun invoke(id: Snowflake, guild: Guild) = object : Category {
             override val guild = guild
             override val id = id
         }
-        fun from(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<CategoryCacheEntry>(data, guild)
+        operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<CategoryCacheEntry>(data, guild)
     }
 
 }

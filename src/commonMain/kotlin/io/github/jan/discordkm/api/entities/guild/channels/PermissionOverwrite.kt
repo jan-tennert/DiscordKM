@@ -49,7 +49,7 @@ class PermissionOverwrite(
     }
 
     companion object {
-        fun from(data: JsonObject) = PermissionOverwrite(
+        operator fun invoke(data: JsonObject) = PermissionOverwrite(
             Snowflake(data["id"]!!.long),
             Permission.decode(data["allow"]!!.long).toMutableSet(),
             Permission.decode(data["deny"]!!.long).toMutableSet(),

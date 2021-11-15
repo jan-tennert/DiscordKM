@@ -14,7 +14,7 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.internal.DiscordKMInternal
 
-enum class Cache {
+enum class CacheFlag {
     STICKERS,
     EMOJIS,
     MEMBERS,

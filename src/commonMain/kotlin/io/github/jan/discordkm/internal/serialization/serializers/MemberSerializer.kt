@@ -14,25 +14,28 @@ import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import io.github.jan.discordkm.internal.utils.get
+
 
 object MemberSerializer : GuildEntitySerializer<MemberCacheEntry> {
 
     override fun deserialize(data: JsonObject, value: Guild) : MemberCacheEntry {
-        val user = User.from(data["user"]!!.jsonObject, value.client)
+        val user = User(data["user"]!!.jsonObject, value.client)
+        val cacheMember = value.cache?.members?.get(user.id)
         return MemberCacheEntry(
             guild = value,
             user = user,
-            nickname = data["nick"]?.string,
+            nickname = data["nick", true]?.string,
             joinedAt = data["joined_at"]!!.isoTimestamp,
-            isDeafened = data["deaf"]!!.boolean,
-            isMuted = data["mute"]!!.boolean,
+            isDeafened = data["deaf"]?.boolean ?: cacheMember?.isDeafened ?: false,
+            isMuted = data["mute"]?.boolean ?: cacheMember?.isMuted ?: false,
             id = user.id,
-            avatarHash = data["avatar"]?.string,
-            premiumSince = data["premium_since"]?.isoTimestamp,
-            isPending = data["pending"]?.boolean ?: false
+            avatarHash = data["avatar", true]?.string,
+            premiumSince = data["premium_since", true]?.isoTimestamp,
+            isPending = data["pending", true]?.boolean ?: false
             //permissions?
         ).apply {
-            cacheManager.roleCache.putAll(data["roles"]!!.jsonArray.map { Role.from(it.snowflake, value) }.associateBy { it.id })
+            cacheManager.roleCache.putAll(data["roles"]!!.jsonArray.map { Role(it.snowflake, value) }.associateBy { it.id })
         }
     }
 

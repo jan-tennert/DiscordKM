@@ -4,6 +4,7 @@ import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.containers.CacheGuildThreadContainer
 import io.github.jan.discordkm.api.entities.containers.GuildThreadContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.internal.Route
@@ -26,7 +27,7 @@ interface GuildTextChannel : GuildMessageChannel {
             putOptional("limit", limit)
             putOptional("before", before)
         }
-        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread.from(thread.jsonObject, guild) }}
+        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(thread.jsonObject, guild) }}
     }
 
     /**
@@ -39,7 +40,7 @@ interface GuildTextChannel : GuildMessageChannel {
             putOptional("limit", limit)
             putOptional("before", before?.let { ISO8601.DATETIME_UTC_COMPLETE.format(before) })
         }
-        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread.from(thread.jsonObject, guild) }}
+        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(thread.jsonObject, guild) }}
     }
 
     /**
@@ -52,14 +53,16 @@ interface GuildTextChannel : GuildMessageChannel {
             putOptional("limit", limit)
             putOptional("before", before?.let { ISO8601.DATETIME_UTC_COMPLETE.format(before) })
         }
-        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread.from(thread.jsonObject, guild) }}
+        transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(thread.jsonObject, guild) }}
     }
 
     companion object {
-        fun from(id: Snowflake, guild: Guild) = object : GuildTextChannel {
+        operator fun invoke(id: Snowflake, guild: Guild) = object : GuildTextChannel {
+            override val cache: GuildMessageChannelCacheEntry?
+                get() = guild.cache?.channels?.get(id) as GuildMessageChannelCacheEntry?
             override val guild: Guild = guild
             override val type: ChannelType
-                get() = throw IllegalStateException("I'm not sure which channel type this channel is")
+                get() = cache?.type ?: ChannelType.UNKNOWN
             override val id: Snowflake = id
         }
     }
@@ -70,12 +73,13 @@ sealed interface GuildTextChannelCacheEntry : GuildTextChannel, GuildMessageChan
 
     val threads: GuildThreadContainer
         get() = guild.cache?.cacheManager?.threadCache?.filter { it.value.parent.id == id }?.values?.let {
-            GuildThreadContainer(
+            CacheGuildThreadContainer(
+                guild,
                 it
             )
-        } ?: GuildThreadContainer(emptyList())
+        } ?: CacheGuildThreadContainer(guild, emptyList())
     val isNSFW: Boolean
-    val topic: String
+    val topic: String?
     val defaultAutoArchiveDuration: Thread.ThreadDuration
 
 }

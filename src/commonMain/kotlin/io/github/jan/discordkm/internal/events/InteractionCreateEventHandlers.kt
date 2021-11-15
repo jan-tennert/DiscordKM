@@ -10,16 +10,19 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.containers.OptionContainer
+import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.interactions.AutoCompleteInteraction
 import io.github.jan.discordkm.api.entities.interactions.ComponentInteraction
-import io.github.jan.discordkm.api.entities.interactions.Interaction
+import io.github.jan.discordkm.api.entities.interactions.InteractionOption
+import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.StandardInteraction
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.components.SelectOption
-import io.github.jan.discordkm.api.entities.lists.OptionList
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.events.AutoCompleteEvent
 import io.github.jan.discordkm.api.events.ButtonClickEvent
@@ -28,17 +31,15 @@ import io.github.jan.discordkm.api.events.MessageCommandEvent
 import io.github.jan.discordkm.api.events.SelectionMenuEvent
 import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.api.events.UserCommandEvent
-import io.github.jan.discordkm.internal.entities.UserData
-import io.github.jan.discordkm.internal.entities.guilds.RoleData
-import io.github.jan.discordkm.internal.utils.extractChannel
+import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.int
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -46,15 +47,14 @@ import kotlinx.serialization.json.jsonPrimitive
 
 class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<InteractionCreateEvent> {
 
-    override fun handle(data: JsonObject) = when(Interaction.InteractionType.values().first { it.ordinal + 1 == data.getOrThrow<Int>("type") }) {
-        Interaction.InteractionType.PING -> TODO()
-        Interaction.InteractionType.APPLICATION_COMMAND -> extractApplicationCommand(data)
-        Interaction.InteractionType.MESSAGE_COMPONENT -> extractMessageComponent(data)
-        Interaction.InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE -> extractCommandAutoComplete(data)
+    override fun handle(data: JsonObject) = when(InteractionType[data["type"]!!.int]) {
+        InteractionType.PING -> TODO()
+        InteractionType.APPLICATION_COMMAND -> extractApplicationCommand(data)
+        InteractionType.MESSAGE_COMPONENT -> extractMessageComponent(data)
+        InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE -> extractCommandAutoComplete(data)
     }
 
     private fun extractCommandAutoComplete(data: JsonObject) : InteractionCreateEvent {
-        println(data)
         val interactionData = data.getValue("data").jsonObject
         val commandId = interactionData.getOrThrow<Snowflake>("id")
         val commandName = interactionData.getOrThrow<String>("name")
@@ -100,7 +100,8 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         val target = data.getValue("data").jsonObject.getOrThrow<String>("target_id")
         val interaction = StandardInteraction(client, data)
         val name = data.getValue("data").jsonObject.getOrThrow<String>("name")
-        val message = Message(interaction.channel!!, data.getValue("data").jsonObject.getValue("resolved").jsonObject.getValue("messages").jsonObject.getValue(target).jsonObject)
+        val messageObject = data.getValue("data").jsonObject.getValue("resolved").jsonObject.getValue("messages").jsonObject.getValue(target).jsonObject
+        val message = Message(messageObject, client)
         return MessageCommandEvent(client, interaction, name, message)
     }
 
@@ -108,7 +109,8 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         val target = data.getValue("data").jsonObject.getOrThrow<String>("target_id")
         val interaction = StandardInteraction(client, data)
         val name = data.getValue("data").jsonObject.getOrThrow<String>("name")
-        val user = UserData(client, data.getValue("data").jsonObject.getValue("resolved").jsonObject.jsonObject.getValue("users").jsonObject.getValue(target).jsonObject)
+        val userObject = data.getValue("data").jsonObject.getValue("resolved").jsonObject.jsonObject.getValue("users").jsonObject.getValue(target).jsonObject
+        val user = User(userObject, client)
         return UserCommandEvent(client, interaction, name, user)
     }
 
@@ -117,11 +119,11 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         var subCommand: String? = null
         val resolved = data.getValue("data").jsonObject["resolved"]?.jsonObject
         val name = data.getValue("data").jsonObject.getOrThrow<String>("name")
-        val options = mutableListOf<Interaction.InteractionOption>()
+        val options = mutableListOf<InteractionOption>()
         if(data.getValue("data").jsonObject["options"] != null) {
             data.getValue("data").jsonObject.getValue("options").jsonArray.forEach { option ->
                 option as JsonObject
-                when(valueOfIndex<CommandOption.OptionType>(option.getOrThrow("type"), 1)) {
+                when(CommandOption.OptionType[option["type"]!!.int]) {
                     CommandOption.OptionType.SUB_COMMAND -> {
                         subCommand = option.jsonObject.getOrThrow<String>("name")
                         option["options"]?.jsonArray?.forEach {
@@ -139,28 +141,28 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
                 }
             }
         }
-        return SlashCommandEvent(client, StandardInteraction(client, data), name, OptionList(options), subCommand, subCommandGroup)
+        return SlashCommandEvent(client, StandardInteraction(client, data), name, OptionContainer(options), subCommand, subCommandGroup)
     }
 
-    private fun extractOption(resolved: JsonObject?, option: JsonObject, fullData: JsonObject) : Interaction.InteractionOption {
+    private fun extractOption(resolved: JsonObject?, option: JsonObject, fullData: JsonObject) : InteractionOption {
         val type = CommandOption.OptionType.values().first { it.ordinal + 1 == option.jsonObject.getOrThrow<Int>("type") }
         val name = option.getOrThrow<String>("name")
         val guild = client.guilds[fullData.getOrThrow<Snowflake>(
             "guild_id"
         )]
         return when(type) {
-            CommandOption.OptionType.STRING -> Interaction.InteractionOption(name, type, option.getOrThrow<String>("value"))
-            CommandOption.OptionType.INTEGER -> Interaction.InteractionOption(name, type, option.getOrThrow<Int>("value"))
-            CommandOption.OptionType.BOOLEAN -> Interaction.InteractionOption(name, type, option.getOrThrow<Boolean>("value"))
-            CommandOption.OptionType.USER -> Interaction.InteractionOption(name, type, UserData(client, resolved!!.getValue("users").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject))
-            CommandOption.OptionType.CHANNEL -> Interaction.InteractionOption(name, type, resolved!!.getValue("channels").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject.extractChannel(client, guild))
-            CommandOption.OptionType.ROLE -> Interaction.InteractionOption(name, type, RoleData(guild!!, resolved!!.getValue("roles").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject))
+            CommandOption.OptionType.STRING -> InteractionOption(name, type, option.getOrThrow<String>("value"))
+            CommandOption.OptionType.INTEGER -> InteractionOption(name, type, option.getOrThrow<Int>("value"))
+            CommandOption.OptionType.BOOLEAN -> InteractionOption(name, type, option.getOrThrow<Boolean>("value"))
+            CommandOption.OptionType.USER -> InteractionOption(name, type, User(resolved!!.getValue("users").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, client))
+            CommandOption.OptionType.CHANNEL -> InteractionOption(name, type, ChannelSerializer.deserialize(resolved!!.getValue("channels").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, guild!!))
+            CommandOption.OptionType.ROLE -> InteractionOption(name, type, Role(resolved!!.getValue("roles").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, guild!!))
             CommandOption.OptionType.MENTIONABLE -> when {
-                resolved!!["users"] != null && resolved["users"]!!.jsonObject.contains(option.getOrThrow<Snowflake>("value").string) -> Interaction.InteractionOption(name, type, UserData(client, resolved.getValue("users").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject))
-                resolved["roles"] != null && resolved["roles"]!!.jsonObject.contains(option.getOrThrow<Snowflake>("value").string) -> Interaction.InteractionOption(name, type, RoleData(guild!!, resolved.getValue("roles").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject))
+                resolved!!["users"] != null && resolved["users"]!!.jsonObject.contains(option.getOrThrow<Snowflake>("value").string) -> InteractionOption(name, type, User(resolved.getValue("users").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, client))
+                resolved["roles"] != null && resolved["roles"]!!.jsonObject.contains(option.getOrThrow<Snowflake>("value").string) -> InteractionOption(name, type, Role(resolved.getValue("roles").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, guild!!))
                 else -> throw IllegalStateException()
             }
-            CommandOption.OptionType.NUMBER -> Interaction.InteractionOption(name, type, option.getOrThrow<Double>("value"))
+            CommandOption.OptionType.NUMBER -> InteractionOption(name, type, option.getOrThrow<Double>("value"))
             else -> throw IllegalStateException()
         }
     }

@@ -9,24 +9,21 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.BanEvent
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
 import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
-import io.github.jan.discordkm.internal.entities.UserData
-import io.github.jan.discordkm.internal.utils.extractClientEntity
-import io.github.jan.discordkm.internal.utils.getOrThrow
-import io.github.jan.discordkm.internal.utils.toJsonObject
+import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 
 class BanEventHandler(val client: Client) {
 
     inline fun <reified C : BanEvent> handle(data: JsonObject): C {
-        val guildId = data.getOrThrow<Snowflake>("guild_id")
-        val guild = client.guilds[data.getOrThrow<Snowflake>("guild_id")] ?: throw IllegalStateException("Guild with id $guildId couldn't be found on event GuildMemberUpdateEvent. The guilds probably aren't done initialising.")
-        val user = data.getOrThrow<String>("user").toJsonObject().extractClientEntity<User>(client)
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val user = User(data["user"]!!.jsonObject, client)
         return when(C::class) {
             GuildBanAddEvent::class -> GuildBanAddEvent(guild, user) as C
             GuildBanRemoveEvent::class -> GuildBanRemoveEvent(guild, user) as C
