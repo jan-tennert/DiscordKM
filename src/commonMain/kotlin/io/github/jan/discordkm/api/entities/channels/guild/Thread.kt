@@ -89,7 +89,7 @@ interface Thread : GuildMessageChannel {
     )
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild, type: ChannelType) = object : Thread {
+        operator fun invoke(id: Snowflake, guild: Guild, type: ChannelType) = guild.client.threads[id] ?: object : Thread {
             override val guild = guild
             override val id = id
             override val type = guild.cache?.threads?.get(id)?.type ?: type

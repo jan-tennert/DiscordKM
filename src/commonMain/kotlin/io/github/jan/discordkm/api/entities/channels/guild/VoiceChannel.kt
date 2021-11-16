@@ -36,7 +36,7 @@ interface VoiceChannel : GuildChannel {
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = object : VoiceChannel {
+        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] ?: object : VoiceChannel {
             override val guild = guild
             override val id = id
             override val type: ChannelType

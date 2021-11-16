@@ -5,6 +5,7 @@ import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.channels.guild.Category
+import io.github.jan.discordkm.api.entities.channels.guild.GuildMessageChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.NewsChannel
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.TextChannel
@@ -39,7 +40,7 @@ interface Channel : SnowflakeEntity, BaseEntity, Mentionable, CacheEntity {
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, type: ChannelType, client: Client, guild: Guild? = null) = when (type) {
+        operator fun invoke(id: Snowflake, type: ChannelType, client: Client, guild: Guild? = null) = client.channels[id] ?: when (type) {
             ChannelType.GUILD_TEXT -> TextChannel(id, guild!!)
             ChannelType.GUILD_VOICE -> VoiceChannel(id, guild!!)
             ChannelType.GUILD_CATEGORY -> Category(id, guild!!)

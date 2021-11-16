@@ -37,7 +37,7 @@ interface NewsChannel: GuildTextChannel {
     suspend fun follow(target: GuildTextChannel) = follow(target.id)
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = object : NewsChannel {
+        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] ?: object : NewsChannel {
             override val guild = guild
             override val id = id
         }

@@ -57,7 +57,7 @@ interface GuildTextChannel : GuildMessageChannel {
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = object : GuildTextChannel {
+        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] ?: object : GuildTextChannel {
             override val cache: GuildMessageChannelCacheEntry?
                 get() = guild.cache?.channels?.get(id) as GuildMessageChannelCacheEntry?
             override val guild: Guild = guild

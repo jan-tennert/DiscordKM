@@ -48,7 +48,7 @@ interface StageChannel : VoiceChannel {
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = object : StageChannel {
+        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] ?: object : StageChannel {
             override val guild = guild
             override val id = id
         }
