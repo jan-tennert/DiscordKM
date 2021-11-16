@@ -40,10 +40,10 @@ class DiscordWebSocketClient internal constructor(
     private val status: PresenceStatus,
     private val activity: Presence?,
     private val reconnectDelay: TimeSpan = 5.seconds,
-    internal val enabledCache: List<CacheFlag>,
-    private val shards: List<Int> = emptyList(),
+    enabledCache: Set<CacheFlag>,
+    shards: List<Int> = emptyList(),
     private val totalShards: Int = -1
-) : Client(token, loggingLevel) {
+) : Client(token, loggingLevel, enabledCache) {
 
     val shardConnections = mutableListOf<DiscordGateway>()
     @get:JvmName("isClosed")
@@ -134,7 +134,7 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
     /**
      * The cache specifies which entities should be cached.
      */
-    var enabledCache = CacheFlag.ALL.toMutableList()
+    var enabledCache = CacheFlag.ALL.toMutableSet()
     private val shards = mutableListOf<Int>()
 
     /**

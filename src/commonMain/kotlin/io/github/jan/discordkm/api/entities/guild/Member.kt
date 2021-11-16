@@ -107,7 +107,7 @@ data class MemberCacheEntry(
     val activities: List<Activity>
         get() = guild.cache?.presences?.get(id)?.activities ?: emptyList()
 
-    val cacheManager = MemberCacheManager()
+    val cacheManager = MemberCacheManager(client)
 
     override val roles: CacheMemberRoleContainer
         get() = CacheMemberRoleContainer(this, cacheManager.roleCache.values)

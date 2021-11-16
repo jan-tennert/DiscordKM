@@ -23,6 +23,7 @@ import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.caching.ClientCacheManager
 import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
 import io.github.jan.discordkm.internal.get
@@ -41,12 +42,12 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.coroutines.CoroutineContext
 
-sealed class Client(val token: String, val loggingLevel: Logger.Level) : CoroutineScope, CommandHolder, BaseEntity {
+sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabledCache: Set<CacheFlag>) : CoroutineScope, CommandHolder, BaseEntity {
 
     val rest = RestClient(this)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client = this
-    val cacheManager = ClientCacheManager()
+    val cacheManager = ClientCacheManager(this)
 
     lateinit var selfUser: User
         internal set

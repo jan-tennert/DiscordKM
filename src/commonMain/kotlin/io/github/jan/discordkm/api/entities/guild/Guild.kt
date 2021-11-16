@@ -507,7 +507,7 @@ class GuildCacheEntry(
 ) : Guild, Nameable, CacheEntry {
 
     //cache
-    val cacheManager = GuildCacheManager()
+    val cacheManager = GuildCacheManager(this.client)
 
     //containers
     override val roles: CacheGuildRoleContainer

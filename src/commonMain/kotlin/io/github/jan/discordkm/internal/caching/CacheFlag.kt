@@ -24,6 +24,9 @@ enum class CacheFlag {
     ROLES,
     STAGE_INSTANCES,
     THREADS,
+    REACTIONS,
+    GUILDS,
+    USERS,
     VOICE_STATES;
 
     companion object {

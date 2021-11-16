@@ -60,6 +60,6 @@ class NewsChannelCacheEntry(
     override val name: String
 ) : NewsChannel, GuildTextChannelCacheEntry {
 
-    override val cacheManager = MessageCacheManager()
+    override val cacheManager = MessageCacheManager(client)
 
 }

@@ -131,6 +131,6 @@ class ThreadCacheEntry(
     val metadata: Thread.ThreadMetadata,
 ) : Thread, GuildMessageChannelCacheEntry {
 
-    override val cacheManager = MessageCacheManager()
+    override val cacheManager = MessageCacheManager(client)
 
 }

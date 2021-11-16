@@ -241,7 +241,7 @@ data class MessageCacheEntry(
     val webhookId: Snowflake?
 ) : Message, CacheEntry {
 
-    val cacheManager = ReactionCacheManager()
+    val cacheManager = ReactionCacheManager(client)
 
     override val reactions: CacheReactionContainer
         get() = CacheReactionContainer(this, cacheManager.reactionCache.values.toList())

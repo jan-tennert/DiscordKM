@@ -42,6 +42,6 @@ class TextChannelCacheEntry(
     override val name: String
 ) : TextChannel, GuildTextChannelCacheEntry {
 
-    override val cacheManager = MessageCacheManager()
+    override val cacheManager = MessageCacheManager(client)
 
 }

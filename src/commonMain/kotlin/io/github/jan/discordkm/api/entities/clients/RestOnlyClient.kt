@@ -10,13 +10,14 @@
 package io.github.jan.discordkm.api.entities.clients
 
 import com.soywiz.klogger.Logger
+import io.github.jan.discordkm.internal.caching.CacheFlag
 
 /**
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
-class RestOnlyClient @Deprecated("Use the method buildRestOnlyClient") internal constructor(token: String, loggingLevel: Logger.Level) : Client(token, loggingLevel)
+class RestOnlyClient @Deprecated("Use the method buildRestOnlyClient") internal constructor(token: String, loggingLevel: Logger.Level, enabledCache: Set<CacheFlag>) : Client(token, loggingLevel, enabledCache)
 
 /**
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
-fun buildRestOnlyClient(token: String, loggingLevel: Logger.Level) =  RestOnlyClient(token, loggingLevel)
+fun buildRestOnlyClient(token: String, loggingLevel: Logger.Level, enabledCache: Set<CacheFlag> = CacheFlag.values().toSet()) =  RestOnlyClient(token, loggingLevel, enabledCache)
