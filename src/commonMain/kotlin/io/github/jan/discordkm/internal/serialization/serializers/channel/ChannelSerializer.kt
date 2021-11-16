@@ -53,7 +53,7 @@ object ChannelSerializer : GuildEntitySerializer<Channel> {
     inline fun <reified T : ChannelCacheEntry>deserializeChannel(data: JsonObject, guild: Guild) : T {
         val id = data["id"]!!.snowflake
         val name = data["name", true]?.string //guild
-        val type = ChannelType.get(data["type"]!!.int)
+        val type = ChannelType[data["type"]!!.int]
         val position = data["position", true]?.int //guild
         val permissionOverwrites = data["permission_overwrites"]?.jsonArray?.map { PermissionOverwrite(it.jsonObject) }?.toSet()
         val nsfw = data["nsfw", true]?.boolean //guild
@@ -71,8 +71,8 @@ object ChannelSerializer : GuildEntitySerializer<Channel> {
         return when(T::class) {
             TextChannelCacheEntry::class -> TextChannelCacheEntry(guild, position!!, permissionOverwrites!!, slowModeTime!!, nsfw ?: false, topic, defaultAutoArchiveDuration ?: Thread.ThreadDuration.DAY, Category(parentId!!, guild), id, lastMessageId, name!!)
             NewsChannelCacheEntry::class -> NewsChannelCacheEntry(guild, position!!, permissionOverwrites!!, slowModeTime!!, nsfw ?: false, topic, defaultAutoArchiveDuration ?: Thread.ThreadDuration.DAY, Category(parentId!!, guild), id, lastMessageId, name!!)
-            StageChannelCacheEntry::class -> StageChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild!!, id, name!!, position!!, permissionOverwrites!!)
-            VoiceChannelCacheEntry::class -> VoiceChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild!!, id, name!!, position!!, permissionOverwrites!!)
+            StageChannelCacheEntry::class -> StageChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild, id, name!!, position!!, permissionOverwrites!!)
+            VoiceChannelCacheEntry::class -> VoiceChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild, id, name!!, position!!, permissionOverwrites!!)
             CategoryCacheEntry::class -> CategoryCacheEntry(guild, position!!, permissionOverwrites!!, id, name!!)
             ThreadCacheEntry::class -> ThreadCacheEntry(guild, permissionOverwrites ?: emptySet(), slowModeTime!!, GuildTextChannel(parentId!!, guild), id, lastMessageId, name!!, type, Json.decodeFromJsonElement(data["thread_metadata"]!!))
             else -> TODO()

@@ -16,7 +16,7 @@ interface Category : GuildChannel {
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? CategoryCacheEntry
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] ?: object : Category {
+        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? CategoryCacheEntry ?: object : Category {
             override val guild = guild
             override val id = id
         }
