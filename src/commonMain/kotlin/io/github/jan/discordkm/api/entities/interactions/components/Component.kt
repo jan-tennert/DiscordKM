@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.components
 
+import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -30,7 +31,8 @@ interface Component {
 enum class ComponentType {
     ACTION_ROW,
     BUTTON,
-    SELECTION_MENU;
+    SELECTION_MENU,
+    TEXT_INPUT;
 
     object Serializer : KSerializer<ComponentType> {
 

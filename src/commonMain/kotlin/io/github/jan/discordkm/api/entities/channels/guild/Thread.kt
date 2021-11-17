@@ -11,13 +11,16 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.containers.ThreadMemberContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.modifiers.Modifiable
+import io.github.jan.discordkm.api.entities.modifiers.guild.TextChannelModifier
+import io.github.jan.discordkm.api.entities.modifiers.guild.ThreadModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.delete
-import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
@@ -25,14 +28,13 @@ import io.github.jan.discordkm.internal.utils.ISO8601Serializer
 import io.github.jan.discordkm.internal.utils.ThreadDurationSerializer
 import io.github.jan.discordkm.internal.utils.isoTimestamp
 import io.github.jan.discordkm.internal.utils.snowflake
-import io.github.jan.discordkm.internal.utils.toJsonArray
+import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 import kotlin.jvm.JvmInline
 
-interface Thread : GuildMessageChannel {
+interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, ThreadCacheEntry> {
 
     val members: ThreadMemberContainer
         get() = ThreadMemberContainer(this)
@@ -51,6 +53,11 @@ interface Thread : GuildMessageChannel {
      */
     suspend fun leave() = client.buildRestAction<Unit> {
         route = Route.Thread.LEAVE_THREAD(id).delete()
+    }
+
+    override suspend fun modify(modifier: ThreadModifier.() -> Unit) = client.buildRestAction<ThreadCacheEntry> {
+        route = Route.Channel.MODIFY_CHANNEL(id).patch(ThreadModifier().apply(modifier).data)
+        transform { ChannelSerializer.deserializeChannel(it.toJsonObject(), guild) }
     }
 
     data class ThreadMember(

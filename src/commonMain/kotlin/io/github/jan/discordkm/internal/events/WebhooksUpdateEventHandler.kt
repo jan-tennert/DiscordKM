@@ -18,7 +18,7 @@ import kotlinx.serialization.json.JsonObject
 
 class WebhooksUpdateEventHandler(val client: Client) : InternalEventHandler<WebhooksUpdateEvent> {
 
-    override fun handle(data: JsonObject): WebhooksUpdateEvent {
+    override suspend fun handle(data: JsonObject): WebhooksUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val channel = GuildMessageChannel(data["channel_id"]!!.snowflake, guild)
         return WebhooksUpdateEvent(guild, channel)

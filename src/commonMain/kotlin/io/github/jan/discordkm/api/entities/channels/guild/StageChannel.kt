@@ -2,10 +2,12 @@ package io.github.jan.discordkm.api.entities.channels.guild
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.StageInstance
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
+import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
+import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
@@ -34,7 +36,7 @@ interface StageChannel : VoiceChannel {
         route = Route.StageInstance.CREATE_INSTANCE.post(buildJsonObject {
             put("channel_id", id.long)
             put("topic", topic)
-            put("privacy_level", if(public) StageInstance.PrivacyLevel.PUBLIC.ordinal else StageInstance.PrivacyLevel.GUILD_ONLY.ordinal)
+            put("privacy_level", if(public) PrivacyLevel.PUBLIC.value else PrivacyLevel.GUILD_ONLY.value)
         })
         transform { StageInstance(it.toJsonObject(), client) }
     }
@@ -47,7 +49,9 @@ interface StageChannel : VoiceChannel {
         transform { StageInstance(it.toJsonObject(), client) }
     }
 
-    companion object {
+    companion object : GuildChannelBuilder<VoiceChannelModifier, StageChannel> {
+        override fun create(modifier: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(ChannelType.GUILD_STAGE_VOICE).apply(modifier)
+
         operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? StageChannelCacheEntry ?: object : StageChannel {
             override val guild = guild
             override val id = id

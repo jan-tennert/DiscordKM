@@ -8,6 +8,8 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Category
 import io.github.jan.discordkm.api.entities.channels.guild.CategoryCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.channels.guild.NewsChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannelCacheEntry
@@ -16,11 +18,9 @@ import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannelCacheEntry
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
 import io.github.jan.discordkm.internal.serialization.GuildEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.int
@@ -35,7 +35,7 @@ import io.github.jan.discordkm.internal.utils.get
 
 object ChannelSerializer : GuildEntitySerializer<Channel> {
 
-    override fun deserialize(data: JsonObject, value: Guild) = when(ChannelType[data["type"]!!.int]) {
+    override fun deserialize(data: JsonObject, value: Guild): GuildChannelCacheEntry = when(ChannelType[data["type"]!!.int]) {
         ChannelType.GUILD_TEXT -> deserializeChannel<TextChannelCacheEntry>(data, value)
         ChannelType.DM -> TODO()
         ChannelType.GUILD_VOICE -> deserializeChannel<VoiceChannelCacheEntry>(data, value)

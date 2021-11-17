@@ -14,6 +14,6 @@ import kotlinx.serialization.json.JsonObject
 
 internal interface InternalEventHandler <T : Event> {
 
-    fun handle(data: JsonObject) : T
+    suspend fun handle(data: JsonObject) : T
 
 }

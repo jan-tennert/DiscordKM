@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.entities.guild.auditlog
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

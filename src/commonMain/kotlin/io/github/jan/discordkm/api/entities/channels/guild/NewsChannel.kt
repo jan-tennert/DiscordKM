@@ -3,10 +3,11 @@ package io.github.jan.discordkm.api.entities.channels.guild
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
+import io.github.jan.discordkm.api.entities.modifiers.guild.TextChannelModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.invoke
@@ -36,7 +37,9 @@ interface NewsChannel: GuildTextChannel {
 
     suspend fun follow(target: GuildTextChannel) = follow(target.id)
 
-    companion object {
+    companion object : GuildChannelBuilder<TextChannelModifier, NewsChannel> {
+        override fun create(modifier: TextChannelModifier.() -> Unit) = TextChannelModifier().apply { convertToNewsChannel(); modifier(this) }
+
         operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? NewsChannelCacheEntry ?: object : NewsChannel {
             override val guild = guild
             override val id = id

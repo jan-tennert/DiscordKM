@@ -16,7 +16,7 @@ import kotlinx.serialization.json.JsonObject
 
 class GuildUpdateEventHandler(val client: Client) : InternalEventHandler<GuildUpdateEvent> {
 
-    override fun handle(data: JsonObject): GuildUpdateEvent {
+    override suspend fun handle(data: JsonObject): GuildUpdateEvent {
         val guild = GuildSerializer.deserialize(data, client)
         val oldGuild = client.guilds[guild.id]
         oldGuild?.cacheManager?.fillCache(oldGuild.cacheManager)

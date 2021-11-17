@@ -29,7 +29,7 @@ import kotlinx.serialization.json.jsonObject
 import io.github.jan.discordkm.internal.utils.get
 
 class MessageReactionAddEventHandler(val client: Client) : InternalEventHandler<MessageReactionAddEvent> {
-    override fun handle(data: JsonObject): MessageReactionAddEvent {
+    override suspend fun handle(data: JsonObject): MessageReactionAddEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)
         val emojiObject = data.getValue("emoji").jsonObject
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, client) }

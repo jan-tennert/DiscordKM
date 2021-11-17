@@ -16,25 +16,22 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.misc.Color
-import io.github.jan.discordkm.api.media.Image
+import io.github.jan.discordkm.api.entities.modifiers.Modifiable
+import io.github.jan.discordkm.api.entities.modifiers.guild.RoleModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.serialization.serializers.RoleSerializer
-import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
 
-open class Role protected constructor(override val id: Snowflake, override val guild: Guild) : Mentionable, SnowflakeEntity, GuildEntity, CacheEntity {
+open class Role protected constructor(override val id: Snowflake, override val guild: Guild) : Mentionable, SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<RoleModifier, RoleCacheEntry> {
 
     override val client
         get() = guild.client
@@ -45,8 +42,8 @@ open class Role protected constructor(override val id: Snowflake, override val g
     override val cache: RoleCacheEntry?
         get() = guild.cache?.cacheManager?.roleCache?.get(id)
 
-    suspend fun modify(modifier: RoleModifier.() -> Unit) = client.buildRestAction<RoleCacheEntry> {
-        route = Route.Role.MODIFY_ROLE(guild.id, id).patch(RoleModifier().apply(modifier).build())
+    override suspend fun modify(modifier: RoleModifier.() -> Unit) = client.buildRestAction<RoleCacheEntry> {
+        route = Route.Role.MODIFY_ROLE(guild.id, id).patch(RoleModifier().apply(modifier).data)
         transform { RoleSerializer.deserialize(it.toJsonObject(), guild) }
     }
 
@@ -101,25 +98,5 @@ data class RoleCacheEntry(
     override fun toString() = "Role[id=$id, name=$name]"
 
     override val type = PermissionOverwrite.HolderType.ROLE
-
-}
-
-class RoleModifier {
-
-    var name: String? = null
-    var permissions: MutableSet<Permission> = mutableSetOf()
-    var color: Color? = null
-    var hoist: Boolean? = null
-    var mentionable: Boolean? = null
-    var icon: Image? = null
-
-    fun build() = buildJsonObject {
-        putOptional("name", name)
-        putOptional("permissions", permissions.rawValue())
-        putOptional("color", color?.rgb)
-        putOptional("hoist", hoist)
-        putOptional("icon", icon?.encodedData)
-        putOptional("mentionable", mentionable)
-    }
 
 }

@@ -20,7 +20,7 @@ import kotlinx.serialization.json.JsonObject
 class GuildDeleteEventHandler(val client: Client, private val LOGGER: Logger) :
     InternalEventHandler<GuildDeleteEvent> {
 
-    override fun handle(data: JsonObject): GuildDeleteEvent {
+    override suspend fun handle(data: JsonObject): GuildDeleteEvent {
         val id = data["id"]!!.snowflake
         if(data.contains("unavailable")) {
             LOGGER.warn { "The guild \"$id\" is unavailable due to an outage" }

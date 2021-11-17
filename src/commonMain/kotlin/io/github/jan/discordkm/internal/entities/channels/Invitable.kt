@@ -39,7 +39,7 @@ interface Invitable : SnowflakeEntity, BaseEntity {
      * Creates a new invite for this channel
      */
     suspend fun createInvite(builder: InviteBuilder.() -> Unit) = client.buildRestAction<Invite> {
-        route = Route.Invite.CREATE_CHANNEL_INVITE(id).post(Json.encodeToJsonElement(InviteBuilder().apply(builder).build()))
+        route = Route.Invite.CREATE_CHANNEL_INVITE(id).post(Json.encodeToJsonElement(InviteBuilder().apply(builder).data))
         transform { Invite(client, it.toJsonObject()) }
     }
 

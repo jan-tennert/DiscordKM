@@ -101,7 +101,6 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
      */
     suspend fun delete() = client.buildRestAction<Unit> {
         route = Route.Invite.DELETE_INVITE(code).delete()
-        transform {  }
     }
 
     //stage instance object

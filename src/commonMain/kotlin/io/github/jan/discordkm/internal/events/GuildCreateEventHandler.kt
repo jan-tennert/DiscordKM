@@ -19,7 +19,7 @@ import kotlinx.serialization.json.JsonObject
 internal class GuildCreateEventHandler(val client: Client) :
     InternalEventHandler<GuildCreateEvent> {
 
-    override fun handle(data: JsonObject): GuildCreateEvent {
+    override suspend fun handle(data: JsonObject): GuildCreateEvent {
         val guild = GuildSerializer.deserialize(data, client)
         client.cacheManager.guildCache[guild.id] = guild
         return GuildCreateEvent(guild, client)

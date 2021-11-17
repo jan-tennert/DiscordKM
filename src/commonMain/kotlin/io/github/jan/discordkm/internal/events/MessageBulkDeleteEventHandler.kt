@@ -25,7 +25,7 @@ import io.github.jan.discordkm.internal.utils.get
 
 class MessageBulkDeleteEventHandler(val client: Client) : InternalEventHandler<MessageBulkDeleteEvent> {
 
-    override fun handle(data: JsonObject): MessageBulkDeleteEvent {
+    override suspend fun handle(data: JsonObject): MessageBulkDeleteEvent {
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, client) }
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)
         return MessageBulkDeleteEvent(client, data.getValue("ids").jsonArray.map { Snowflake(it.jsonPrimitive.long) }, channel)

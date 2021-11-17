@@ -47,11 +47,12 @@ import kotlinx.serialization.json.jsonPrimitive
 
 class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<InteractionCreateEvent> {
 
-    override fun handle(data: JsonObject) = when(InteractionType[data["type"]!!.int]) {
+    override suspend fun handle(data: JsonObject) = when(InteractionType[data["type"]!!.int]) {
         InteractionType.PING -> TODO()
         InteractionType.APPLICATION_COMMAND -> extractApplicationCommand(data)
         InteractionType.MESSAGE_COMPONENT -> extractMessageComponent(data)
         InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE -> extractCommandAutoComplete(data)
+        else -> TODO()
     }
 
     private fun extractCommandAutoComplete(data: JsonObject) : InteractionCreateEvent {

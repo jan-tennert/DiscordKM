@@ -26,6 +26,7 @@ import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
+import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.getOrNull
@@ -131,7 +132,8 @@ enum class InteractionType : EnumWithValue<Int> {
     PING,
     APPLICATION_COMMAND,
     MESSAGE_COMPONENT,
-    APPLICATION_COMMAND_AUTOCOMPLETE;
+    APPLICATION_COMMAND_AUTOCOMPLETE,
+    @DiscordKMUnstable MODAL_SUBMIT;
 
     override val value: Int
         get() = ordinal + 1

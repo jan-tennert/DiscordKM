@@ -18,7 +18,7 @@ import kotlinx.serialization.json.JsonObject
 
 class VoiceStateUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<VoiceStateUpdateEvent> {
 
-    override fun handle(data: JsonObject): VoiceStateUpdateEvent {
+    override suspend fun handle(data: JsonObject): VoiceStateUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val voiceState = VoiceStateSerializer.deserialize(data, guild)
         val oldVoiceState = guild.cache?.cacheManager?.voiceStates?.get(voiceState.user.id)

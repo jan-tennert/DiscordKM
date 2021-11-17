@@ -1,18 +1,25 @@
 package io.github.jan.discordkm.api.entities.channels.guild
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.channels.ChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.modifiers.Modifiable
+import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
+import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
+import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
+import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 
-interface VoiceChannel : GuildChannel {
+interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceChannelCacheEntry> {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_VOICE
@@ -28,6 +35,11 @@ interface VoiceChannel : GuildChannel {
         throw UnsupportedOperationException("You can't join a voice channel without having a gateway connection!")
     }
 
+    override suspend fun modify(modifier: VoiceChannelModifier.() -> Unit) = client.buildRestAction<VoiceChannelCacheEntry> {
+        route = Route.Channel.MODIFY_CHANNEL(id).patch(VoiceChannelModifier(ChannelType.GUILD_VOICE).apply(modifier).data)
+        transform { ChannelSerializer.deserializeChannel(it.toJsonObject(), guild) }
+    }
+
     enum class VideoQualityMode(override val value: Int) : EnumWithValue<Int> {
         AUTO(1),
         FULL(2);
@@ -35,7 +47,9 @@ interface VoiceChannel : GuildChannel {
         companion object : EnumWithValueGetter<VideoQualityMode, Int>(values())
     }
 
-    companion object {
+    companion object : GuildChannelBuilder<VoiceChannelModifier, VoiceChannel> {
+        override fun create(modifier: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(ChannelType.GUILD_VOICE).apply(modifier)
+
         operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? VoiceChannelCacheEntry ?: object : VoiceChannel {
             override val guild = guild
             override val id = id

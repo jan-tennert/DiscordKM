@@ -21,7 +21,7 @@ import kotlinx.serialization.json.JsonObject
 
 class MessageDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<MessageDeleteEvent> {
 
-    override fun handle(data: JsonObject): MessageDeleteEvent {
+    override suspend fun handle(data: JsonObject): MessageDeleteEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)
         val messageId = data.getOrThrow<Snowflake>("id")
         channel.cache?.cacheManager?.messageCache?.remove(messageId)

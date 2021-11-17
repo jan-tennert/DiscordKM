@@ -20,7 +20,7 @@ import kotlinx.serialization.json.jsonObject
 
 class GuildEmojisUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildEmojisUpdateEvent> {
 
-    override fun handle(data: JsonObject): GuildEmojisUpdateEvent {
+    override suspend fun handle(data: JsonObject): GuildEmojisUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val emotes = data["emojis"]!!.jsonArray.map { GuildSerializer.deserializeGuildEmote(it.jsonObject, client) }
         guild.cache?.let {

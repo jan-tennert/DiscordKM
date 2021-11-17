@@ -9,10 +9,9 @@
  */
 package io.github.jan.discordkm.api.entities
 
-import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Permission
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 
 /**
  * All objects inheriting this interface can have permissions

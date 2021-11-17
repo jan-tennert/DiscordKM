@@ -7,12 +7,9 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.guild.channels
+package io.github.jan.discordkm.api.entities.guild
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.guild.Member
-import io.github.jan.discordkm.api.entities.guild.Permission
-import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
@@ -42,7 +39,6 @@ class PermissionOverwrite(
             "type", when (type) {
                 HolderType.ROLE -> 0
                 HolderType.MEMBER -> 1
-                else -> throw IllegalStateException("Invalid permission holder")
             }
         )
         put("deny", deny.rawValue())

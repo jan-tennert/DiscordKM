@@ -27,6 +27,7 @@ enum class CacheFlag {
     REACTIONS,
     GUILDS,
     USERS,
+    SCHEDULED_EVENTS,
     VOICE_STATES;
 
     companion object {

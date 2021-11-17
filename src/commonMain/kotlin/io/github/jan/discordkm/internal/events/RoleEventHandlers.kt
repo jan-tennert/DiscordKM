@@ -23,7 +23,7 @@ import kotlinx.serialization.json.jsonObject
 
 class RoleCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleCreateEvent> {
 
-    override fun handle(data: JsonObject): RoleCreateEvent {
+    override suspend fun handle(data: JsonObject): RoleCreateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val role = Role(data["role"]!!.jsonObject, guild)
         guild.cache?.cacheManager?.roleCache?.set(role.id, role)
@@ -34,7 +34,7 @@ class RoleCreateEventHandler(val client: DiscordWebSocketClient) : InternalEvent
 
 class RoleUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleUpdateEvent> {
 
-    override fun handle(data: JsonObject): RoleUpdateEvent {
+    override suspend fun handle(data: JsonObject): RoleUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val role = Role(data["role"]!!.jsonObject, guild)
         val oldRole = guild.cache?.cacheManager?.roleCache?.get(role.id)
@@ -46,7 +46,7 @@ class RoleUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEvent
 
 class RoleDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleDeleteEvent> {
 
-    override fun handle(data: JsonObject): RoleDeleteEvent {
+    override suspend fun handle(data: JsonObject): RoleDeleteEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val roleId = data.getOrThrow<Snowflake>("role_id")
         guild.cache?.cacheManager?.roleCache?.remove(roleId)

@@ -47,6 +47,9 @@ import io.github.jan.discordkm.internal.events.ReadyEventHandler
 import io.github.jan.discordkm.internal.events.RoleCreateEventHandler
 import io.github.jan.discordkm.internal.events.RoleDeleteEventHandler
 import io.github.jan.discordkm.internal.events.RoleUpdateEventHandler
+import io.github.jan.discordkm.internal.events.ScheduledEventCreateHandler
+import io.github.jan.discordkm.internal.events.ScheduledEventDeleteHandler
+import io.github.jan.discordkm.internal.events.ScheduledEventUpdateHandler
 import io.github.jan.discordkm.internal.events.SelfUserUpdateEventHandler
 import io.github.jan.discordkm.internal.events.StageInstanceCreateEventHandler
 import io.github.jan.discordkm.internal.events.StageInstanceDeleteEventHandler
@@ -261,6 +264,11 @@ class DiscordGateway(
                 "GUILD_ROLE_CREATE" -> RoleCreateEventHandler(client).handle(payload.eventData!!)
                 "GUILD_ROLE_UPDATE" -> RoleUpdateEventHandler(client).handle(payload.eventData!!)
                 "GUILD_ROLE_DELETE" -> RoleDeleteEventHandler(client).handle(payload.eventData!!)
+
+                //scheduled events
+                "GUILD_SCHEDULED_EVENT_CREATE" -> ScheduledEventCreateHandler(client).handle(payload.eventData!!)
+                "GUILD_SCHEDULED_EVENT_UPDATE" -> ScheduledEventUpdateHandler(client).handle(payload.eventData!!)
+                "GUILD_SCHEDULED_EVENT_DELETE" -> ScheduledEventDeleteHandler(client).handle(payload.eventData!!)
 
                 //invites
                 "INVITE_CREATE" -> InviteCreateEventHandler(client).handle(payload.eventData!!)

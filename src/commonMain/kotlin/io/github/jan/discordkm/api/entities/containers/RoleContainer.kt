@@ -6,7 +6,7 @@ import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.RoleCacheEntry
-import io.github.jan.discordkm.api.entities.guild.RoleModifier
+import io.github.jan.discordkm.api.entities.modifiers.guild.RoleModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.get
@@ -40,7 +40,7 @@ open class GuildRoleContainer(val guild: Guild) {
      * Requires the permission [Permission.MANAGE_ROLES]
      */
     suspend fun create(builder: RoleModifier.() -> Unit) = guild.client.buildRestAction<Role> {
-        route = Route.Role.CREATE_ROLE(guild.id).post(RoleModifier().apply(builder).build())
+        route = Route.Role.CREATE_ROLE(guild.id).post(RoleModifier().apply(builder).data)
         transform { RoleSerializer.deserialize(it.toJsonObject(), guild) }
     }
 

@@ -6,7 +6,16 @@ import io.github.jan.discordkm.api.entities.channels.ChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.modifiers.Modifiable
+import io.github.jan.discordkm.api.entities.modifiers.guild.CategoryModifier
+import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelModifier
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
+import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
+import io.github.jan.discordkm.internal.utils.toJsonObject
 
 sealed interface GuildChannel : Channel {
 
@@ -20,9 +29,6 @@ sealed interface GuildChannel : Channel {
 
     override val client: Client
         get() = guild.client
-
-
-    //modifier
 
 }
 

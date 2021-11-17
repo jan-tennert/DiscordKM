@@ -22,7 +22,7 @@ import kotlinx.serialization.json.jsonObject
 
 class GuildMemberAddEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildMemberAddEvent> {
 
-    override fun handle(data: JsonObject): GuildMemberAddEvent {
+    override suspend fun handle(data: JsonObject): GuildMemberAddEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val member = Member(data, guild)
         guild.cache?.cacheManager?.memberCache?.set(member.id, member)
@@ -33,7 +33,7 @@ class GuildMemberAddEventHandler(val client: DiscordWebSocketClient) : InternalE
 
 class GuildMemberUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildMemberUpdateEvent> {
 
-    override fun handle(data: JsonObject): GuildMemberUpdateEvent {
+    override suspend fun handle(data: JsonObject): GuildMemberUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val member = Member(data, guild)
         guild.cache?.cacheManager?.memberCache?.set(member.id, member)
@@ -44,7 +44,7 @@ class GuildMemberUpdateEventHandler(val client: DiscordWebSocketClient) : Intern
 
 class GuildMemberRemoveEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildMemberRemoveEvent> {
 
-    override fun handle(data: JsonObject): GuildMemberRemoveEvent {
+    override suspend fun handle(data: JsonObject): GuildMemberRemoveEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val user = User(data["user"]!!.jsonObject, client)
         guild.cache?.cacheManager?.memberCache?.remove(user.id)

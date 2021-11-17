@@ -26,6 +26,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.int
@@ -38,6 +39,11 @@ fun JsonObject.getId(): Snowflake {
 }
 fun String.toJsonObject() = Json.decodeFromString<JsonObject>(this)
 fun String.toJsonArray() = Json.decodeFromString<JsonArray>(this)
+
+fun JsonObject.modify(builder: JsonObjectBuilder.() -> Unit) = buildJsonObject {
+    this@modify.forEach { put(it.key, it.value) }
+    builder(this)
+}
 
 inline fun <reified T> JsonObject.getOrThrow(key: String): T {
     if(getValue(key).toString() == "null") throw NoSuchElementException()

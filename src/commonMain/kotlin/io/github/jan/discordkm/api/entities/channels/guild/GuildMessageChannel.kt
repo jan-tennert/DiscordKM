@@ -8,6 +8,8 @@ import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.MessageChannelCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelModifier
+import io.github.jan.discordkm.api.entities.modifiers.guild.MessageChannelModifier
 import io.github.jan.discordkm.internal.entities.channels.Invitable
 
 interface GuildMessageChannel : GuildChannel, MessageChannel {

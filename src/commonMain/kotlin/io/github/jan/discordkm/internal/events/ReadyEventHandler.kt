@@ -22,7 +22,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
 internal class ReadyEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ReadyEvent> {
-    override fun handle(data: JsonObject): ReadyEvent {
+    override suspend fun handle(data: JsonObject): ReadyEvent {
         val shardId = data["shard"]?.jsonArray?.get(1)?.jsonPrimitive?.intOrNull
         if(shardId != null) {
             client.getGatewayByShardId(shardId).sessionId = data.getValue("session_id").jsonPrimitive.content

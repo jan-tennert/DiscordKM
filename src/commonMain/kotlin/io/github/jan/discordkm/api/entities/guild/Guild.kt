@@ -28,12 +28,14 @@ import io.github.jan.discordkm.api.entities.containers.CacheGuildChannelContaine
 import io.github.jan.discordkm.api.entities.containers.CacheGuildMemberContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildRoleContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildThreadContainer
+import io.github.jan.discordkm.api.entities.containers.CacheScheduledEventContainer
 import io.github.jan.discordkm.api.entities.containers.CommandContainer
 import io.github.jan.discordkm.api.entities.containers.EmoteContainer
 import io.github.jan.discordkm.api.entities.containers.GuildChannelContainer
 import io.github.jan.discordkm.api.entities.containers.GuildMemberContainer
 import io.github.jan.discordkm.api.entities.containers.GuildRoleContainer
 import io.github.jan.discordkm.api.entities.containers.GuildThreadContainer
+import io.github.jan.discordkm.api.entities.containers.ScheduledEventContainer
 import io.github.jan.discordkm.api.entities.guild.Guild.WelcomeScreen.Channel
 import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLog
 import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLogAction
@@ -41,6 +43,8 @@ import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteBuilder
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
+import io.github.jan.discordkm.api.entities.modifiers.guild.GuildModifier
+import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -64,9 +68,7 @@ import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import kotlin.reflect.KProperty
@@ -74,7 +76,7 @@ import kotlin.reflect.KProperty
 /**
  * A guild can contain channels and members.
  */
-interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, CommandHolder {
+interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, CommandHolder, Modifiable<GuildModifier, Unit> {
 
     override val cache: GuildCacheEntry?
         get() = client.cacheManager.guildCache[id]
@@ -88,6 +90,8 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
         get() = GuildChannelContainer(this)
     val emotes: EmoteContainer
         get() = EmoteContainer(this)
+    val scheduledEvents: ScheduledEventContainer
+        get() = ScheduledEventContainer(this)
     override val commands: CommandContainer
         get() = CommandContainer(this, "/applications/${client.selfUser.id}/guilds/$id")
 
@@ -164,7 +168,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
      */
     suspend fun createInvite(channelId: Snowflake, builder: InviteBuilder.() -> Unit) = client.buildRestAction<Invite> {
         route = Route.Invite.CREATE_CHANNEL_INVITE(channelId)
-            .post(Json.encodeToJsonElement(InviteBuilder().apply(builder).build()))
+            .post(InviteBuilder().apply(builder).data)
         transform { Invite(client, it.toJsonObject()) }
     }
 
@@ -190,8 +194,8 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
     /**
      * Modifies this guild
      */
-    suspend fun modify(modifier: GuildModifier.() -> Unit) = client.buildRestAction<Unit> {
-        route = Route.Guild.MODIFY_GUILD(id).patch(GuildModifier().apply(modifier).build())
+    override suspend fun modify(modifier: GuildModifier.() -> Unit) = client.buildRestAction<Unit> {
+        route = Route.Guild.MODIFY_GUILD(id).patch(GuildModifier().apply(modifier).data)
     }
 
     /**
@@ -526,6 +530,8 @@ class GuildCacheEntry(
         get() = cacheManager.stageInstanceCache.safeValues.associateBy { it.id }
     override val emotes: CacheEmoteContainer
         get() = CacheEmoteContainer(this,  cacheManager.emoteCache.safeValues)
+    override val scheduledEvents: CacheScheduledEventContainer
+        get() = CacheScheduledEventContainer(this, cacheManager.guildScheduledEventCache.safeValues)
 
     val everyoneRole: Role
         get() = cacheManager.roleCache.safeValues.first { it.name == "@everyone" }

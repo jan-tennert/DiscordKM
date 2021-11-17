@@ -19,7 +19,7 @@ import kotlinx.serialization.json.jsonArray
 
 class GuildStickersUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildStickersUpdateEvent> {
 
-    override fun handle(data: JsonObject): GuildStickersUpdateEvent {
+    override suspend fun handle(data: JsonObject): GuildStickersUpdateEvent {
         val stickers = data["stickers"]!!.jsonArray.map { GuildSerializer.deserializeSticker(data, client) }
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         guild.cache?.cacheManager?.let {

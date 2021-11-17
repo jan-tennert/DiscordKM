@@ -45,22 +45,12 @@ interface StageInstance : SnowflakeEntity, BaseEntity {
      * @param topic The new topic for this stage instance
      * @param privacyLevel The new privacy level for this stage instance
      */
-    suspend fun modify(topic: String? = null, privacyLevel: StageInstance.PrivacyLevel? = null) = client.buildRestAction<StageInstanceCacheEntry> {
+    suspend fun modify(topic: String? = null, privacyLevel: PrivacyLevel? = null) = client.buildRestAction<StageInstanceCacheEntry> {
         route = Route.StageInstance.MODIFY_INSTANCE(stageChannel.id).patch(buildJsonObject {
             putOptional("topic", topic)
             putOptional("privacy_level", privacyLevel?.value)
         })
         transform { StageInstance(it.toJsonObject(), client) }
-    }
-
-    enum class PrivacyLevel : EnumWithValue<Int> {
-        PUBLIC,
-        GUILD_ONLY;
-
-        override val value: Int
-            get() = ordinal + 1
-
-        companion object : EnumWithValueGetter<PrivacyLevel, Int>(values())
     }
 
     companion object {
@@ -78,7 +68,7 @@ class StageInstanceCacheEntry(
     override val id: Snowflake,
     val topic: String,
     override val stageChannel: StageChannel,
-    val privacyLevel: StageInstance.PrivacyLevel,
+    val privacyLevel: PrivacyLevel,
     val isDiscoveryEnabled: Boolean
 ) : StageInstance, GuildEntity {
 

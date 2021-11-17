@@ -18,7 +18,7 @@ import kotlinx.serialization.json.JsonObject
 
 class PresenceUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<PresenceUpdateEvent> {
 
-    override fun handle(data: JsonObject): PresenceUpdateEvent {
+    override suspend fun handle(data: JsonObject): PresenceUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val presence = GuildSerializer.deserializeGuildPresence(data, client)
         val oldPresence = guild.cache?.presences?.get(presence.user.id)

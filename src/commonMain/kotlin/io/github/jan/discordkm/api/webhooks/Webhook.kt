@@ -18,6 +18,7 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
 import io.github.jan.discordkm.api.entities.messages.buildMessage
+import io.github.jan.discordkm.api.entities.modifiers.WebhookModifier
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
@@ -93,7 +94,7 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
      * Modifies this webhook
      */
     suspend fun modify(modifier: WebhookModifier.() -> Unit) = client.buildRestAction<Webhook> {
-        val data = WebhookModifier().apply(modifier).build()
+        val data = WebhookModifier().apply(modifier).data
         route = if(token.isEmpty()) {
             Route.Webhook.MODIFY(id).patch(data)
         } else {
@@ -155,19 +156,5 @@ interface WebhookExecutor : SnowflakeEntity {
     suspend fun send(message: MessageBuilder.() -> Unit) = send(buildMessage(message))
 
     suspend fun send(message: String) = send { content = message }
-
 }
 
-class WebhookModifier : Modifier {
-
-    var name: String? = null
-    var avatar: Image? = null
-    var channelId: Snowflake? = null
-
-    override fun build() = buildJsonObject {
-        putOptional("name", name)
-        putOptional("avatar", avatar?.encodedData)
-        putOptional("channel_id", channelId?.string)
-    }
-
-}

@@ -18,7 +18,7 @@ import kotlinx.serialization.json.JsonObject
 
 class MessageUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<MessageUpdateEvent> {
 
-    override fun handle(data: JsonObject): MessageUpdateEvent {
+    override suspend fun handle(data: JsonObject): MessageUpdateEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)
         val message = Message(data, client)
         channel.cache?.cacheManager?.messageCache?.set(message.id, message)

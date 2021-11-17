@@ -88,6 +88,9 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
             data["emojis"]?.jsonArray?.map { deserializeGuildEmote(it.jsonObject, value) }?.let { data ->
                 cacheManager.emoteCache.putAll(data.associateBy { it.id })
             }
+            data["guild_scheduled_events"]?.jsonArray?.map { ScheduledEventSerializer.deserialize(it.jsonObject, client) }?.let { data ->
+                cacheManager.guildScheduledEventCache.putAll(data.associateBy { it.id })
+            }
         }
     }
 

@@ -14,6 +14,7 @@ import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.DiscordKMInfo
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.receive
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.request.delete
@@ -28,9 +29,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 
-class RestClient(val client: Client) {
+class RestClient(val client: Client, httpClientConfig: HttpClientConfig<*>.() -> Unit) {
 
     val http = HttpClient {
+        httpClientConfig(this)
         defaultRequest {
             header("Authorization", "Bot ${client.token}")
             header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.3)")

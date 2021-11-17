@@ -29,7 +29,7 @@ import kotlinx.serialization.json.JsonObject
 class ChannelCreateEventHandler(val client: DiscordWebSocketClient) :
     InternalEventHandler<ChannelCreateEvent> {
 
-    override fun handle(data: JsonObject): ChannelCreateEvent {
+    override suspend fun handle(data: JsonObject): ChannelCreateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val channel = ChannelSerializer.deserialize(data, guild)
         guild.cache?.cacheManager?.channelCache?.set(channel.id, channel)
@@ -41,7 +41,7 @@ class ChannelCreateEventHandler(val client: DiscordWebSocketClient) :
 class ChannelDeleteEventHandler(val client: DiscordWebSocketClient) :
     InternalEventHandler<ChannelDeleteEvent> {
 
-    override fun handle(data: JsonObject): ChannelDeleteEvent {
+    override suspend fun handle(data: JsonObject): ChannelDeleteEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val channel = ChannelSerializer.deserialize(data, guild)
         guild.cache?.cacheManager?.channelCache?.remove(channel.id)
@@ -53,7 +53,7 @@ class ChannelDeleteEventHandler(val client: DiscordWebSocketClient) :
 class ChannelUpdateEventHandler(val client: DiscordWebSocketClient) :
     InternalEventHandler<ChannelUpdateEvent> {
 
-    override fun handle(data: JsonObject): ChannelUpdateEvent {
+    override suspend fun handle(data: JsonObject): ChannelUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val channel = ChannelSerializer.deserialize(data, guild)
         val oldChannel = guild.cache?.cacheManager?.channelCache?.get(channel.id)
@@ -69,7 +69,7 @@ class ChannelUpdateEventHandler(val client: DiscordWebSocketClient) :
 class ChannelPinUpdateEventHandler(val client: Client) :
     InternalEventHandler<ChannelPinUpdateEvent> {
 
-    override fun handle(data: JsonObject): ChannelPinUpdateEvent {
+    override suspend fun handle(data: JsonObject): ChannelPinUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val channel = Channel(data["channel_id"]!!.snowflake, ChannelType.UNKNOWN, client, guild) as GuildTextChannel
         val lastPinTimestamp = ISO8601.DATETIME_UTC_COMPLETE.tryParse(data.getOrNull<String>("last_pin_timestamp") ?: "")

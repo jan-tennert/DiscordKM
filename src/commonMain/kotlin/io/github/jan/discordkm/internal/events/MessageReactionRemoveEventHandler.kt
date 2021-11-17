@@ -29,7 +29,7 @@ import io.github.jan.discordkm.internal.utils.get
 
 class MessageReactionRemoveEventHandler(val client: Client) : InternalEventHandler<MessageReactionRemoveEvent> {
 
-    override fun handle(data: JsonObject): MessageReactionRemoveEvent {
+    override suspend fun handle(data: JsonObject): MessageReactionRemoveEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)
         val emojiObject = data.getValue("emoji").jsonObject
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, client) }

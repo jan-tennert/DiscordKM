@@ -24,7 +24,7 @@ import io.github.jan.discordkm.internal.utils.get
 
 class TypingStartEventHandler(val client: Client) : InternalEventHandler<TypingStartEvent> {
 
-    override fun handle(data: JsonObject): TypingStartEvent {
+    override suspend fun handle(data: JsonObject): TypingStartEvent {
         val user = User(data["user_id"]!!.snowflake, client)
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, client) }
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)

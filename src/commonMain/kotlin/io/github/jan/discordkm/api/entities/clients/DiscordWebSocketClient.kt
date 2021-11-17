@@ -23,6 +23,7 @@ import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
 import io.github.jan.discordkm.internal.websocket.Encoding
+import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -42,8 +43,9 @@ class DiscordWebSocketClient internal constructor(
     private val reconnectDelay: TimeSpan = 5.seconds,
     enabledCache: Set<CacheFlag>,
     shards: List<Int> = emptyList(),
-    private val totalShards: Int = -1
-) : Client(token, loggingLevel, enabledCache) {
+    private val totalShards: Int = -1,
+    httpClient: HttpClientConfig<*>.() -> Unit,
+) : Client(token, loggingLevel, enabledCache, httpClient) {
 
     val shardConnections = mutableListOf<DiscordGateway>()
     @get:JvmName("isClosed")
@@ -136,6 +138,7 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
      */
     var enabledCache = CacheFlag.ALL.toMutableSet()
     private val shards = mutableListOf<Int>()
+    private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
     /**
      * Specifies the total amount of shards. [Sharding](https://discord.com/developers/docs/topics/gateway#sharding)
@@ -152,7 +155,9 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
      */
     fun activity(builder: PresenceModifier.() -> Unit) { activity = PresenceModifier().apply(builder) }
 
-    fun build() = DiscordWebSocketClient(token, encoding, compression, intents.toSet(), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache, shards, totalShards)
+    fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
+
+    fun build() = DiscordWebSocketClient(token, encoding, compression, intents.toSet(), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache, shards, totalShards, httpClientConfig)
 
 }
 

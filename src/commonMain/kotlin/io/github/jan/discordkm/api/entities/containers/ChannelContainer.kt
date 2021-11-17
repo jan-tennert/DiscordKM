@@ -1,12 +1,11 @@
 package io.github.jan.discordkm.api.entities.containers
 
-import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
-import io.github.jan.discordkm.api.entities.guild.channels.modifier.GuildChannelBuilder
-import io.github.jan.discordkm.api.entities.guild.channels.modifier.GuildChannelModifier
+import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
+import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
@@ -31,11 +30,11 @@ open class GuildChannelContainer(override val guild: Guild) : GuildEntity {
      * Creates a guild channel
      * @param type The type
      **/
-    suspend inline fun <reified C: GuildChannel, M: GuildChannelModifier<C>, T : GuildChannelBuilder<C, M>> create(type: T, noinline builder: M.() -> Unit) : C = guild.client.buildRestAction<C> {
-        route = Route.Channel.CREATE_CHANNEL(guild.id).post(type.create(builder))
+    suspend inline fun <reified C: GuildChannel, M: GuildChannelModifier, T : GuildChannelBuilder<M, C>> create(type: T, noinline builder: M.() -> Unit) : C = guild.client.buildRestAction<C> {
+        route = Route.Channel.CREATE_CHANNEL(guild.id).post(type.create(builder).data)
         transform { ChannelSerializer.deserializeChannel(it.toJsonObject(), guild) as C }
     }
-    //TODO: Change modifier hirarchy
+
 }
 
 class CacheGuildChannelContainer(guild: Guild, override val values: Collection<GuildChannelCacheEntry>) : GuildChannelContainer(guild), NameableSnowflakeContainer<GuildChannelCacheEntry>

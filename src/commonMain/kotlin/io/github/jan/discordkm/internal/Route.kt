@@ -15,6 +15,17 @@ import io.github.jan.discordkm.internal.restaction.RestAction
 
 object Route {
 
+    object ScheduledEvent {
+
+        const val GET_EVENT = "/guilds/%s/scheduled-events/%s"
+        const val MODIFY_EVENT = "/guilds/%s/scheduled-events/%s"
+        const val DELETE_EVENT = "/guilds/%s/scheduled-events/%s"
+        const val GET_USERS = "/guilds/%s/scheduled-events/%s/users"
+        const val GET_EVENTS = "/guilds/%s/scheduled-events"
+        const val CREATE_EVENT = "/guilds/%s/scheduled-events"
+
+    }
+
     object Emoji {
 
         const val GET_GUILD_EMOJIS = "/guilds/%s/emojis"

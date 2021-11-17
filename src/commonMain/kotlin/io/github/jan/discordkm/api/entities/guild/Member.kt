@@ -23,7 +23,6 @@ import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.containers.CacheMemberRoleContainer
 import io.github.jan.discordkm.api.entities.containers.MemberRoleContainer
-import io.github.jan.discordkm.api.entities.guild.channels.PermissionOverwrite
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry

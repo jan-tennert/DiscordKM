@@ -36,15 +36,16 @@ import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.coroutines.CoroutineContext
 
-sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabledCache: Set<CacheFlag>) : CoroutineScope, CommandHolder, BaseEntity {
+sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabledCache: Set<CacheFlag>, httpClientConfig: HttpClientConfig<*>.() -> Unit) : CoroutineScope, CommandHolder, BaseEntity {
 
-    val rest = RestClient(this)
+    val rest = RestClient(this, httpClientConfig)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client = this
     val cacheManager = ClientCacheManager(this)
@@ -55,7 +56,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabl
     override val commands: CommandContainer
         get() = CommandContainer(this, "/applications/${selfUser.id}/commands")
     val guilds: CacheGuildContainer
-        get() = CacheGuildContainer(this, cacheManager.guildCache.toMap().values)
+        get() = CacheGuildContainer(this, cacheManager.guildCache.safeValues)
     val channels: CacheChannelContainer
         get() = CacheChannelContainer(cacheManager.guildCache.safeValues.map { it.channels.values }.flatten())
     val members: CacheMemberContainer
@@ -120,7 +121,8 @@ enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
     GUILD_MESSAGE_TYPING(11),
     DIRECT_MESSAGES(12),
     DIRECT_MESSAGE_REACTIONS(13),
-    DIRECT_MESSAGE_TYPING(14);
+    DIRECT_MESSAGE_TYPING(14),
+    GUILD_SCHEDULED_EVENTS(16);
 
     companion object : FlagSerializer<Intent>(values())
 

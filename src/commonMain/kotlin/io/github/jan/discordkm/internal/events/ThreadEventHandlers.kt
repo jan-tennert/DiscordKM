@@ -27,7 +27,7 @@ import kotlinx.serialization.json.jsonObject
 
 class ThreadCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadCreateEvent> {
 
-    override fun handle(data: JsonObject): ThreadCreateEvent {
+    override suspend fun handle(data: JsonObject): ThreadCreateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val thread = Thread(data, guild)
         guild.cache?.cacheManager?.threadCache?.set(thread.id, thread)
@@ -38,7 +38,7 @@ class ThreadCreateEventHandler(val client: DiscordWebSocketClient) : InternalEve
 
 class ThreadUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadUpdateEvent> {
 
-    override fun handle(data: JsonObject): ThreadUpdateEvent {
+    override suspend fun handle(data: JsonObject): ThreadUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val thread = Thread(data, guild)
         val oldThread = guild.cache?.threads?.get(thread.id)
@@ -50,7 +50,7 @@ class ThreadUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEve
 
 class ThreadDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadDeleteEvent> {
 
-    override fun handle(data: JsonObject): ThreadDeleteEvent {
+    override suspend fun handle(data: JsonObject): ThreadDeleteEvent {
         val threadId = data["id"]!!.snowflake
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val stageChannel = StageChannel(data["parent_id"]!!.snowflake, guild)
@@ -63,7 +63,7 @@ class ThreadDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEve
 
 class ThreadMembersUpdateEventHandler(val client: Client) : InternalEventHandler<ThreadMembersUpdateEvent> {
 
-    override fun handle(data: JsonObject): ThreadMembersUpdateEvent {
+    override suspend fun handle(data: JsonObject): ThreadMembersUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val thread = Thread(data["id"]!!.snowflake, guild, ChannelType.GUILD_PUBLIC_THREAD)
         val memberCount = data["member_count"]!!.int

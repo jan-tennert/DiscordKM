@@ -16,7 +16,7 @@ import kotlinx.serialization.json.JsonObject
 
 class SelfUserUpdateEventHandler(val client: Client) : InternalEventHandler<SelfUserUpdateEvent> {
 
-    override fun handle(data: JsonObject): SelfUserUpdateEvent {
+    override suspend fun handle(data: JsonObject): SelfUserUpdateEvent {
         val user = User(data, client)
         val oldUser = client.selfUser
         client.selfUser = user

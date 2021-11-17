@@ -16,6 +16,7 @@ import io.github.jan.discordkm.api.entities.guild.RoleCacheEntry
 import io.github.jan.discordkm.api.entities.guild.StageInstanceCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.guild.VoiceStateCacheEntry
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntry
 import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 import io.github.jan.discordkm.api.entities.messages.MessageReaction
 
@@ -54,6 +55,7 @@ class GuildCacheManager internal constructor(override val client: Client) : Cach
     val emoteCache = createCache<Snowflake, Emoji.Emote>(CacheFlag.EMOJIS)
     val stickerCache = createCache<Snowflake, Sticker>(CacheFlag.STICKERS)
     val stageInstanceCache = createCache<Snowflake, StageInstanceCacheEntry>(CacheFlag.STAGE_INSTANCES)
+    val guildScheduledEventCache = createCache<Snowflake, ScheduledEventCacheEntry>(CacheFlag.SCHEDULED_EVENTS)
 
     override fun fillCache(cache: GuildCacheManager) = cache.let {
         it.memberCache.putAll(memberCache)

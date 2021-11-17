@@ -11,10 +11,15 @@ package io.github.jan.discordkm.api.entities.guild.invites
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.invites.Invite.TargetType
+import io.github.jan.discordkm.api.entities.modifiers.BaseModifier
 import io.github.jan.discordkm.internal.check
 import io.github.jan.discordkm.internal.utils.checkAndReturn
+import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 /**
  * Represents an invite target.
@@ -48,18 +53,27 @@ data class InviteBuilderObject internal constructor(
  * @param isUnique "If true, don't try to reuse a similar invite (useful for creating many unique one time use invites)"
  * @param target The target of this invite. Can refer to a EmbeddedApplication or a user's stream
  */
-class InviteBuilder(
-    var maxAge: Int? = null,
-    var maxUses: Int? = null,
-    var isTemporary: Boolean? = null,
-    var isUnique: Boolean? = null,
-    var target: Target? = null
-) {
+class InviteBuilder : BaseModifier {
 
-    fun build() = checkAndReturn {
-        maxAge.check("The maximum age of an invite has to be between 0 and 604800 seconds") { it in 0..604799 }
-        maxUses.check("The maximum uses of an invite have to be between 0 and 100") { it in 0..100 }
-        InviteBuilderObject(maxAge, maxUses, isTemporary, isUnique, target?.type?.ordinal?.plus(1), if(target?.type == TargetType.STREAM) target?.targetId else null, if(target?.type == TargetType.EMBEDDED_APPLICATION) target?.targetId else null)
-    }
+    var maxAge: Int? = null
+    var maxUses: Int? = null
+    var isTemporary: Boolean? = null
+    var isUnique: Boolean? = null
+    var target: Target? = null
+
+    override val data: JsonObject
+        get() = checkAndReturn {
+            maxAge.check("The maximum age of an invite has to be between 0 and 604800 seconds") { it in 0..604799 }
+            maxUses.check("The maximum uses of an invite have to be between 0 and 100") { it in 0..100 }
+            buildJsonObject {
+                putOptional("max_age", maxAge)
+                putOptional("max_uses", maxUses)
+                putOptional("unique", isUnique)
+                putOptional("temporary", isTemporary)
+                putOptional("target_type", target?.type?.value)
+                if (target?.type == TargetType.STREAM) put("target_user_id", target!!.targetId.string)
+                if (target?.type == TargetType.EMBEDDED_APPLICATION) put("target_application_id", target!!.targetId.string)
+            }
+        }
 
 }
