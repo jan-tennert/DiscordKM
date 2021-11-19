@@ -34,6 +34,7 @@ class GuildModifier : BaseModifier {
     var preferredLocale: String? = null
     var features: MutableSet<Guild.Feature> = mutableSetOf()
     var description: String? = null
+    var enablePremiumProgressBar: Boolean? = null
 
     override val data
         get() = buildJsonObject {
@@ -56,6 +57,7 @@ class GuildModifier : BaseModifier {
             putOptional("name", name)
             features.ifNotEmpty { put("features", JsonArray(features.map { JsonPrimitive(it.name) })) }
             putOptional("description", description)
+            putOptional("premium_progress_bar_enabled", enablePremiumProgressBar)
         }
 
     fun afkChannel(modifier: AfkChannelModifier.() -> Unit) {

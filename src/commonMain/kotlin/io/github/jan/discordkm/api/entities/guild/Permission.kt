@@ -50,6 +50,7 @@ enum class Permission(override val offset: Int) : SerializableEnum<Permission> {
     MANAGE_EMOJIS_AND_STICKERS(30),
     USE_APPLICATION_COMMANDS(31),
     REQUEST_TO_SPEAK(32),
+    MANAGE_EVENTS(33),
     MANAGE_THREADS(34),
     USE_PUBLIC_THREADS(35),
     USE_PRIVATE_THREADS(36),
@@ -58,7 +59,7 @@ enum class Permission(override val offset: Int) : SerializableEnum<Permission> {
     UNKNOWN(-1);
 
     companion object : FlagSerializer<Permission>(values()) {
-        val ALL_PERMISSIONS = values().filter { it != UNKNOWN }
+        val ALL_PERMISSIONS = values().filter { it != UNKNOWN }.toSet()
     }
 
 }

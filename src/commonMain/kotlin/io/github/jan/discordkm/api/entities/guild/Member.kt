@@ -23,6 +23,7 @@ import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.containers.CacheMemberRoleContainer
 import io.github.jan.discordkm.api.entities.containers.MemberRoleContainer
+import io.github.jan.discordkm.api.entities.modifiers.guild.MemberModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -31,6 +32,7 @@ import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.serialization.serializers.MemberSerializer
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
@@ -38,13 +40,14 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlin.jvm.JvmName
 
-open class Member protected constructor(override val id: Snowflake, override val guild: Guild) : SnowflakeEntity, GuildEntity, CacheEntity {
+interface Member : SnowflakeEntity, GuildEntity, CacheEntity {
 
     override val cache: MemberCacheEntry?
         get() = guild.cache?.members?.get(id)
-    open val user: User
+    val user: User
         get() = User(id, client)
-    open val roles = MemberRoleContainer(this)
+    val roles: MemberRoleContainer
+        get() = MemberRoleContainer(this)
 
     /**
      * Modifies this user
@@ -69,12 +72,27 @@ open class Member protected constructor(override val id: Snowflake, override val
     suspend fun ban(delDays: Int?) = guild.members.ban(id, delDays)
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = Member(id, guild)
+        operator fun invoke(id: Snowflake, guild: Guild) = object : Member {
+            override val id: Snowflake = id
+            override val guild: Guild = guild
+        }
         operator fun invoke(data: JsonObject, guild: Guild) = MemberSerializer.deserialize(data, guild)
     }
 
 }
 
+/**
+ * Represents a member of a guild
+ * @param id The id of the member
+ * @param guild The guild this member belongs to
+ * @param user The user this member represents
+ * @param joinedAt The date this member joined the guild
+ * @param nickname The nickname of this member
+ * @param isDeafened Whether this member is deafened
+ * @param isMuted Whether this member is muted
+ * @param isPending Whether this member is in the verification process
+ * @param timeoutUntil The date where the timeout will be removed from the member. (Until then the member can't do anything in this guild)
+ */
 data class MemberCacheEntry(
     override val guild: Guild,
     override val id: Snowflake,
@@ -86,7 +104,8 @@ data class MemberCacheEntry(
     val isPending: Boolean,
     val nickname: String?,
     val avatarHash: String?,
-) : Member(id, guild), Nameable, PermissionHolder, CacheEntry {
+    val timeoutUntil: DateTimeTz?
+) : Member, Nameable, PermissionHolder, CacheEntry {
 
     /**
      * The voice state of the member retrieved from cache
@@ -135,14 +154,19 @@ data class MemberCacheEntry(
      */
     override val permissions: Set<Permission>
         get() {
-            TODO()
-            /*if (isOwner) return Permission.ALL_PERMISSIONS.toSet()
-            var permission: Long = guild.cache!!.everyoneRole.cache!!.permissions.rawValue()
+            if(isOwner) return Permission.ALL_PERMISSIONS
+            if(guild.cache == null) return setOf()
+            val publicRole = guild.cache!!.publicRole
+            var basePermissions = publicRole.permissions.rawValue()
+
             for (role in roles) {
-                permission = permission or role.permissions.rawValue()
-                if ((permission and Permission.ADMINISTRATOR.rawValue) == Permission.ADMINISTRATOR.rawValue) return Permission.ALL_PERMISSIONS.toSet()
+                if(role.cache == null) return setOf()
+                basePermissions = basePermissions or role.cache!!.permissions.rawValue()
             }
-            return Permission.decode(permission)*/
+
+            val permissions = Permission.decode(basePermissions)
+            if(Permission.ADMINISTRATOR in permissions) return Permission.ALL_PERMISSIONS
+            return permissions
         }
 
     /**
@@ -151,67 +175,39 @@ data class MemberCacheEntry(
      * @see GuildChannel
      */
     override fun getPermissionsFor(channel: GuildChannelCacheEntry): Set<Permission> {
-        if (isOwner) return Permission.ALL_PERMISSIONS.toSet()
-        if (Permission.ADMINISTRATOR in permissions) return Permission.ALL_PERMISSIONS.toSet()
-        if (channel.permissionOverwrites.isEmpty()) return guild.cache!!.everyoneRole.cache!!.permissions.toSet()
+        if(Permission.ADMINISTRATOR in permissions) return Permission.ALL_PERMISSIONS
 
-        //*Placeholder*
-        val permissions = mutableSetOf<Permission>()
-        channel.permissionOverwrites.forEach {
-            if (it.type == PermissionOverwrite.HolderType.ROLE && it.holderId in roles.map { it.id }) permissions.addAll(it.allow.toList())
-            if (it.type == PermissionOverwrite.HolderType.MEMBER && it.holderId == id) permissions.addAll(it.allow.toList())
+        var basePermissions = permissions.rawValue()
+        val publicOverwrite = channel.permissionOverwrites.firstOrNull { it.holderId == guild.id }
+        publicOverwrite?.let {
+            basePermissions = basePermissions and it.deny.rawValue()
+            basePermissions = basePermissions or it.allow.rawValue()
         }
-        return permissions.toSet()
+
+        var allow = 0L
+        var deny = 0L
+
+        for (role in roles) {
+            val overwrite = channel.permissionOverwrites.firstOrNull { it.holderId == role.id }
+            overwrite?.let {
+                allow = allow and it.allow.rawValue()
+                deny = deny and it.deny.rawValue()
+            }
+        }
+
+        basePermissions = basePermissions and deny
+        basePermissions = basePermissions or allow
+
+        val memberOverwrite = channel.permissionOverwrites.firstOrNull { it.holderId == id }
+        memberOverwrite?.let {
+            basePermissions = basePermissions and it.deny.rawValue()
+            basePermissions = basePermissions or it.allow.rawValue()
+        }
+
+        return Permission.decode(basePermissions)
     }
 
     override val type = PermissionOverwrite.HolderType.MEMBER
 
-
-}
-
-class MemberModifier {
-
-    /**
-     * The new nickname of the member
-     */
-    var nickname: String? = null
-
-    /**
-     * A list of role ids the member will get
-     */
-    val roleIds = mutableListOf<Snowflake>()
-
-    /**
-     * Whether the member should be muted
-     */
-    var mute: Boolean? = null
-
-    /**
-     * Whether the member should be deafend
-     */
-    var deaf: Boolean? = null
-    private var channelId: Snowflake? = null
-
-    /**
-     * Adds a role to the member
-     */
-    fun role(role: Role) {
-        roleIds += role.id
-    }
-
-    /**
-     * Moves the member to a voice channel
-     */
-    fun moveTo(voiceChannel: VoiceChannel) {
-        channelId = voiceChannel.id
-    }
-
-    fun build() = buildJsonObject {
-        putOptional("nickname", nickname)
-        putOptional("roles", roleIds.ifEmpty { null })
-        putOptional("mute", mute)
-        putOptional("deaf", deaf)
-        putOptional("channel_id", channelId)
-    }
 
 }

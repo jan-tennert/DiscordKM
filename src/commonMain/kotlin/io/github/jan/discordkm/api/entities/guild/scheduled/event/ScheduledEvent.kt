@@ -13,6 +13,8 @@ import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.ScheduledEventModifier
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.CacheEntity
+import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
@@ -25,10 +27,11 @@ import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.jsonObject
 
-interface ScheduledEvent : SnowflakeEntity, GuildEntity, Modifiable<ScheduledEventModifier, ScheduledEventCacheEntry> {
+interface ScheduledEvent : SnowflakeEntity, GuildEntity, Modifiable<ScheduledEventModifier, ScheduledEventCacheEntry>, CacheEntity {
 
-    //modify
-    //retrieve
+    override val cache: ScheduledEventCacheEntry?
+        get() = guild.cache?.scheduledEvents?.get(id)
+
     /**
      * Deletes this scheduled event
      */
@@ -40,12 +43,14 @@ interface ScheduledEvent : SnowflakeEntity, GuildEntity, Modifiable<ScheduledEve
      * Retrieves the users who are interested in this scheduled event
      * @param limit The maximum amount of users to retrieve. 1-100
      */
-    suspend fun retrieveUsers(limit: Int = 100) = client.buildRestAction<List<User>> {
+    suspend fun retrieveUsers(limit: Int = 100, before: Snowflake? = null, after: Snowflake? = null) = client.buildRestAction<List<User>> {
         route = Route.ScheduledEvent.GET_USERS(guild.id, id).get {
             put("limit", limit)
+            putOptional("before", before?.string)
+            putOptional("after", after?.string)
         }
         transform {
-            it.toJsonArray().map { u -> User(u.jsonObject, client) }
+            it.toJsonArray().map { u -> User(u.jsonObject["user"]!!.jsonObject, client) }
         }
         check {
             if(limit < 1 || limit > 100) throw IllegalArgumentException("Limit must be between 1 and 100")
@@ -86,9 +91,15 @@ interface ScheduledEvent : SnowflakeEntity, GuildEntity, Modifiable<ScheduledEve
     }
 
     class EventMetadata(
-        val speakers: List<User>,
         val location: String?
     )
+
+    companion object {
+        operator fun invoke(id: Snowflake, guild: Guild) = object : ScheduledEvent {
+            override val guild = guild
+            override val id = id
+        }
+    }
 
 }
 
@@ -122,4 +133,4 @@ class ScheduledEventCacheEntry(
     val entity: StageInstance?,
     val userCount: Int,
     val metadata: ScheduledEvent.EventMetadata?
-) : ScheduledEvent, Nameable
+) : ScheduledEvent, Nameable, CacheEntry

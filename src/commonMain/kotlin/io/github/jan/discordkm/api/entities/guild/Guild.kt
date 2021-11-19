@@ -320,6 +320,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
         PRIVATE_THREADS,
         THREADS_ENABLED,
         NEW_THREAD_PERMISSIONS,
+        CHANNEL_BANNER,
         ROLE_ICONS;
 
         override val value: String
@@ -507,7 +508,8 @@ class GuildCacheEntry(
     val publicUpdatesChannelId: Snowflake?,
     val ownerId: Snowflake,
     val welcomeScreen: Guild.WelcomeScreen?,
-    val discoveryHash: String?
+    val discoveryHash: String?,
+    val hasPremiumProgressBarEnabled: Boolean
 ) : Guild, Nameable, CacheEntry {
 
     //cache
@@ -533,8 +535,8 @@ class GuildCacheEntry(
     override val scheduledEvents: CacheScheduledEventContainer
         get() = CacheScheduledEventContainer(this, cacheManager.guildScheduledEventCache.safeValues)
 
-    val everyoneRole: Role
-        get() = cacheManager.roleCache.safeValues.first { it.name == "@everyone" }
+    val publicRole: RoleCacheEntry
+        get() = cacheManager.roleCache.safeValues.first { it.id == id }
 
     /**
      * The discovery image shown on the discovery tab

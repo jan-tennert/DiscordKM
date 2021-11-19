@@ -1,24 +1,72 @@
 package io.github.jan.discordkm.api.events
 
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.Intent
+import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntry
 
 interface ScheduledEventEvent : Event {
 
-    val scheduledEvent: ScheduledEventCacheEntry
+    val scheduledEvent: ScheduledEvent
     override val client: Client
         get() = scheduledEvent.client
 
 }
 
-class ScheduledEventCreate(override val scheduledEvent: ScheduledEventCacheEntry) : ScheduledEventEvent
-class ScheduledEventUpdate(override val scheduledEvent: ScheduledEventCacheEntry, val oldScheduledEvent: ScheduledEventCacheEntry?) : ScheduledEventEvent
-class ScheduledEventDelete(override val scheduledEvent: ScheduledEventCacheEntry) : ScheduledEventEvent
+/**
+ * Fired when a scheduled event was created
+ *
+ * Requires the intent [Intent.GUILD_SCHEDULED_EVENTS]
+ */
+class ScheduledEventCreateEvent(override val scheduledEvent: ScheduledEventCacheEntry) : ScheduledEventEvent
 
-//context specific
+/**
+ * Fired when a scheduled event was updated
+ *
+ * Requires the intent [Intent.GUILD_SCHEDULED_EVENTS]
+ */
+class ScheduledEventUpdateEvent(override val scheduledEvent: ScheduledEventCacheEntry, val oldScheduledEvent: ScheduledEventCacheEntry?) : ScheduledEventEvent
+
+/**
+ * Fired when a scheduled event was deleted
+ *
+ * Requires the intent [Intent.GUILD_SCHEDULED_EVENTS]
+ */
+class ScheduledEventDeleteEvent(override val scheduledEvent: ScheduledEventCacheEntry) : ScheduledEventEvent
+
+/**
+ * Fired when a scheduled event was started
+ *
+ * Requires the intent [Intent.GUILD_SCHEDULED_EVENTS]
+ */
 class ScheduledEventStartEvent(override val scheduledEvent: ScheduledEventCacheEntry) : ScheduledEventEvent
+
+/**
+ * Fired when a scheduled event was completed
+ *
+ * Requires the intent [Intent.GUILD_SCHEDULED_EVENTS]
+ */
 class ScheduledEventCompleteEvent(override val scheduledEvent: ScheduledEventCacheEntry) : ScheduledEventEvent
+
+/**
+ * Fired when a scheduled event was canceled
+ *
+ * Requires the intent [Intent.GUILD_SCHEDULED_EVENTS]
+ */
 class ScheduledEventCancelEvent(override val scheduledEvent: ScheduledEventCacheEntry) : ScheduledEventEvent
 
-//user add
+/**
+ * Fired when a user clicks on the "interested" button on a scheduled event
+ *
+ * Requires the intent [Intent.GUILD_SCHEDULED_EVENTS]
+ */
+class ScheduledEventUserAddEvent(override val scheduledEvent: ScheduledEvent, val user: User, val guild: Guild) : ScheduledEventEvent
+
+/**
+ * Fired when a user uninterested on a scheduled event
+ *
+ * Requires the intent [Intent.GUILD_SCHEDULED_EVENTS]
+ */
+class ScheduledEventUserRemoveEvent(override val scheduledEvent: ScheduledEvent, val user: User, val guild: Guild) : ScheduledEventEvent

@@ -32,8 +32,8 @@ object MemberSerializer : GuildEntitySerializer<MemberCacheEntry> {
             id = user.id,
             avatarHash = data["avatar", true]?.string,
             premiumSince = data["premium_since", true]?.isoTimestamp,
-            isPending = data["pending", true]?.boolean ?: false
-            //permissions?
+            isPending = data["pending", true]?.boolean ?: false,
+            timeoutUntil = data["communication_disabled_until", true]?.isoTimestamp
         ).apply {
             cacheManager.roleCache.putAll(data["roles"]!!.jsonArray.map { Role(it.snowflake, value) }.associateBy { it.id })
         }

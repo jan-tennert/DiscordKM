@@ -9,7 +9,6 @@
  */
 package io.github.jan.discordkm.api.entities.activity
 
-import io.github.jan.discordkm.DiscordEnum
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.Serializable

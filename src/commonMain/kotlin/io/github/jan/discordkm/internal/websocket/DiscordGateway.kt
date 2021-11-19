@@ -50,6 +50,8 @@ import io.github.jan.discordkm.internal.events.RoleUpdateEventHandler
 import io.github.jan.discordkm.internal.events.ScheduledEventCreateHandler
 import io.github.jan.discordkm.internal.events.ScheduledEventDeleteHandler
 import io.github.jan.discordkm.internal.events.ScheduledEventUpdateHandler
+import io.github.jan.discordkm.internal.events.ScheduledEventUserAddEventHandler
+import io.github.jan.discordkm.internal.events.ScheduledEventUserRemoveEventHandler
 import io.github.jan.discordkm.internal.events.SelfUserUpdateEventHandler
 import io.github.jan.discordkm.internal.events.StageInstanceCreateEventHandler
 import io.github.jan.discordkm.internal.events.StageInstanceDeleteEventHandler
@@ -269,6 +271,8 @@ class DiscordGateway(
                 "GUILD_SCHEDULED_EVENT_CREATE" -> ScheduledEventCreateHandler(client).handle(payload.eventData!!)
                 "GUILD_SCHEDULED_EVENT_UPDATE" -> ScheduledEventUpdateHandler(client).handle(payload.eventData!!)
                 "GUILD_SCHEDULED_EVENT_DELETE" -> ScheduledEventDeleteHandler(client).handle(payload.eventData!!)
+                "GUILD_SCHEDULED_EVENT_USER_ADD" -> ScheduledEventUserAddEventHandler(client).handle(payload.eventData!!)
+                "GUILD_SCHEDULED_EVENT_USER_REMOVE" -> ScheduledEventUserRemoveEventHandler(client).handle(payload.eventData!!)
 
                 //invites
                 "INVITE_CREATE" -> InviteCreateEventHandler(client).handle(payload.eventData!!)

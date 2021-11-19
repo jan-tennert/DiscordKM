@@ -38,9 +38,8 @@ object ScheduledEventSerializer : BaseEntitySerializer<ScheduledEventCacheEntry>
             data["entity_id", false]?.let { StageInstance(it.snowflake, channel as StageChannel) },
             data["user_count", false]?.int ?: 0,
             data["metadata", false]?.jsonObject?.let {
-                val speakers = it["speaker_ids"]?.jsonArray?.map { u -> User(u.snowflake, value) }
                 val location = it["location", false]?.string
-                ScheduledEvent.EventMetadata(speakers ?: emptyList(), location)
+                ScheduledEvent.EventMetadata(location)
             }
         )
     }

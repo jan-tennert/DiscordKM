@@ -20,13 +20,12 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.reflect.KProperty
 
-open class User protected constructor(override val id: Snowflake, override val client: Client) : Mentionable, SnowflakeEntity, Reference<User>, BaseEntity, CacheEntity {
+interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntity, CacheEntity {
 
     override val asMention: String
         get() = "<@$id>"
     override val cache: UserCacheEntry?
         get() = client.cacheManager.userCache[id]
-
     /**
      * Creates a new [PrivateChannel]
      */
@@ -82,7 +81,10 @@ open class User protected constructor(override val id: Snowflake, override val c
     override suspend fun retrieve() = client.users.retrieve(id)
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client) = User(id, client)
+        operator fun invoke(id: Snowflake, client: Client) = object : User {
+            override val id: Snowflake = id
+            override val client: Client = client
+        }
         operator fun invoke(data: JsonObject, client: Client) = UserSerializer.deserialize(data, client)
     }
 
@@ -109,16 +111,16 @@ data class UserCacheEntry (
     val isBot: Boolean,
     val isSystem: Boolean,
     val hasMfaEnabled: Boolean,
-    val flags: Set<UserFlag>,
-    val premiumType: PremiumType,
-    val publicFlags: Set<UserFlag>,
+    val flags: Set<User.UserFlag>,
+    val premiumType: User.PremiumType,
+    val publicFlags: Set<User.UserFlag>,
     override val client: Client
-) : User(id, client), CacheEntry, Nameable {
+) : User, CacheEntry, Nameable {
 
     /**
      * Whether this user has nitro or not
      */
-    val hasNitro = premiumType != PremiumType.NONE;
+    val hasNitro = premiumType != User.PremiumType.NONE;
 
     /**
      * The avatar url of the user

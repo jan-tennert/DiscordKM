@@ -9,7 +9,8 @@
  */
 package io.github.jan.discordkm.api.entities.guild.auditlog
 
-import io.github.jan.discordkm.DiscordEnum
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -18,7 +19,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 @Serializable(with = AuditActionEventSerializer::class)
-enum class AuditLogAction(val value: Int) {
+enum class AuditLogAction(override val value: Int) : EnumWithValue<Int> {
     GUILD_UPDATE(1),
     CHANNEL_CREATE(10),
     CHANNEL_UPDATE(11),
@@ -64,11 +65,7 @@ enum class AuditLogAction(val value: Int) {
     THREAD_UPDATE(111),
     THREAD_DELETE(112);
 
-    companion object : DiscordEnum<Int, AuditLogAction> {
-
-        override operator fun get(key: Int) = values().first { it.value == key }
-
-    }
+    companion object : EnumWithValueGetter<AuditLogAction, Int>(values())
 }
 
 object AuditActionEventSerializer: KSerializer<AuditLogAction> {

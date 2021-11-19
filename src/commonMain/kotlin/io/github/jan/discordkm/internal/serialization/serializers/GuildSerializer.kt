@@ -66,6 +66,7 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
             systemChannelFlags = data["system_channel_flags", true]?.long?.let { Guild.SystemChannelFlag.decode(it) }
                 ?: setOf(),
             ownerId = data["owner_id"]!!.snowflake,
+            hasPremiumProgressBarEnabled = data["premium_progress_bar_enabled", true]?.boolean ?: false,
         ).apply {
             data["roles"]?.jsonArray?.map { Role(it.jsonObject, basicGuild) }?.let { data ->
                 cacheManager.roleCache.putAll(data.associateBy { it.id })
