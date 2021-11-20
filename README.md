@@ -29,7 +29,7 @@ You can create a client easily by just using buildClient:
 
     loggingLevel = Logger.Level.WARN
     reconnectDelay = 10.seconds
-    enabledCache -= Cache.VOICE_STATES //remove caches you don't need
+    enabledCache -= CacheFlag.VOICE_STATES //remove caches you don't need
 }
 
 client.on<MessageCreateEvent> {
