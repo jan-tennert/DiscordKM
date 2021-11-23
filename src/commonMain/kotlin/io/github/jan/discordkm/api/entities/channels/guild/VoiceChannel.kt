@@ -9,6 +9,7 @@ import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.entities.channels.Invitable
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -19,7 +20,7 @@ import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 
-interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceChannelCacheEntry> {
+interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceChannelCacheEntry>, InvitableGuildChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_VOICE
@@ -35,8 +36,9 @@ interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceCha
         throw UnsupportedOperationException("You can't join a voice channel without having a gateway connection!")
     }
 
-    override suspend fun modify(modifier: VoiceChannelModifier.() -> Unit) = client.buildRestAction<VoiceChannelCacheEntry> {
+    override suspend fun modify(reason: String?, modifier: VoiceChannelModifier.() -> Unit) = client.buildRestAction<VoiceChannelCacheEntry> {
         route = Route.Channel.MODIFY_CHANNEL(id).patch(VoiceChannelModifier(ChannelType.GUILD_VOICE).apply(modifier).data)
+        this.reason = reason
         transform { ChannelSerializer.deserializeChannel(it.toJsonObject(), guild) }
     }
 

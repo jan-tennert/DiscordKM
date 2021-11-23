@@ -22,15 +22,15 @@ class RestAction<T>(val client: Client)  {
     private lateinit var transformer: (String) -> T
     private var check: () -> Unit = {  }
     private var onFinish: RestActionListener<T> = {}
+    var reason: String? = null
 
     fun transform(transform: (String) -> T) {
         this.transformer = transform
     }
 
-    @PublishedApi
-    internal suspend fun await(): T {
+    suspend fun await(): T {
         check()
-        val json = client.rest.custom(route.method, route.endpoint, route.body)
+        val json = client.rest.custom(route.method, route.endpoint, route.body, reason)
         val result = if(!this::transformer.isInitialized) Unit as T else transformer(json)
         onFinish(result)
         return result

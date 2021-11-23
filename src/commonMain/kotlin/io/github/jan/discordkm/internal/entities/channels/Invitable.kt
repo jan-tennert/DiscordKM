@@ -37,10 +37,12 @@ interface Invitable : SnowflakeEntity, BaseEntity {
 
     /**
      * Creates a new invite for this channel
+     * @param reason The reason which will be displayed in the audit logs
      */
-    suspend fun createInvite(builder: InviteBuilder.() -> Unit) = client.buildRestAction<Invite> {
+    suspend fun createInvite(reason: String? = null, builder: InviteBuilder.() -> Unit) = client.buildRestAction<Invite> {
         route = Route.Invite.CREATE_CHANNEL_INVITE(id).post(Json.encodeToJsonElement(InviteBuilder().apply(builder).data))
         transform { Invite(client, it.toJsonObject()) }
+        this.reason = reason
     }
 
 }

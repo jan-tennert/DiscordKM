@@ -10,11 +10,25 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelModifier
 import io.github.jan.discordkm.api.entities.modifiers.guild.MessageChannelModifier
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.channels.Invitable
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.restaction.buildRestAction
 
 interface GuildMessageChannel : GuildChannel, MessageChannel {
 
     override val cache: GuildMessageChannelCacheEntry?
+
+    /**
+     * Removes the specified message from this channel
+     * @param reason The reason which will be displayed in the audit log
+     * @param messageIds The ids of the messages which are going to be removed
+     */
+    suspend fun removeMessages(vararg messageIds: Snowflake, reason: String? = null) = client.buildRestAction<Unit> {
+        route = Route.Message.BULK_DELETE(id).delete()
+        this.reason = reason
+    }
 
     companion object {
         operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? GuildMessageChannelCacheEntry ?: object : GuildMessageChannel {

@@ -194,8 +194,19 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
     /**
      * Modifies this guild
      */
-    override suspend fun modify(modifier: GuildModifier.() -> Unit) = client.buildRestAction<Unit> {
+    override suspend fun modify(reason: String?, modifier: GuildModifier.() -> Unit) = client.buildRestAction<Unit> {
         route = Route.Guild.MODIFY_GUILD(id).patch(GuildModifier().apply(modifier).data)
+        this.reason = reason
+    }
+
+    /**
+     * Set's the bots nickname. When [nickname] is null, it will reset the nickname (and will use the bot's username).
+     */
+    suspend fun setOwnNickname(nickname: String?, reason: String? = null) = client.buildRestAction<Unit> {
+        route = Route.Guild.MODIFY_CURRENT_MEMBER(id).patch(buildJsonObject {
+            put("nick", nickname)
+        })
+        this.reason = reason
     }
 
     /**

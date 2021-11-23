@@ -30,9 +30,10 @@ open class GuildChannelContainer(override val guild: Guild) : GuildEntity {
      * Creates a guild channel
      * @param type The type
      **/
-    suspend inline fun <reified C: GuildChannel, M: GuildChannelModifier, T : GuildChannelBuilder<M, C>> create(type: T, noinline builder: M.() -> Unit) : C = guild.client.buildRestAction<C> {
+    suspend inline fun <reified C: GuildChannel, M: GuildChannelModifier, T : GuildChannelBuilder<M, C>> create(type: T, reason: String? = null, noinline builder: M.() -> Unit) : C = guild.client.buildRestAction<C> {
         route = Route.Channel.CREATE_CHANNEL(guild.id).post(type.create(builder).data)
         transform { ChannelSerializer.deserializeChannel(it.toJsonObject(), guild) as C }
+        this.reason = reason
     }
 
 }

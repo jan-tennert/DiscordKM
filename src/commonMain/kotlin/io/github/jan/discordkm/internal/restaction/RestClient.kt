@@ -40,15 +40,18 @@ class RestClient(val client: Client, httpClientConfig: HttpClientConfig<*>.() ->
     }
     val rateLimiter = RateLimiter(client.loggingLevel)
 
-    suspend fun custom(method: HttpMethod, endpoint: String, data: Any? = null) = when(method.value) {
+    suspend fun custom(method: HttpMethod, endpoint: String, data: Any? = null, reason: String? = null) = when(method.value) {
         "GET" -> {
             rateLimiter.queue(endpoint) {
-                http.get<HttpResponse>(generateUrl(endpoint))
+                http.get<HttpResponse>(generateUrl(endpoint)) {
+                    header("X-Audit-Log-Reason", reason)
+                }
             }.receive<String>()
         }
         "POST" -> {
             rateLimiter.queue(endpoint) {
                 http.post<HttpResponse>(generateUrl(endpoint)) {
+                    header("X-Audit-Log-Reason", reason)
                     data?.let {
                         body = if(it is MultiPartFormDataContent) {
                             it
@@ -62,12 +65,15 @@ class RestClient(val client: Client, httpClientConfig: HttpClientConfig<*>.() ->
         }
         "DELETE" -> {
             rateLimiter.queue(endpoint) {
-                http.delete<HttpResponse>(generateUrl(endpoint))
+                http.delete<HttpResponse>(generateUrl(endpoint)) {
+                    header("X-Audit-Log-Reason", reason)
+                }
             }.receive<String>()
         }
         "PATCH" -> {
             rateLimiter.queue(endpoint) {
                 http.patch<HttpResponse>(generateUrl(endpoint)) {
+                    header("X-Audit-Log-Reason", reason)
                     data?.let {
                         body = if(it is MultiPartFormDataContent) {
                             it
@@ -82,6 +88,7 @@ class RestClient(val client: Client, httpClientConfig: HttpClientConfig<*>.() ->
         "PUT" -> {
             rateLimiter.queue(endpoint) {
                 http.put(generateUrl(endpoint)) {
+                    header("X-Audit-Log-Reason", reason)
                     data?.let {
                         body = if(it is MultiPartFormDataContent) {
                             it

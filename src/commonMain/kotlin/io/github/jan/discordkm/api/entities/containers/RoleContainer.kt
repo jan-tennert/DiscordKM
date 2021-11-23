@@ -39,9 +39,10 @@ open class GuildRoleContainer(val guild: Guild) {
      *
      * Requires the permission [Permission.MANAGE_ROLES]
      */
-    suspend fun create(builder: RoleModifier.() -> Unit) = guild.client.buildRestAction<Role> {
+    suspend fun create(reason: String? = null, builder: RoleModifier.() -> Unit) = guild.client.buildRestAction<Role> {
         route = Route.Role.CREATE_ROLE(guild.id).post(RoleModifier().apply(builder).data)
         transform { RoleSerializer.deserialize(it.toJsonObject(), guild) }
+        this.reason = reason
     }
 
 }

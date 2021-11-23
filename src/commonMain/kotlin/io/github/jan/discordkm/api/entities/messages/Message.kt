@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.api.entities.messages
 
 import com.soywiz.klock.DateTimeTz
+import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
@@ -46,6 +47,7 @@ import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.serializers.MessageSerializer
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
+import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -79,11 +81,12 @@ interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
     /**
      * Deletes the message in the channel
      * Needs [Permission.MANAGE_MESSAGES] to delete other's messages
+     * @param reason The reason which will be displayed in the audit logs
      */
-    suspend fun delete() = client.buildRestAction<Unit> {
+    suspend fun delete(reason: String? = null) = client.buildRestAction<Unit> {
         route = Route.Message.DELETE_MESSAGE(channel.id.toString(), id).delete()
+        this.reason = reason
     }
-
 
     /**
      * Edits this message
@@ -124,27 +127,33 @@ interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
      * Creates a thread from this message
      * @param name The name this thread will get
      * @param autoArchiveDuration The [Thread.ThreadDuration] after the thread will be achieved
+     * @param slowModeTime The time in seconds after which a user can send another message
+     * @param reason The reason which will be displayed in the audit logs
      */
-    suspend fun createThread(name: String, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY) = client.buildRestAction<Thread> {
+    suspend fun createThread(name: String, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY, slowModeTime: TimeSpan? = null, reason: String? = null) = client.buildRestAction<Thread> {
         route = Route.Thread.START_THREAD_WITH_MESSAGE(channel.id, id).post(buildJsonObject {
             put("name", name)
+            putOptional("rate_limit_per_user", slowModeTime?.seconds)
             put("auto_archive_duration", autoArchiveDuration.duration.minutes.toInt())
         })
         transform { Thread(it.toJsonObject(), guild!!) }
+        this.reason = reason
     }
 
     /**
      * Pins this message in this channel
      */
-    suspend fun pin() = client.buildRestAction<Unit> {
+    suspend fun pin(reason: String? = null) = client.buildRestAction<Unit> {
         route = Route.Message.PIN_MESSAGE(channel.id, id).put()
+        this.reason = reason
     }
 
     /**
      * Unpins this message in this channel
      */
-    suspend fun unpin() = client.buildRestAction<Unit> {
+    suspend fun unpin(reason: String? = null) = client.buildRestAction<Unit> {
         route = Route.Message.UNPIN_MESSAGE(channel.id, id).delete()
+        this.reason = reason
     }
 
     /**

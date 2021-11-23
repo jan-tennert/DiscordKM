@@ -6,10 +6,11 @@ import io.github.jan.discordkm.api.entities.Modifier
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.guild.Role
+import io.github.jan.discordkm.api.entities.modifiers.BaseModifier
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.buildJsonObject
 
-class MemberModifier : Modifier {
+class MemberModifier : BaseModifier {
 
     /**
      * The new nickname of the member
@@ -48,7 +49,7 @@ class MemberModifier : Modifier {
         channelId = voiceChannel.id
     }
 
-    override fun build() = buildJsonObject {
+    override val data get() = buildJsonObject {
         putOptional("nickname", nickname)
         putOptional("roles", roles.ifEmpty { null })
         putOptional("mute", mute)

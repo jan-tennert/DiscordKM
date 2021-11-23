@@ -55,8 +55,9 @@ interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, ThreadCacheEn
         route = Route.Thread.LEAVE_THREAD(id).delete()
     }
 
-    override suspend fun modify(modifier: ThreadModifier.() -> Unit) = client.buildRestAction<ThreadCacheEntry> {
+    override suspend fun modify(reason: String?, modifier: ThreadModifier.() -> Unit) = client.buildRestAction<ThreadCacheEntry> {
         route = Route.Channel.MODIFY_CHANNEL(id).patch(ThreadModifier().apply(modifier).data)
+        this.reason = reason
         transform { ChannelSerializer.deserializeChannel(it.toJsonObject(), guild) }
     }
 

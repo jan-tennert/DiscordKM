@@ -204,6 +204,7 @@ object Route {
         const val GET_WELCOME_SCREEN = "/guilds/%s/welcome-screen"
         const val MODIFY_WELCOME_SCREEN = "/guilds/%s/welcome-screen"
         const val GET_AUDIT_LOGS = "/guilds/%s/audit-logs"
+        const val MODIFY_CURRENT_MEMBER = "/guilds/%s/members/@me"
 
         //integrations
         //prune ?

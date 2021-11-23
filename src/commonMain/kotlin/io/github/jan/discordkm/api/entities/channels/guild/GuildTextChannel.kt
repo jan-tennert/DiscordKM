@@ -2,6 +2,7 @@ package io.github.jan.discordkm.api.entities.channels.guild
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
+import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.containers.CacheGuildThreadContainer
@@ -15,13 +16,49 @@ import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
+import io.github.jan.discordkm.internal.post
+import io.github.jan.discordkm.internal.restaction.RestAction.Companion.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
+import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 
-interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier, GuildTextChannelCacheEntry> {
+interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier, GuildTextChannelCacheEntry>, InvitableGuildChannel {
+
+    /**
+     * Creates a new public thread in this channel.
+     * @param name The name of the thread.
+     * @param autoArchiveDuration The time after which the thread will be automatically archived.
+     * @param slowModeTime The time after users will be able to send another message
+     * @param reason The reason which will be displayed in the audit logs
+     * @param invitable Whether the thread can be joined by anyone
+     */
+    suspend fun createPublicThread(name: String, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY, slowModeTime: TimeSpan? = null, reason: String? = null, invitable: Boolean? = null) = createThread(name, ChannelType.GUILD_PUBLIC_THREAD, autoArchiveDuration, slowModeTime, reason, invitable)
+
+    /**
+     * Creates a new private thread in this channel.
+     * @param name The name of the thread.
+     * @param autoArchiveDuration The time after which the thread will be automatically archived.
+     * @param slowModeTime The time after users will be able to send another message
+     * @param reason The reason which will be displayed in the audit logs
+     * @param invitable Whether the thread can be joined by anyone
+     */
+    suspend fun createPrivateThread(name: String, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY, slowModeTime: TimeSpan? = null, reason: String? = null, invitable: Boolean? = null) = createThread(name, ChannelType.GUILD_PRIVATE_THREAD, autoArchiveDuration, slowModeTime, reason, invitable)
+
+    suspend fun createThread(name: String, type: ChannelType, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY, slowModeTime: TimeSpan? = null, reason: String? = null, invitable: Boolean? = null) = client.buildRestAction<Unit> {
+        transform { Thread(it.toJsonObject(), guild) }
+        route = Route.Thread.START_THREAD(id).post(buildJsonObject {
+            put("name", name)
+            putOptional("rate_limit_per_user", slowModeTime?.seconds)
+            put("auto_archive_duration", autoArchiveDuration.duration.minutes.toInt())
+            put("invitable", invitable)
+        })
+        this.reason = reason
+    }
 
     /**
      * Retrieves all public achieved threads
@@ -62,8 +99,9 @@ interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier
         transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(thread.jsonObject, guild) }}
     }
 
-    override suspend fun modify(modifier: TextChannelModifier.() -> Unit) = client.buildRestAction<GuildTextChannelCacheEntry> {
+    override suspend fun modify(reason: String?, modifier: TextChannelModifier.() -> Unit) = client.buildRestAction<GuildTextChannelCacheEntry> {
         route = Route.Channel.MODIFY_CHANNEL(id).patch(TextChannelModifier().apply(modifier).data)
+        this.reason = reason
         transform { ChannelSerializer.deserialize(it.toJsonObject(), guild) as GuildTextChannelCacheEntry }
     }
 

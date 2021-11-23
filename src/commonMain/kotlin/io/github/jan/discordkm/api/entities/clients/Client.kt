@@ -78,7 +78,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabl
     /**
      * Edits the bot's user
      */
-    suspend fun editSelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<User> {
+    suspend fun modifySelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<User> {
         val edit = SelfUserEdit()
         edit.builder()
         route = Route.User.MODIFY_SELF_USER.patch(buildJsonObject {
@@ -92,7 +92,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabl
     /**
      * Edits the bot's user
      */
-    suspend fun editSelfUser(username: String, image: Image? = null) = editSelfUser {
+    suspend fun modifySelfUser(username: String, image: Image? = null) = modifySelfUser {
         this.username = username
         this.image = image
     }

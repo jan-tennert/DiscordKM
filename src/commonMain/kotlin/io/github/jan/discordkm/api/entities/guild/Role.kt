@@ -22,6 +22,7 @@ import io.github.jan.discordkm.api.entities.modifiers.guild.RoleModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
+import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -30,6 +31,9 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.put
 
 open class Role protected constructor(override val id: Snowflake, override val guild: Guild) : Mentionable, SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<RoleModifier, RoleCacheEntry> {
 
@@ -42,9 +46,31 @@ open class Role protected constructor(override val id: Snowflake, override val g
     override val cache: RoleCacheEntry?
         get() = guild.cache?.cacheManager?.roleCache?.get(id)
 
-    override suspend fun modify(modifier: RoleModifier.() -> Unit) = client.buildRestAction<RoleCacheEntry> {
+    override suspend fun modify(reason: String?, modifier: RoleModifier.() -> Unit) = client.buildRestAction<RoleCacheEntry> {
         route = Route.Role.MODIFY_ROLE(guild.id, id).patch(RoleModifier().apply(modifier).data)
         transform { RoleSerializer.deserialize(it.toJsonObject(), guild) }
+        this.reason
+    }
+
+    /**
+     * Sets the role's position
+     */
+    suspend fun setPosition(position: Int? = null, reason: String? = null) = client.buildRestAction<Unit> {
+        route = Route.Role.MODIFY_ROLE_POSITION(guild.id).patch(buildJsonArray {
+            addJsonObject {
+                put("id", id.string)
+                put("position", position)
+            }
+        })
+        this.reason = reason
+    }
+
+    /**
+     * Deletes this role
+     */
+    suspend fun delete(reason: String? = null) = client.buildRestAction<Unit> {
+        route = Route.Role.DELETE_ROLE(guild.id, id).delete()
+        this.reason = reason
     }
 
     override fun toString() = "Role[id=$id]"

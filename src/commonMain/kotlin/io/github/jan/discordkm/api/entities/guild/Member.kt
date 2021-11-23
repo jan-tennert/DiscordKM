@@ -23,6 +23,7 @@ import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.containers.CacheMemberRoleContainer
 import io.github.jan.discordkm.api.entities.containers.MemberRoleContainer
+import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.MemberModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
@@ -40,7 +41,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlin.jvm.JvmName
 
-interface Member : SnowflakeEntity, GuildEntity, CacheEntity {
+interface Member : SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<MemberModifier, Member> {
 
     override val cache: MemberCacheEntry?
         get() = guild.cache?.members?.get(id)
@@ -52,9 +53,10 @@ interface Member : SnowflakeEntity, GuildEntity, CacheEntity {
     /**
      * Modifies this user
      */
-    suspend fun modify(modifier: MemberModifier.() -> Unit) = client.buildRestAction<Member> {
-        route = Route.Member.MODIFY_MEMBER(guild.id, id).patch(MemberModifier().apply(modifier).build())
+    override suspend fun modify(reason: String?, modifier: MemberModifier.() -> Unit) = client.buildRestAction<Member> {
+        route = Route.Member.MODIFY_MEMBER(guild.id, id).patch(MemberModifier().apply(modifier).data)
         transform { Member(it.toJsonObject(), guild) }
+        this.reason = reason
     }
 
     /**
@@ -69,7 +71,7 @@ interface Member : SnowflakeEntity, GuildEntity, CacheEntity {
      *
      * Requires the permission [Permission.BAN_MEMBERS]
      */
-    suspend fun ban(delDays: Int?) = guild.members.ban(id, delDays)
+    suspend fun ban(delDays: Int?) = guild.members.ban(id, null, delDays)
 
     companion object {
         operator fun invoke(id: Snowflake, guild: Guild) = object : Member {

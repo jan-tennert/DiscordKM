@@ -72,16 +72,16 @@ open class GuildMemberContainer(val guild: Guild) {
      *
      * Requires the permission [Permission.BAN_MEMBERS]
      */
-    suspend fun ban(userId: Snowflake, delDays: Int? = null) = guild.client.buildRestAction<Unit> {
+    suspend fun ban(userId: Snowflake, reason: String? = null, delDays: Int? = null) = guild.client.buildRestAction<Unit> {
         route = Route.Ban.CREATE_BAN(guild.id, userId).put(buildJsonObject {
             putOptional("delete_message_days", delDays)
         })
-        transform {  }
         check {
             if (delDays != null) {
                 if(delDays > 7 || delDays < 0) throw IllegalArgumentException("The delDays have to be between 0 and 7")
             }
         }
+        this.reason = reason
     }
 
     /**
@@ -89,9 +89,9 @@ open class GuildMemberContainer(val guild: Guild) {
      *
      * Requires the permission [Permission.BAN_MEMBERS]
      */
-    suspend fun unban(userId: Snowflake) = guild.client.buildRestAction<Unit> {
+    suspend fun unban(userId: Snowflake, reason: String? = null) = guild.client.buildRestAction<Unit> {
         route = Route.Ban.REMOVE_BAN(guild.id, userId).delete()
-        transform {  }
+        this.reason = reason
     }
 
 }

@@ -36,8 +36,9 @@ interface StageInstance : SnowflakeEntity, BaseEntity {
     /**
      * Deletes this stage instance
      */
-    suspend fun delete() = client.buildRestAction<Unit> {
+    suspend fun delete(reason: String? = null) = client.buildRestAction<Unit> {
         route = Route.StageInstance.DELETE_INSTANCE(stageChannel.id).delete()
+        this.reason = reason
     }
 
     /**
@@ -45,12 +46,13 @@ interface StageInstance : SnowflakeEntity, BaseEntity {
      * @param topic The new topic for this stage instance
      * @param privacyLevel The new privacy level for this stage instance
      */
-    suspend fun modify(topic: String? = null, privacyLevel: PrivacyLevel? = null) = client.buildRestAction<StageInstanceCacheEntry> {
+    suspend fun modify(topic: String? = null, privacyLevel: PrivacyLevel? = null, reason: String? = null) = client.buildRestAction<StageInstanceCacheEntry> {
         route = Route.StageInstance.MODIFY_INSTANCE(stageChannel.id).patch(buildJsonObject {
             putOptional("topic", topic)
             putOptional("privacy_level", privacyLevel?.value)
         })
         transform { StageInstance(it.toJsonObject(), client) }
+        this.reason = reason
     }
 
     companion object {

@@ -34,9 +34,11 @@ interface Channel : SnowflakeEntity, BaseEntity, Mentionable, CacheEntity {
 
     /**
      * Deletes this channel
+     * @param reason The reason which will be displayed in the audit logs
      */
-    suspend fun delete() = client.buildRestAction<Unit> {
+    suspend fun delete(reason: String? = null) = client.buildRestAction<Unit> {
         route = Route.Channel.DELETE_CHANNEL(id).delete()
+        this.reason = reason
     }
 
     companion object {

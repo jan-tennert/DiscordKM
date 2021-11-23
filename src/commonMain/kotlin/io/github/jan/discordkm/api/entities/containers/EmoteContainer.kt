@@ -57,20 +57,24 @@ open class EmoteContainer(val guild: Guild) {
      * Modifies an existing guild emote
      * @param name The name of the emote
      * @param allowedRoleIds The roles that can use this emote
+     * @param reason The reason which will be displayed in the audit logs
      */
-    suspend fun modify(id: Snowflake, name: String? = null, allowedRoleIds: List<Snowflake>? = null) = guild.client.buildRestAction<Emoji.Emote> {
+    suspend fun modify(id: Snowflake, name: String? = null, allowedRoleIds: List<Snowflake>? = null, reason: String? = null) = guild.client.buildRestAction<Emoji.Emote> {
         route = Route.Emoji.MODIFY_EMOJI(guild.id, id).post(buildJsonObject {
             putOptional("name", name)
             putJsonArray("roles") { allowedRoleIds?.forEach { add(it.string) } }
         })
         transform { GuildSerializer.deserializeGuildEmote(it.toJsonObject(), client) }
+        this.reason = reason
     }
 
     /**
      * Deletes a guild emote by its id
+     * @param reason The reason which will be displayed in the audit logs
      */
-    suspend fun delete(id: Snowflake) = guild.client.buildRestAction<Unit> {
+    suspend fun delete(id: Snowflake, reason: String? = null) = guild.client.buildRestAction<Unit> {
         route = Route.Emoji.DELETE_EMOJI(guild.id, id).delete()
+        this.reason = reason
     }
 
 }

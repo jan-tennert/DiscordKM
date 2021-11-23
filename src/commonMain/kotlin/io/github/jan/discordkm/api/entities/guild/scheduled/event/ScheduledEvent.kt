@@ -57,9 +57,10 @@ interface ScheduledEvent : SnowflakeEntity, GuildEntity, Modifiable<ScheduledEve
         }
     }
 
-    override suspend fun modify(modifier: ScheduledEventModifier.() -> Unit) = client.buildRestAction<ScheduledEventCacheEntry> {
+    override suspend fun modify(reason: String?, modifier: ScheduledEventModifier.() -> Unit) = client.buildRestAction<ScheduledEventCacheEntry> {
         route = Route.ScheduledEvent.MODIFY_EVENT(guild.id, id).patch(ScheduledEventModifier().apply(modifier).data)
         transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), client) }
+        this.reason = reason
     }
 
     /**

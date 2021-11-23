@@ -13,6 +13,7 @@ import io.github.jan.discordkm.api.entities.messages.buildEmbed
 import io.github.jan.discordkm.api.entities.messages.buildMessage
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.MessageCacheManager
+import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -21,6 +22,16 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 interface MessageChannel : Channel {
 
     override val cache: MessageChannelCacheEntry?
+
+    /**
+     * Deletes a message from this channel.
+     * @param reason The reason which will be displayed in the audit logs.
+     * @param messageId The ID of the message to delete.
+     */
+    suspend fun delete(messageId: Snowflake, reason: String? = null) = client.buildRestAction<Unit> {
+        route = Route.Message.DELETE_MESSAGE(id, messageId).delete()
+        this.reason = reason
+    }
 
     suspend fun send(message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
         route = Route.Message.CREATE_MESSAGE(id).post(message.build())

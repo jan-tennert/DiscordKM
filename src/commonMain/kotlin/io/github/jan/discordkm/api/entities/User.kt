@@ -39,10 +39,6 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntity, Cach
         }
 
         transform { it.toJsonObject().extractClientEntity(client) }
-
-        onFinish {
-           // (this@User as UserData).privateChannel = it
-        }
     }
 
     enum class PremiumType : EnumWithValue<Int> {

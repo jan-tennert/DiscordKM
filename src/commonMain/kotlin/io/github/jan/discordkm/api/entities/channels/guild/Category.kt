@@ -22,8 +22,9 @@ interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryCacheEnt
     override val cache: CategoryCacheEntry?
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? CategoryCacheEntry
 
-    override suspend fun modify(modifier: CategoryModifier.() -> Unit) = client.buildRestAction<CategoryCacheEntry> {
+    override suspend fun modify(reason: String?, modifier: CategoryModifier.() -> Unit) = client.buildRestAction<CategoryCacheEntry> {
         route = Route.Channel.MODIFY_CHANNEL(id).patch(CategoryModifier().apply(modifier).data)
+        this.reason = reason
         transform { ChannelSerializer.deserializeChannel(it.toJsonObject(), guild) }
     }
 

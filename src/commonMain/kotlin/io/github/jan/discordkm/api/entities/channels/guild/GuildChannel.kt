@@ -11,6 +11,7 @@ import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.CategoryModifier
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelModifier
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.entities.channels.Invitable
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -29,6 +30,8 @@ sealed interface GuildChannel : Channel {
 
     override val client: Client
         get() = guild.client
+
+    //edit permissions?
 
 }
 
