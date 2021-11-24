@@ -16,7 +16,7 @@ object Versions {
     const val KORLIBS = "2.2.0"
     const val COROUTINES = "1.5.2"
     const val STATELY = "1.2.0-nmm"
-    const val DISCORDKM = "0.6.2"
+    const val DISCORDKM = "0.6.3"
 
 }
 
