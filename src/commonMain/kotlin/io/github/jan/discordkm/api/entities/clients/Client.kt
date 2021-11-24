@@ -25,7 +25,6 @@ import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.caching.ClientCacheManager
-import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
@@ -33,6 +32,7 @@ import io.github.jan.discordkm.internal.restaction.RestClient
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.internal.serialization.SerializableEnum
+import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonObject
@@ -72,7 +72,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabl
      */
     suspend fun retrieveGuildTemplate(id: Snowflake) = buildRestAction<GuildTemplate> {
         route = Route.Template.GET_GUILD_TEMPLATE(id).get()
-        transform { GuildTemplateData(this@Client, it.toJsonObject()) }
+        transform { GuildSerializer.deserializeGuildTemplate(it.toJsonObject(), this@Client) }
     }
 
     /**

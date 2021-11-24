@@ -13,6 +13,7 @@ import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.guild.StickerType
+import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import io.github.jan.discordkm.internal.utils.boolean
@@ -133,6 +134,19 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
         isAnimated = data["animated", true]?.boolean ?: false,
         isAvailable = data["available", true]?.boolean ?: false,
         client = client
+    )
+
+    fun deserializeGuildTemplate(data: JsonObject, client: Client) = GuildTemplate(
+        name = data["name"]!!.string,
+        description = data["description", true]?.string,
+        creator = User(data["user"]!!.jsonObject, client),
+        client = client,
+        code = data["code"]!!.string,
+        usageCount = data["usage_count"]!!.int,
+        createdAt = data["created_at"]!!.isoTimestamp,
+        updatedAt = data["updated_at"]!!.isoTimestamp,
+        sourceGuild = Guild(data["source_guild_id", true]!!.snowflake, client),
+        isDirty = data["is_dirty", true]?.boolean ?: false,
     )
 
 }

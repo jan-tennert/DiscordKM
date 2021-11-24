@@ -51,7 +51,6 @@ import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.caching.GuildCacheManager
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.DiscordImage
-import io.github.jan.discordkm.internal.entities.guilds.templates.GuildTemplateData
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
@@ -177,7 +176,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
      */
     suspend fun retrieveTemplates() = client.buildRestAction<List<GuildTemplate>> {
         route = Route.Template.GET_GUILD_TEMPLATES(id).get()
-        transform { it.toJsonArray().map { GuildTemplateData(client, it.jsonObject) } }
+        transform { data -> data.toJsonArray().map { GuildSerializer.deserializeGuildTemplate(it.jsonObject, client) } }
     }
 
     /**
@@ -188,7 +187,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
             put("name", name)
             putOptional("description", description)
         })
-        transform { GuildTemplateData(client, it.toJsonObject()) }
+        transform { GuildSerializer.deserializeGuildTemplate(it.toJsonObject(), client) }
     }
 
     /**

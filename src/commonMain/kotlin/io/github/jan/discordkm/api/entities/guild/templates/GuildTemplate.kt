@@ -10,108 +10,75 @@
 package io.github.jan.discordkm.api.entities.guild.templates
 
 import com.soywiz.klock.DateTimeTz
-import com.soywiz.klock.ISO8601
-import com.soywiz.klock.parse
-import io.github.jan.discordkm.api.entities.SerializableEntity
-import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.internal.utils.extractClientEntity
-import io.github.jan.discordkm.internal.utils.getOrNull
-import io.github.jan.discordkm.internal.utils.getOrThrow
-import kotlinx.serialization.json.jsonObject
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
+import io.github.jan.discordkm.internal.put
+import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
+import io.github.jan.discordkm.internal.utils.putOptional
+import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 /**
- * A guild template is used to create a guild on top of another guild. Roles, channels, etc. are synced
+ * Represents a guild template
+ * @param code The template code
+ * @param name The name of this template
+ * @param description The description of this template
+ * @param usageCount Number of times this template has been used
+ * @param creator The creator of this template
+ * @param createdAt When this template was created at
+ * @param updatedAt When this template was last synced to the source guild
+ * @param sourceGuild The guild this template is based on
+ * @param isDirty Whether this template has unsynced changes
  */
-interface GuildTemplate : SerializableEntity {
+data class GuildTemplate(
+    val code: String,
+    val name: String,
+    val description: String?,
+    val usageCount: Int,
+    val creator: User,
+    val createdAt: DateTimeTz,
+    val updatedAt: DateTimeTz,
+    val sourceGuild: Guild,
+    val isDirty: Boolean,
+    override val client: Client
+) : BaseEntity {
 
-    /**
-     * The template code
-     */
-    val code: String
-        get() = data.getOrThrow("code")
-
-    /**
-     * The name of this template
-     */
-    val name: String
-        get() = data.getOrThrow("name")
-
-    /**
-     * The description of this template
-     */
-    val description: String?
-        get() = data.getOrNull("description")
-
-    /**
-     * Number of times this template has been used
-     */
-    val usageCount: Int
-        get() = data.getOrThrow("usage_count")
-
-    /**
-     * The creator id of this template
-     */
-    val creatorId: Snowflake
-        get() = data.getOrThrow("creator_id")
-
-    /**
-     * The creator of this template
-     */
-    val creator: User
-        get() = data.getValue("creator").jsonObject.extractClientEntity(client)
-
-    /**
-     * When this template was created at
-     */
-    val createdAt: DateTimeTz
-        get() = ISO8601.DATETIME_UTC_COMPLETE.parse(data.getOrThrow<String>("created_at"))
-
-    /**
-     * When this template was last synced to the source guild
-     */
-    val uploadedAt: DateTimeTz
-        get() = ISO8601.DATETIME_UTC_COMPLETE.parse(data.getOrThrow<String>("updated_at"))
-
-    /**
-     * The guild this template is based on
-     */
-    val sourceGuildId: Snowflake
-        get() = data.getOrThrow("source_guild_id")
-
-    /**
-     * The guild this template is based on
-     */
-    val sourceGuild: Guild
-        get() = data.getValue("serialized_source_guild").jsonObject.extractClientEntity(client)
-
-    /**
-     * Whether this template has unsynced changed
-     */
-    val isDirty: Boolean
-        get() = data.getOrNull<Boolean>("is_dirty") ?: false
-
-    val url: String
-        get() = "https://discord.new/$code"
 
     /**
      * Deletes this guild template
-     *
-     * Requires the [MANAGE_GUILD] Permission
      */
-    suspend fun delete()
+    suspend fun delete() = client.buildRestAction<Unit> {
+        route = Route.Template.DELETE_GUILD_TEMPLATE(sourceGuild.id, code).delete()
+    }
 
     /**
-    * Modifies this guild template
-     *
-    * Requires the [MANAGE_GUILD] Permission
-    */
-    suspend fun modify(name: String? = null, description: String? = null) : GuildTemplate
+     * Modifies this guild template
+     * @param name The new name of the template
+     * @param description The new description of the template
+     */
+    suspend fun modify(name: String?, description: String?) = client.buildRestAction<GuildTemplate> {
+        route = Route.Template.MODIFY_GUILD_TEMPLATE(sourceGuild.id, code).patch(buildJsonObject {
+            put("name", name)
+            putOptional("description", description)
+        })
+        transform { copy(name = name ?: this@GuildTemplate.name, description = description ?: this@GuildTemplate.name) }
+    }
 
     /**
-     * Syncs the template to the guild's current state
+     * Syncs the template to the source guild's current state
      */
-    suspend fun sync(): GuildTemplate
+    suspend fun sync() = client.buildRestAction<GuildTemplate> {
+        route = Route.Template.SYNC_GUILD_TEMPLATE(sourceGuild.id, code).put()
+        transform { GuildSerializer.deserializeGuildTemplate(it.toJsonObject(), client) }
+    }
 
 }
+
