@@ -12,7 +12,7 @@ package io.github.jan.discordkm.api.entities.clients
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildContainer
 import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
@@ -33,7 +33,7 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
-import io.github.jan.discordkm.internal.utils.extractClientEntity
+import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
 import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.ktor.client.HttpClientConfig
@@ -50,7 +50,7 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabl
     override val client = this
     val cacheManager = ClientCacheManager(this)
 
-    lateinit var selfUser: User
+    lateinit var selfUser: UserCacheEntry
         internal set
 
     override val commands: CommandContainer
@@ -78,14 +78,14 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabl
     /**
      * Edits the bot's user
      */
-    suspend fun modifySelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<User> {
+    suspend fun modifySelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<UserCacheEntry> {
         val edit = SelfUserEdit()
         edit.builder()
         route = Route.User.MODIFY_SELF_USER.patch(buildJsonObject {
             edit.username?.let { put("username", it) }
             edit.image?.let { put("image", it.encodedData) }
         })
-        transform { it.toJsonObject().extractClientEntity(this@Client) }
+        transform { UserSerializer.deserialize(it.toJsonObject(), this@Client) }
         onFinish { selfUser = it }
     }
 
