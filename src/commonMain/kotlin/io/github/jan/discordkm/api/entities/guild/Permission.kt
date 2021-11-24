@@ -56,6 +56,7 @@ enum class Permission(override val offset: Int) : SerializableEnum<Permission> {
     USE_PRIVATE_THREADS(36),
     USE_EXTERNAL_STICKERS(37),
     START_EMBEDDED_ACTIVITIES(39),
+    MODERATE_MEMBER(40),
     UNKNOWN(-1);
 
     companion object : FlagSerializer<Permission>(values()) {

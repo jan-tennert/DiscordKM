@@ -35,10 +35,8 @@ import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.serialization.serializers.MemberSerializer
-import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
 import kotlin.jvm.JvmName
 
 interface Member : SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<MemberModifier, Member> {
@@ -58,6 +56,45 @@ interface Member : SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<MemberM
         transform { Member(it.toJsonObject(), guild) }
         this.reason = reason
     }
+
+    /**
+     * Time-outs this member
+     * @param reason The reason which will be displayed in audit logs
+     * @param time The time when the time-out will remove
+     */
+    suspend fun timeoutUntil(time: DateTimeTz, reason: String? = null) = modify(reason) { timeoutUntil = time }
+
+    /**
+     * Modifies the member's nickname
+     * @param reason The reason which will be displayed in audit logs
+     * @param nickname The new nickname, or null to reset
+     */
+    suspend fun modifyNickname(nickname: String?, reason: String? = null) = modify(reason) { this.nickname = nickname }
+
+    /**
+     * Mutes this member server-wide
+     */
+    suspend fun mute() = modify { this.mute = true }
+
+    /**
+     * Unmutes this member server-wide
+     */
+    suspend fun unmute() = modify { this.mute = false }
+
+    /**
+     * Deafens this member server-wide
+     */
+    suspend fun deafen() = modify { this.deaf = true }
+
+    /**
+     * Undeafens this member server-wide
+     */
+    suspend fun undeafen() = modify { this.deaf = false }
+
+    /**
+     * Moves this member to the specified voice channel. Only works if he is in a voice channel
+     */
+    suspend fun moveTo(voiceChannel: VoiceChannel) = modify { moveTo(voiceChannel) }
 
     /**
      * Kicks the member from the guild.

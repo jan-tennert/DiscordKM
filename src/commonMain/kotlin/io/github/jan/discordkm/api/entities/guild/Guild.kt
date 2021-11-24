@@ -43,8 +43,8 @@ import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteBuilder
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildModifier
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
+import io.github.jan.discordkm.api.entities.modifiers.guild.GuildModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -202,7 +202,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
     /**
      * Set's the bots nickname. When [nickname] is null, it will reset the nickname (and will use the bot's username).
      */
-    suspend fun setOwnNickname(nickname: String?, reason: String? = null) = client.buildRestAction<Unit> {
+    suspend fun modifyOwnNickname(nickname: String?, reason: String? = null) = client.buildRestAction<Unit> {
         route = Route.Guild.MODIFY_CURRENT_MEMBER(id).patch(buildJsonObject {
             put("nick", nickname)
         })
