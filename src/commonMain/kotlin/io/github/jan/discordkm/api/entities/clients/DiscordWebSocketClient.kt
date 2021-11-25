@@ -120,7 +120,7 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
     /**
      * The intents specify which events you should receive. For example if you don't use VoiceStates remove the [Intent.GUILD_VOICE_STATES] intent
      */
-    var intents = mutableListOf<Intent>()
+    var intents = mutableSetOf<Intent>()
 
     /**
      * The logging level specifies which messages the console should get. [Logger.Level.DEBUG] receives all messages
