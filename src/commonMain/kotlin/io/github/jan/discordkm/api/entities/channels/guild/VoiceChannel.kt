@@ -5,11 +5,12 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifiable
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventVoiceChannel
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
 import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.entities.channels.Invitable
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -49,7 +50,7 @@ interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceCha
         companion object : EnumWithValueGetter<VideoQualityMode, Int>(values())
     }
 
-    companion object : GuildChannelBuilder<VoiceChannelModifier, VoiceChannel> {
+    companion object : GuildChannelBuilder<VoiceChannelModifier, VoiceChannel>, ScheduledEventModifiable<ScheduledEventVoiceChannel> {
         override fun create(modifier: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(ChannelType.GUILD_VOICE).apply(modifier)
 
         operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? VoiceChannelCacheEntry ?: object : VoiceChannel {
@@ -63,6 +64,8 @@ interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceCha
                 }
         }
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<VoiceChannelCacheEntry>(data, guild)
+
+        override fun build(modifier: ScheduledEventVoiceChannel.() -> Unit) = ScheduledEventVoiceChannel(false).apply(modifier).build()
     }
 
 }

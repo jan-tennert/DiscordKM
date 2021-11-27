@@ -3,7 +3,8 @@ package io.github.jan.discordkm.api.entities.containers
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntry
-import io.github.jan.discordkm.api.entities.modifiers.guild.BaseScheduledEventModifier
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifiable
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
@@ -39,8 +40,8 @@ open class ScheduledEventContainer(val guild: Guild) {
     /**
      * Creates a new scheduled event
      */
-    suspend fun create(builder: BaseScheduledEventModifier.() -> Unit) = guild.client.buildRestAction<ScheduledEventCacheEntry> {
-        route = Route.ScheduledEvent.CREATE_EVENT(guild.id).post(BaseScheduledEventModifier().apply(builder).data)
+    suspend fun <M : ScheduledEventModifier, T : ScheduledEventModifiable<M>> create(type: T, modifier: M.() -> Unit) = guild.client.buildRestAction<ScheduledEventCacheEntry> {
+        route = Route.ScheduledEvent.CREATE_EVENT(guild.id).post(type.build(modifier))
         transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), client) }
     }
 

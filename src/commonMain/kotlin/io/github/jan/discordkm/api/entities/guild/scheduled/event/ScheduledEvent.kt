@@ -10,8 +10,6 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
 import io.github.jan.discordkm.api.entities.guild.StageInstance
-import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.ScheduledEventModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -23,11 +21,15 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.serializers.ScheduledEventSerializer
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
+import io.github.jan.discordkm.internal.utils.modify
+import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 
-interface ScheduledEvent : SnowflakeEntity, GuildEntity, Modifiable<ScheduledEventModifier, ScheduledEventCacheEntry>, CacheEntity {
+interface ScheduledEvent : SnowflakeEntity, GuildEntity, CacheEntity {
 
     override val cache: ScheduledEventCacheEntry?
         get() = guild.cache?.scheduledEvents?.get(id)
@@ -57,21 +59,26 @@ interface ScheduledEvent : SnowflakeEntity, GuildEntity, Modifiable<ScheduledEve
         }
     }
 
-    override suspend fun modify(reason: String?, modifier: ScheduledEventModifier.() -> Unit) = client.buildRestAction<ScheduledEventCacheEntry> {
-        route = Route.ScheduledEvent.MODIFY_EVENT(guild.id, id).patch(ScheduledEventModifier().apply(modifier).data)
+    suspend fun <M : ScheduledEventModifier, T : ScheduledEventModifiable<M>>modify(type: T, status: EventStatus? = null, reason: String? = null, modifier: M.() -> Unit) = client.buildRestAction<ScheduledEventCacheEntry> {
+        route = Route.ScheduledEvent.MODIFY_EVENT(guild.id, id).patch(type.build(modifier).modify { putOptional("status", status?.value) })
         transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), client) }
         this.reason = reason
+    }
+
+    private suspend fun setStatus(status: EventStatus) = client.buildRestAction<ScheduledEventCacheEntry> {
+        route = Route.ScheduledEvent.MODIFY_EVENT(guild.id, id).patch(buildJsonObject  {put("status", status.value) })
+        transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), client) }
     }
 
     /**
      * Starts this event
      */
-    suspend fun start() = modify { start() }
+    suspend fun start() = setStatus(EventStatus.ACTIVE)
 
     /**
      * Cancels this event
      */
-    suspend fun cancel() = modify { cancel() }
+    suspend fun cancel() = setStatus(EventStatus.CANCELED)
 
     enum class EventStatus : EnumWithValue<Int> {
         SCHEDULED, ACTIVE, COMPLETED, CANCELED;
