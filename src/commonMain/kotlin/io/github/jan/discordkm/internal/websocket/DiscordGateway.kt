@@ -174,7 +174,7 @@ class DiscordGateway(
             }
             OpCode.RECONNECT -> {
                 close()
-                start(false)
+                start(true)
             }
             OpCode.INVALID_SESSION -> {
                 LOGGER.warn { "Failed to resume! Trying to reconnect manually..." }

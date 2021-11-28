@@ -2,14 +2,10 @@ package io.github.jan.discordkm.api.entities.channels.guild
 
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.channels.ChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.MessageChannelCacheEntry
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelModifier
-import io.github.jan.discordkm.api.entities.modifiers.guild.MessageChannelModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.channels.Invitable
@@ -25,7 +21,7 @@ interface GuildMessageChannel : GuildChannel, MessageChannel {
      * @param reason The reason which will be displayed in the audit log
      * @param messageIds The ids of the messages which are going to be removed
      */
-    suspend fun removeMessages(vararg messageIds: Snowflake, reason: String? = null) = client.buildRestAction<Unit> {
+    suspend fun removeMessages(messageIds: Iterable<Snowflake>, reason: String? = null) = client.buildRestAction<Unit> {
         route = Route.Message.BULK_DELETE(id).delete()
         this.reason = reason
     }

@@ -16,9 +16,11 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlin.jvm.JvmInline
 
 @Serializable(with = SnowflakeSerializer::class)
-data class Snowflake internal constructor(val long: Long) {
+@JvmInline
+value class Snowflake internal constructor(val long: Long) {
 
     val string: String
         get() = long.toString()
