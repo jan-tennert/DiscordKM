@@ -116,12 +116,8 @@ kotlin {
             useJUnit()
         }
     }
-    js(LEGACY) {
-        browser {
-            commonWebpackConfig {
-                cssSupport.enabled = true
-            }
-        }
+    js(IR) {
+        browser()
         nodejs()
     }
 
