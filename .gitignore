@@ -7,3 +7,4 @@ src/jvmMain/resources/test.json
 src/jvmMain/kotlin/test.kt
 buildSrc/build
 buildSrc/.gradle/
+ignoreDir
