@@ -1,11 +1,11 @@
 package io.github.jan.discordkm.api.entities
 
+import io.github.jan.discordkm.api.entities.channels.PrivateChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.entities.DiscordImage
-import io.github.jan.discordkm.api.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagSerializer

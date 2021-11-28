@@ -12,6 +12,7 @@ package io.github.jan.discordkm.internal.events
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.events.SelfUserUpdateEvent
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
 
 class SelfUserUpdateEventHandler(val client: Client) : InternalEventHandler<SelfUserUpdateEvent> {
@@ -19,7 +20,9 @@ class SelfUserUpdateEventHandler(val client: Client) : InternalEventHandler<Self
     override suspend fun handle(data: JsonObject): SelfUserUpdateEvent {
         val user = User(data, client)
         val oldUser = client.selfUser
-        client.selfUser = user
+        client.mutex.withLock {
+            client.selfUser = user
+        }
         return SelfUserUpdateEvent(user, oldUser)
     }
 

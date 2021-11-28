@@ -12,18 +12,17 @@ package io.github.jan.discordkm.internal.serialization.serializers
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
+import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.long
 import kotlinx.serialization.json.JsonObject
-import io.github.jan.discordkm.internal.utils.get
 
 
-object UserSerializer : BaseEntitySerializer<UserCacheEntry> {
+object UserSerializer {
 
-    override fun deserialize(data: JsonObject, client: Client) = UserCacheEntry(
+    fun deserialize(data: JsonObject, value: Client) = UserCacheEntry(
         id = data.getOrThrow("id"),
         name = data["username"].toString(),
         discriminator = data["discriminator"].toString(),
@@ -34,7 +33,7 @@ object UserSerializer : BaseEntitySerializer<UserCacheEntry> {
         premiumType = data["premium_type", true]?.int?.let { User.PremiumType.get(it) } ?: User.PremiumType.NONE,
         publicFlags = data["flags", true]?.long?.let { User.UserFlag.decode(it) } ?: setOf(),
         isSystem = data["system", true]?.boolean ?: false,
-        client = client
+        client = value
     )
 
 }

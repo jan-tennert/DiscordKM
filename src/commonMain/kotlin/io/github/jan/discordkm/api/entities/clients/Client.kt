@@ -39,16 +39,25 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.coroutines.CoroutineContext
 
-sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabledCache: Set<CacheFlag>, httpClientConfig: HttpClientConfig<*>.() -> Unit) : CoroutineScope, CommandHolder, BaseEntity {
+sealed class Client(
+    val token: String,
+    val loggingLevel: Logger.Level,
+    val enabledCache: Set<CacheFlag>,
+    httpClientConfig: HttpClientConfig<*>.() -> Unit
+) : CoroutineScope, CommandHolder, BaseEntity {
 
     val rest = RestClient(this, httpClientConfig)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client = this
     val cacheManager = ClientCacheManager(this)
+
+    val mutex = Mutex()
 
     lateinit var selfUser: UserCacheEntry
         internal set
@@ -86,7 +95,11 @@ sealed class Client(val token: String, val loggingLevel: Logger.Level, val enabl
             edit.image?.let { put("image", it.encodedData) }
         })
         transform { UserSerializer.deserialize(it.toJsonObject(), this@Client) }
-        onFinish { selfUser = it }
+        onFinish {
+            client.mutex.withLock {
+                client.selfUser = it
+            }
+        }
     }
 
     /**
