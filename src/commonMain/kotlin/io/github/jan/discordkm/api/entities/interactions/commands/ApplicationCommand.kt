@@ -73,7 +73,7 @@ class ChatInputCommand(client: Client, data: JsonObject) : ApplicationCommand(cl
     /**
      * The options of the command
      */
-    val options = data["options"]?.jsonArray?.map { Json.decodeFromJsonElement<CommandOption>(it.jsonObject) } ?: emptyList()
+    val options = data["options"]?.jsonArray?.map { Json { ignoreUnknownKeys = true }.decodeFromJsonElement<CommandOption>(it.jsonObject) } ?: emptyList()
 
 }
 

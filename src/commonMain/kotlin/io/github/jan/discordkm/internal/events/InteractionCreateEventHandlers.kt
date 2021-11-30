@@ -35,7 +35,7 @@ import io.github.jan.discordkm.internal.serialization.serializers.channel.Channe
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
-import io.github.jan.discordkm.internal.utils.valueOfIndex
+import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -62,14 +62,16 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         var option = interactionData.getValue("options").jsonArray[0].jsonObject
         var subCommandGroup: String? = null
         var subCommand: String? = null
-        val type = valueOfIndex<CommandOption.OptionType>(option.getOrThrow("type"), 1)
+        var type = CommandOption.OptionType[option["type"]!!.int]
         if(type == CommandOption.OptionType.SUB_COMMAND_GROUP) {
-            subCommandGroup = option.getOrThrow("name")
-            subCommand = option.getValue("options").jsonArray[0].jsonObject.getOrThrow("name")
-            option = option.getValue("options").jsonArray[0].jsonObject.getValue("options").jsonArray[0].jsonObject
+            subCommandGroup = option["name"]!!.string
+            subCommand = option["options"]!!.jsonArray[0].jsonObject["name"]!!.string
+            option = option["options"]!!.jsonArray[0].jsonObject["options"]!!.jsonArray[0].jsonObject
+            type = CommandOption.OptionType[option["type"]!!.int]
         } else if(type == CommandOption.OptionType.SUB_COMMAND) {
-            subCommand = option.getOrThrow("name")
-            option = option.getValue("options").jsonArray[0].jsonObject
+            subCommand = option["name"]!!.string
+            option = option["options"]!!.jsonArray[0].jsonObject
+            type = CommandOption.OptionType[option["type"]!!.int]
         }
         val focused = option.getOrNull<Boolean>("focused") ?: false
         val optionName = option.getOrThrow<String>("name")
@@ -84,7 +86,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
 
     private fun extractMessageComponent(data: JsonObject) : InteractionCreateEvent {
         val interactionData = data.getValue("data").jsonObject
-        return when(valueOfIndex<ComponentType>(interactionData.getOrThrow("component_type"), 1)) {
+        return when(ComponentType[interactionData["component_type"]!!.int]) {
             ComponentType.BUTTON -> ButtonClickEvent(client, ComponentInteraction(client, data), interactionData.getOrThrow("custom_id"))
             ComponentType.SELECTION_MENU -> SelectionMenuEvent(client, ComponentInteraction(client, data), interactionData.getValue("values").jsonArray.map { SelectOption(value = it.jsonPrimitive.content) }, interactionData.getOrThrow("custom_id"))
             else -> throw IllegalStateException("Component type not supported")

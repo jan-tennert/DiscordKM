@@ -37,7 +37,9 @@ data class CommandOption(
     val options: List<CommandOption>? = null,
     @SerialName("channel_types")
     val channelTypes: List<ChannelType>? = null,
-    val autocomplete: Boolean? = null
+    val autocomplete: Boolean? = null,
+    //val nameLocalizations
+    //val descriptionLocalizations
 ) {
 
     enum class OptionType : EnumWithValue<Int> {

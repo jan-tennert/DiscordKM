@@ -231,6 +231,8 @@ class DiscordGateway(
     suspend fun close() {
         isClosed = true
         disconnect = true
+        sessionId = null
+        lastSequenceNumber = null
         LOGGER.info { "Closing websocket connection on shard $shardId" }
         ws.close()
     }

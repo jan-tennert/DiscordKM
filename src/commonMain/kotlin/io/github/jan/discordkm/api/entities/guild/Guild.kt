@@ -92,7 +92,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
     val scheduledEvents: ScheduledEventContainer
         get() = ScheduledEventContainer(this)
     override val commands: CommandContainer
-        get() = CommandContainer(this, "/applications/${client.selfUser.id}/guilds/$id")
+        get() = CommandContainer(this, "/applications/${client.selfUser.id}/guilds/$id/commands")
 
     /**
      * Retrieves the audit log for this guild.

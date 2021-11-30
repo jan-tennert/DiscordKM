@@ -58,9 +58,9 @@ class ChatInputCommandBuilder(name: String, description: String, private val opt
 
     @CommandBuilder
     inline fun <T> onAutoComplete(
+        optionName: String,
         subCommand: String? = null,
         subCommandGroup: String? = null,
-        optionName: String? = null,
         crossinline action: suspend AutoCompleteEvent<T>.() -> Unit
     ) {
         client?.let { c -> c.on<AutoCompleteEvent<T>>(predicate = { it.commandName == name && it.subCommand == subCommand && it.subCommandGroup == subCommandGroup && it.optionName == optionName }) {
