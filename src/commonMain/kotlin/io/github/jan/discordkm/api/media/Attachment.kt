@@ -13,11 +13,11 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
 
 
-class Attachment internal constructor(val bytes: ByteArray, val fileName: String, val size: Long, val spoiler: Boolean = false, val description: String?) {
+class Attachment internal constructor(val bytes: ByteArray, val fileName: String, val size: Long, val spoiler: Boolean = false) {
 
     companion object {
 
-        suspend fun fromFile(file: VfsFile, spoiler: Boolean = false, description: String? = null, fileName: String = file.baseName) = Attachment(file.readBytes(), fileName, file.size(), spoiler, description)
+        suspend fun fromFile(file: VfsFile, spoiler: Boolean = false, fileName: String = file.baseName) = Attachment(file.readBytes(), fileName, file.size(), spoiler)
 
     }
 
