@@ -18,6 +18,7 @@ data class MessageAttachment(
     val id: Snowflake,
     @SerialName("filename")
     val fileName: String,
+    val description: String? = null,
     @SerialName("content_type")
     val contentType: String? = null,
     val size: Int,
