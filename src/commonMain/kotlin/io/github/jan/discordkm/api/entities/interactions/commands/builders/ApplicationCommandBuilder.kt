@@ -21,6 +21,7 @@ import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
@@ -76,7 +77,7 @@ class ChatInputCommandBuilder(name: String, description: String, private val opt
     }
 
     override fun build() = buildJsonObject {
-        put("options", Json.encodeToJsonElement(options))
+        put("options", JsonArray(options.map(Json::encodeToJsonElement)))
         putJsonObject(super.build())
     }
 

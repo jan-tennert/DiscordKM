@@ -9,14 +9,11 @@
  */
 package io.github.jan.discordkm.api.entities.interactions
 
-import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
@@ -29,15 +26,12 @@ import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
-import io.github.jan.discordkm.internal.utils.getOrNull
-import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
-import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import io.github.jan.discordkm.internal.utils.get
 
 
 open class Interaction(override val client: Client, override val data: JsonObject) : SerializableEntity {
@@ -88,7 +82,7 @@ open class Interaction(override val client: Client, override val data: JsonObjec
     /**
      * The user, if this interaction was sent in a private channel
      */
-    val user: User? get() = data["user"]?.let { User(it.jsonObject, client) }
+    val user: User get() = data["user"]?.let { User(it.jsonObject, client) } ?: member!!.user
 
 
     /**

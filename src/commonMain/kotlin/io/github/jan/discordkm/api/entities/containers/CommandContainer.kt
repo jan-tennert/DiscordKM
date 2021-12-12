@@ -1,6 +1,5 @@
 package io.github.jan.discordkm.api.entities.containers
 
-import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
@@ -16,8 +15,7 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.extractApplicationCommand
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.jsonObject
 
 open class CommandContainer(private val holder: CommandHolder, private val baseURL: String) {
@@ -80,7 +78,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      * Overrides all application commands with new ones
      */
     suspend fun overrideCommands(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {
-        route = RestAction.put(baseURL, Json.encodeToJsonElement(CommandBulkOverride().apply(commands).commands.map { it.build() }))
+        route = RestAction.put(baseURL, JsonArray(CommandBulkOverride().apply(commands).commands.map(ApplicationCommandBuilder::build)))
         transform { it.toJsonArray().map { json -> json.jsonObject.extractApplicationCommand(client) } }
     }
 

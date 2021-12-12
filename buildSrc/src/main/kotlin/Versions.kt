@@ -11,12 +11,12 @@ object Versions {
 
     const val KOTLIN = "1.6.0"
     const val DOKKA = "1.6.0"
-    const val KTOR = "1.6.6"
+    const val KTOR = "1.6.7"
     const val SERIALIZATION = "1.3.1"
     const val KORLIBS = "2.4.8"
-    const val COROUTINES = "1.6.0-RC"
-    const val STATELY = "1.2.0-nmm"
-    const val DISCORDKM = "0.6.7"
+    const val COROUTINES = "1.6.0-RC2"
+    const val STATELY = "1.2.0"
+    const val DISCORDKM = "0.6.8"
 
 }
 

@@ -25,12 +25,10 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.ISO8601Serializer
-import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.snowflake
-import io.github.jan.discordkm.internal.utils.valueOfIndexOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -64,7 +62,7 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
     /**
      * The channel this invite is for
      */
-    val channel = Channel(data["channel"]!!.jsonObject["id"]!!.snowflake, ChannelType[data["channel"]!!.jsonObject["type"]!!.int], client, guild)
+    val channel = Channel(data["channel_id"]!!.snowflake, ChannelType.UNKNOWN, client)
 
     /**
      * The inviter who created this invite
