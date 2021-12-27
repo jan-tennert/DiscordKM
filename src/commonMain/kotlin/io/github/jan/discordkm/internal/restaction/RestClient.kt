@@ -15,7 +15,6 @@ import io.github.jan.discordkm.DiscordKMInfo
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -25,7 +24,6 @@ import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
@@ -110,7 +108,7 @@ class RestClient(private val config: ClientConfig) {
             }
             else -> throw UnsupportedOperationException()
         }.let {
-            if(it.status.value in 200..201) {
+            if(it.status.value in 200..204) {
                 it.body<String>()
             } else {
                 errorHandler.handle(it)
