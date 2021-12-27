@@ -20,27 +20,21 @@ import kotlin.jvm.JvmInline
 
 @Serializable(with = SnowflakeSerializer::class)
 @JvmInline
-value class Snowflake internal constructor(val long: Long) {
+value class Snowflake(val long: Long) {
+    
+    constructor(string: String) : this(string.toLongOrNull() ?: throw IllegalArgumentException("Invalid Snowflake: $string"))
 
     val string: String
         get() = long.toString()
     val timestamp: DateTimeTz
         get() = DateTimeTz.fromUnixLocal((long shr 22) + 1420070400000)
-
-    companion object {
-
-        fun fromId(id: Long) = Snowflake(id)
-        fun fromId(id: String) = Snowflake(id.toLong())
-        fun empty() = Snowflake(0L)
-
-    }
-
+    
     override fun toString() = string
 
 }
 
 object SnowflakeSerializer : KSerializer<Snowflake> {
-    override fun deserialize(decoder: Decoder) = Snowflake.fromId(decoder.decodeString())
+    override fun deserialize(decoder: Decoder) = Snowflake(decoder.decodeString())
 
     override val descriptor = PrimitiveSerialDescriptor("Snowflake", PrimitiveKind.STRING)
 
@@ -65,7 +59,7 @@ interface SnowflakeEntity {
 //just channel.send and messagelist for retrieve etc.
 
 val Long.asSnowflake: Snowflake
-    get() = Snowflake.fromId(this)
+    get() = Snowflake(this)
 
 val String.asSnowflake: Snowflake
-    get() = Snowflake.fromId(this)
+    get() = Snowflake(this)

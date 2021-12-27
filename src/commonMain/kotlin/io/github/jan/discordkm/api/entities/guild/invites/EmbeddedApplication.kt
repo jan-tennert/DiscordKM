@@ -13,10 +13,10 @@ import io.github.jan.discordkm.api.entities.Snowflake
 
 object EmbeddedApplication {
 
-    val YOUTUBE_TOGETHER = Snowflake.fromId(755600276941176913)
-    val POKER = Snowflake.fromId(755827207812677713)
-    val BETRAYAL = Snowflake.fromId(773336526917861400)
-    val FISHINGTON = Snowflake.fromId(814288819477020702)
-    val CHESS = Snowflake.fromId(832012586023256104)
+    val YOUTUBE_TOGETHER = Snowflake(755600276941176913)
+    val POKER = Snowflake(755827207812677713)
+    val BETRAYAL = Snowflake(773336526917861400)
+    val FISHINGTON = Snowflake(814288819477020702)
+    val CHESS = Snowflake(832012586023256104)
 
 }

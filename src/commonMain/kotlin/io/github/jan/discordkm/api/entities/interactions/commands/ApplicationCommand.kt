@@ -49,7 +49,7 @@ open class ApplicationCommand(override val client: Client, override val data: Js
         get() = data.getOrNull<Snowflake>("guild_id")
 
     val guild: Guild?
-        get() = client.guilds[guildId ?: Snowflake.empty()]
+        get() = client.guilds[guildId ?: Snowflake(0)]
 
     override val name: String
         get() = data.getOrThrow<String>("name")

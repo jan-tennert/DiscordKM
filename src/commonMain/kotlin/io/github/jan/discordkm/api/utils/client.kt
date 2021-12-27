@@ -39,7 +39,7 @@ suspend fun Client.retrieveWebhook(id: Snowflake, token: String) = buildRestActi
  * Retrieves a webhook from an [url]
  */
 suspend fun Client.retrieveWebhook(url: String) = Webhook.WEBHOOK_PATTERN.matchEntire(url)?.let {
-    retrieveWebhook(Snowflake.fromId(it.groups[1]!!.value), it.groups[2]!!.value)
+    retrieveWebhook(Snowflake(it.groups[1]!!.value), it.groups[2]!!.value)
 } ?: throw IllegalArgumentException("Invalid webhook url: $url")
 
 /**

@@ -35,7 +35,7 @@ import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
 
 fun JsonObject.getId(): Snowflake {
-    return Snowflake.fromId(getOrThrow<String>("id"))
+    return Snowflake(getOrThrow<String>("id"))
 }
 fun String.toJsonObject() = Json.decodeFromString<JsonObject>(this)
 fun String.toJsonArray() = Json.decodeFromString<JsonArray>(this)
@@ -55,7 +55,7 @@ inline fun <reified T> JsonObject.getOrThrow(key: String): T {
         Long::class -> getValue(key).jsonPrimitive.long as T
         Double::class -> getValue(key).jsonPrimitive.double as T
         Boolean::class -> getValue(key).jsonPrimitive.boolean as T
-        Snowflake::class -> Snowflake.fromId(getValue(key).jsonPrimitive.content) as T
+        Snowflake::class -> Snowflake(getValue(key).jsonPrimitive.content) as T
         UInt::class -> getValue(key).jsonPrimitive.int.toUInt() as T
         JsonPrimitive::class -> getValue(key).jsonPrimitive as T
         else -> throw IllegalStateException()
@@ -98,7 +98,7 @@ val JsonElement.int : Int get() = jsonPrimitive.int
 val JsonElement.long : Long get() = jsonPrimitive.long
 val JsonElement.double : Double get() = jsonPrimitive.double
 val JsonElement.string : String get() = jsonPrimitive.contentOrNull ?: ""
-val JsonElement.snowflake : Snowflake get() = Snowflake.fromId(string)
+val JsonElement.snowflake : Snowflake get() = Snowflake(string)
 val JsonElement.isoTimestamp : DateTimeTz get() = ISO8601.DATETIME_UTC_COMPLETE.parse(string)
 
 operator fun JsonObject.get(key: String, nonNull: Boolean): JsonElement? = this[key]?.let { it -> if(nonNull && it is JsonPrimitive && it.jsonPrimitive.content != "null") it else null }
