@@ -19,7 +19,6 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class MessageEmbed(
@@ -54,14 +53,6 @@ data class MessageEmbed(
     @Serializable
     data class Field(val name: String = "", val value: String = "", val inline: Boolean = false)
 
-    companion object {
-
-        fun fromJson(data: JsonObject) {
-
-        }
-
-    }
-
 }
 
 class EmbedBuilder @Deprecated("Use buildEmbed instead") constructor() {
@@ -77,7 +68,7 @@ class EmbedBuilder @Deprecated("Use buildEmbed instead") constructor() {
     var author: Author? = null
     val fields: MutableList<Field> = mutableListOf()
 
-    fun field(name: String = "", value: String = "", inline: Boolean = false, builder: Field.() -> Unit = {}) { fields += Field(name, value ?: "", inline).apply(builder) }
+    fun field(name: String = "", value: String = "", inline: Boolean = false, builder: Field.() -> Unit = {}) { fields += Field(name, value, inline).apply(builder) }
 
     fun footer(text: String = "", iconUrl: String? = null, builder: Footer.() -> Unit = {}) {
         footer = Footer(text, iconUrl).apply(builder)

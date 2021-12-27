@@ -9,10 +9,14 @@
  */
 package io.github.jan.discordkm.api.entities.clients
 
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.UserCacheEntry
+import io.github.jan.discordkm.api.entities.activity.Presence
+import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildContainer
 import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
@@ -36,6 +40,8 @@ import io.github.jan.discordkm.internal.serialization.serializers.GuildSerialize
 import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
 import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import io.github.jan.discordkm.internal.websocket.Compression
+import io.github.jan.discordkm.internal.websocket.Encoding
 import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,15 +52,12 @@ import kotlinx.serialization.json.put
 import kotlin.coroutines.CoroutineContext
 
 sealed class Client(
-    val token: String,
-    val loggingLevel: Logger.Level,
-    val enabledCache: Set<CacheFlag>,
-    httpClientConfig: HttpClientConfig<*>.() -> Unit
+    val config: ClientConfig
 ) : CoroutineScope, CommandHolder, BaseEntity {
 
-    val rest = RestClient(this, httpClientConfig)
+    val rest = RestClient(config)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
-    override val client = this
+    override val client: Client get() = this
     val cacheManager = ClientCacheManager(this)
 
     val mutex = Mutex()
@@ -140,6 +143,21 @@ enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
     companion object : FlagSerializer<Intent>(values())
 
 }
+
+data class ClientConfig(
+    val token: String,
+    val intents: Set<Intent> = emptySet(),
+    val loggingLevel: Logger.Level,
+    val enabledCache: Set<CacheFlag> = emptySet(),
+    val httpClientConfig: HttpClientConfig<*>.() -> Unit,
+    val totalShards: Int = -1,
+    val shards: Set<Int> = emptySet(),
+    val reconnectDelay: TimeSpan = 5.seconds,
+    val activity: Presence? = null,
+    val status: PresenceStatus = PresenceStatus.ONLINE,
+    val encoding: Encoding = Encoding.JSON,
+    val compression: Compression = Compression.NONE,
+)
 
 
 

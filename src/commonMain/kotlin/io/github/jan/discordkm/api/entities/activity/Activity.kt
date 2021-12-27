@@ -70,7 +70,7 @@ data class Activity(
      */
     @Serializable
     data class Party(
-        val id: String?,
+        val id: String? = null,
         private val size: List<Int> = emptyList(),
     ) {
 

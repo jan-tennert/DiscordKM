@@ -9,15 +9,9 @@
  */
 package io.github.jan.discordkm.api.entities.interactions
 
-import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.UserCacheEntry
-import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.OptionBuilder
 import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.check
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -46,5 +40,15 @@ class AutoCompleteInteraction<T>(client: Client, data: JsonObject)  : Interactio
         
         onFinish { isAcknowledged = true }
     }
+
+    /**
+     * Replies to the [AutoCompleteInteraction] with the given choices.
+     */
+    suspend fun replyChoices(choices: List<Pair<String, T>>) = replyChoices { choices.forEach { c -> choice(c.first, c.second) } }
+
+    /**
+     * Replies to the [AutoCompleteInteraction] with the given choices.
+     */
+    suspend fun replyChoices(vararg choices: Pair<String, T>) = replyChoices(choices.toList())
 
 }

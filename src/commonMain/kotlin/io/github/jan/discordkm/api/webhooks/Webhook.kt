@@ -10,7 +10,6 @@
 package io.github.jan.discordkm.api.webhooks
 
 import com.soywiz.klogger.Logger
-import io.github.jan.discordkm.api.entities.Modifier
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
@@ -19,7 +18,6 @@ import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
 import io.github.jan.discordkm.api.entities.messages.buildMessage
 import io.github.jan.discordkm.api.entities.modifiers.WebhookModifier
-import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.DiscordImage
@@ -31,16 +29,15 @@ import io.github.jan.discordkm.internal.restaction.generateUrl
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
-import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.github.jan.discordkm.internal.utils.valueOfIndex
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
 
 class Webhook(override val client: Client, override val data: JsonObject) : SerializableEntity, WebhookExecutor {
 
@@ -144,12 +141,12 @@ interface WebhookExecutor : SnowflakeEntity {
     suspend fun send(message: DataMessage) = rateLimiter.queue(Route.Webhook.EXECUTE_WEBHOOK(id, token)) {
         http.post(generateUrl(Route.Webhook.EXECUTE_WEBHOOK(id, token))) {
             val msg = message.build()
-            body = if (msg is MultiPartFormDataContent) {
+            setBody(if (msg is MultiPartFormDataContent) {
                 msg
             } else {
                 contentType(ContentType.Application.Json)
                 msg.toString()
-            }
+            })
         }
     }
 

@@ -12,11 +12,12 @@ package io.github.jan.discordkm.internal.restaction
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.DiscordKMInfo
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.call.receive
-import io.ktor.client.features.defaultRequest
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.get
@@ -24,81 +25,92 @@ import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
-import io.ktor.client.statement.HttpResponse
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 
-class RestClient(val client: Client, httpClientConfig: HttpClientConfig<*>.() -> Unit) {
+class RestClient(private val config: ClientConfig) {
+
+    private val errorHandler = ErrorHandler(config)
 
     val http = HttpClient {
-        httpClientConfig(this)
+        config.httpClientConfig(this)
         defaultRequest {
-            header("Authorization", "Bot ${client.token}")
+            header("Authorization", "Bot ${config.token}")
             header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.3)")
         }
+
+        HttpResponseValidator {
+            handleResponseException {
+                val clientException = it as? ClientRequestException ?: return@handleResponseException
+                errorHandler.handle(clientException)
+            }
+        }
+
+        expectSuccess = false
     }
-    val rateLimiter = RateLimiter(client.loggingLevel)
+    val rateLimiter = RateLimiter(config.loggingLevel)
 
     suspend fun custom(method: HttpMethod, endpoint: String, data: Any? = null, reason: String? = null) = when(method.value) {
         "GET" -> {
             rateLimiter.queue(endpoint) {
-                http.get<HttpResponse>(generateUrl(endpoint)) {
+                http.get(generateUrl(endpoint)) {
                     header("X-Audit-Log-Reason", reason)
                 }
-            }.receive<String>()
+            }.body<String>()
         }
         "POST" -> {
             rateLimiter.queue(endpoint) {
-                http.post<HttpResponse>(generateUrl(endpoint)) {
+                http.post(generateUrl(endpoint)) {
                     header("X-Audit-Log-Reason", reason)
                     data?.let {
-                        body = if(it is MultiPartFormDataContent) {
+                        setBody(if(it is MultiPartFormDataContent) {
                             it
                         } else {
                             contentType(ContentType.Application.Json)
                             it.toString()
-                        }
+                        })
                     }
                 }
-            }.receive<String>()
+            }.body()
         }
         "DELETE" -> {
             rateLimiter.queue(endpoint) {
-                http.delete<HttpResponse>(generateUrl(endpoint)) {
+                http.delete(generateUrl(endpoint)) {
                     header("X-Audit-Log-Reason", reason)
                 }
-            }.receive<String>()
+            }.body()
         }
         "PATCH" -> {
             rateLimiter.queue(endpoint) {
-                http.patch<HttpResponse>(generateUrl(endpoint)) {
+                http.patch(generateUrl(endpoint)) {
                     header("X-Audit-Log-Reason", reason)
                     data?.let {
-                        body = if(it is MultiPartFormDataContent) {
+                        setBody(if(it is MultiPartFormDataContent) {
                             it
                         } else {
                             contentType(ContentType.Application.Json)
                             it.toString()
-                        }
+                        })
                     }
                 }
-            }.receive<String>()
+            }.body()
         }
         "PUT" -> {
             rateLimiter.queue(endpoint) {
                 http.put(generateUrl(endpoint)) {
                     header("X-Audit-Log-Reason", reason)
                     data?.let {
-                        body = if(it is MultiPartFormDataContent) {
+                        setBody(if(it is MultiPartFormDataContent) {
                             it
                         } else {
                             contentType(ContentType.Application.Json)
                             it.toString()
-                        }
+                        })
                     }
                 }
-            }.receive<String>()
+            }.body()
         }
         else -> throw UnsupportedOperationException()
     }

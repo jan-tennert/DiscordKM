@@ -89,6 +89,7 @@ class MessageBuilder {
 
     fun embed(builder: EmbedBuilder.() -> Unit) { embeds += buildEmbed(builder) }
 
+    @Suppress("DEPRECATION")
     fun build() = DataMessage(content, tts, embeds, allowedMentions, attachments, actionRows, reference)
 
 }

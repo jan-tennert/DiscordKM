@@ -8,7 +8,6 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Category
 import io.github.jan.discordkm.api.entities.channels.guild.CategoryCacheEntry
-import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.channels.guild.NewsChannelCacheEntry
@@ -23,6 +22,7 @@ import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.internal.serialization.GuildEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
+import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
@@ -31,7 +31,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import io.github.jan.discordkm.internal.utils.get
 
 object ChannelSerializer : GuildEntitySerializer<Channel> {
 
@@ -50,19 +49,18 @@ object ChannelSerializer : GuildEntitySerializer<Channel> {
         else -> TODO()
     }
 
-    inline fun <reified T : ChannelCacheEntry>deserializeChannel(data: JsonObject, guild: Guild) : T {
+    inline fun <reified T : ChannelCacheEntry>deserializeChannel(data: JsonObject, guildX: Guild) : T {
         val id = data["id"]!!.snowflake
         val name = data["name", true]?.string //guild
         val type = ChannelType[data["type"]!!.int]
         val position = data["position", true]?.int //guild
         val permissionOverwrites = data["permission_overwrites"]?.jsonArray?.map { PermissionOverwrite(it.jsonObject) }?.toSet()
         val nsfw = data["nsfw", true]?.boolean //guild
-        val guild = data["guild_id", true]?.snowflake?.let { Guild(it, guild.client) } ?: guild
+        val guild = data["guild_id", true]?.snowflake?.let { Guild(it, guildX.client) } ?: guildX
         val topic = data["topic", true]?.string //guild
         val lastMessageId = data["last_message_id", true]?.snowflake?.let { Message(it, Channel(id, type, guild.client, guild) as MessageChannel) } //message channel
         val bitrate = data["bitrate", true]?.int //voice channel
         val userLimit = data["user_limit", true]?.int //voice channel
-        val recipients = data["recipients", true]?.string //dm
         val defaultAutoArchiveDuration = data["default_auto_archive_duration", true]?.int?.minutes?.let { Thread.ThreadDuration.raw(it) } //thread
         val slowModeTime = data["rate_limit_per_user", true]?.int?.seconds //guild
         val parentId = data["parent_id", true]?.snowflake //parent for channel

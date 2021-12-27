@@ -16,7 +16,7 @@ import io.ktor.client.HttpClientConfig
 /**
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
-class RestOnlyClient @Deprecated("Use the method buildRestOnlyClient") internal constructor(token: String, loggingLevel: Logger.Level, enabledCache: Set<CacheFlag>, httpClientConfig: HttpClientConfig<*>.() -> Unit) : Client(token, loggingLevel, enabledCache, httpClientConfig)
+class RestOnlyClient @Deprecated("Use the method buildRestOnlyClient") internal constructor (config: ClientConfig) : Client(config)
 
 class RestOnlyClientBuilder(var token: String) {
 
@@ -24,7 +24,8 @@ class RestOnlyClientBuilder(var token: String) {
     var enabledCache = CacheFlag.values().toMutableSet()
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
-    fun build() = RestOnlyClient(token, loggingLevel, enabledCache, httpClientConfig)
+    @Suppress("DEPRECATION")
+    fun build() = RestOnlyClient(ClientConfig(token = token, loggingLevel = loggingLevel, enabledCache = enabledCache, httpClientConfig = httpClientConfig))
 
     fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
 

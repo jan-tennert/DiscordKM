@@ -10,25 +10,23 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.channels.Channel
-import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.MessageBulkDeleteEvent
+import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
-import io.github.jan.discordkm.internal.utils.get
 
 class MessageBulkDeleteEventHandler(val client: Client) : InternalEventHandler<MessageBulkDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): MessageBulkDeleteEvent {
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, client) }
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)
-        return MessageBulkDeleteEvent(client, data.getValue("ids").jsonArray.map { Snowflake(it.jsonPrimitive.long) }, channel)
+        return MessageBulkDeleteEvent(client, data.getValue("ids").jsonArray.map { Snowflake(it.jsonPrimitive.long) }, channel, guild)
     }
 
 }

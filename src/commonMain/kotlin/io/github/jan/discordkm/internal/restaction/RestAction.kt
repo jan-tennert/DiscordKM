@@ -28,6 +28,7 @@ class RestAction<T>(val client: Client)  {
         this.transformer = transform
     }
 
+    @Suppress("UNCHECKED_CAST")
     suspend fun await(): T {
         check()
         val json = client.rest.custom(route.method, route.endpoint, route.body, reason)

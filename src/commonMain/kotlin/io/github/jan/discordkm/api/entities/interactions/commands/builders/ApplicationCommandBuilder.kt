@@ -108,6 +108,7 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
 
     @CommandBuilder
     @DiscordKMUnstable
+    @Suppress("unused")
     fun attachment(name: String, description: String, required: Boolean = false): Nothing = TODO() //{ options += CommandOption(CommandOption.OptionType.ATTACHMENT, name, description, required) }
 
     @CommandBuilder

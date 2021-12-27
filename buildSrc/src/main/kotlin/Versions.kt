@@ -11,7 +11,7 @@ object Versions {
 
     const val KOTLIN = "1.6.0"
     const val DOKKA = "1.6.0"
-    const val KTOR = "1.6.7"
+    const val KTOR = "2.0.0-beta-1"
     const val SERIALIZATION = "1.3.1"
     const val KORLIBS = "2.4.8"
     const val COROUTINES = "1.6.0-RC2"

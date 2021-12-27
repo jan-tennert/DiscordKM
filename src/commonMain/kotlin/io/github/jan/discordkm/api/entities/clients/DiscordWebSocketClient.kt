@@ -12,9 +12,7 @@ package io.github.jan.discordkm.api.entities.clients
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
-import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
-import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.events.ShardCreateEvent
@@ -33,67 +31,69 @@ import kotlin.jvm.JvmName
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
 class DiscordWebSocketClient internal constructor(
-    token: String,
-    private val encoding: Encoding,
-    private val compression: Compression,
-    val intents: Set<Intent>,
-    loggingLevel: Logger.Level,
-    private val status: PresenceStatus,
-    private val activity: Presence?,
-    private val reconnectDelay: TimeSpan = 5.seconds,
-    enabledCache: Set<CacheFlag>,
-    shards: List<Int> = emptyList(),
-    private val totalShards: Int = -1,
-    httpClient: HttpClientConfig<*>.() -> Unit,
-) : Client(token, loggingLevel, enabledCache, httpClient) {
+    config: ClientConfig
+) : Client(config) {
 
     val shardConnections = mutableListOf<DiscordGateway>()
+
     @get:JvmName("isClosed")
     var loggedIn = false
         private set
     val eventListeners = mutableListOf<EventListener>()
 
     init {
-        if(shards.isEmpty()) shardConnections.add(DiscordGateway(encoding, compression, this, status, activity, reconnectDelay, 0, -1)) else shards.forEach {
-            shardConnections.add(DiscordGateway(encoding, compression, this, status, activity, reconnectDelay, it, totalShards))
+        if (config.shards.isEmpty()) shardConnections.add(DiscordGateway(config, this, 0)) else config.shards.forEach {
+            shardConnections.add(DiscordGateway(config, this, it))
         }
     }
 
     internal fun getGatewayByShardId(shardId: Int) = shardConnections.first { it.shardId == shardId }
 
-    inline fun <reified E : Event> on(crossinline predicate: (E) -> Boolean = { true }, crossinline onEvent: suspend E.() -> Unit) {
+    inline fun <reified E : Event> on(
+        crossinline predicate: (E) -> Boolean = { true },
+        crossinline onEvent: suspend E.() -> Unit
+    ) {
         eventListeners += EventListener {
-            if(it is E && predicate(it)) {
+            if (it is E && predicate(it)) {
                 onEvent(it)
             }
         }
     }
 
-    suspend inline fun <reified E : Event> awaitEvent(crossinline predicate: (E) -> Boolean = { true }) = suspendCancellableCoroutine<E> {
-        val listener = object : EventListener {
-            override suspend fun onEvent(event: Event) {
-                if(event is E && predicate(event)) {
-                    it.resume(event) { err -> throw err }
-                    eventListeners -= this
+    suspend inline fun <reified E : Event> awaitEvent(crossinline predicate: (E) -> Boolean = { true }) =
+        suspendCancellableCoroutine<E> {
+            val listener = object : EventListener {
+                override suspend fun onEvent(event: Event) {
+                    if (event is E && predicate(event)) {
+                        it.resume(event) { err -> throw err }
+                        eventListeners -= this
+                    }
                 }
             }
+            eventListeners += listener
+            it.invokeOnCancellation {
+                eventListeners -= listener
+            }
         }
-        eventListeners += listener
-        it.invokeOnCancellation {
-            eventListeners -= listener
-        }
-    }
 
-    suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) = shardConnections[0].send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
+    suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) =
+        shardConnections[0].send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
 
     suspend fun login() {
-        if(loggedIn) throw IllegalStateException("Discord Client already connected to the discord gateway")
+        if (loggedIn) throw IllegalStateException("Discord Client already connected to the discord gateway")
         loggedIn = true
-        shardConnections.forEach { it.start(); if(totalShards != -1) handleEvent(ShardCreateEvent(this@DiscordWebSocketClient, it.shardId)) }
+        shardConnections.forEach {
+            it.start(); if (config.totalShards != -1) handleEvent(
+            ShardCreateEvent(
+                this@DiscordWebSocketClient,
+                it.shardId
+            )
+        )
+        }
     }
 
     suspend fun disconnect() {
-        if(!loggedIn) throw IllegalStateException("Discord Client is already disconnected from the discord gateway")
+        if (!loggedIn) throw IllegalStateException("Discord Client is already disconnected from the discord gateway")
         loggedIn = false
         shardConnections.forEach { it.close() }
     }
@@ -105,7 +105,10 @@ class DiscordWebSocketClient internal constructor(
 /**
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
-class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", replaceWith = ReplaceWith("buildClient()", "io.github.jan.discordkm.api.entities.clients.buildClient")) constructor(var token: String) {
+class DiscordWebSocketClientBuilder @Deprecated(
+    "Use the method buildClient",
+    replaceWith = ReplaceWith("buildClient()", "io.github.jan.discordkm.api.entities.clients.buildClient")
+) constructor(var token: String) {
 
     /**
      * The encoding used for the websocket. Currently, only [Encoding.JSON] is supported
@@ -137,7 +140,7 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
      * The cache specifies which entities should be cached.
      */
     var enabledCache = CacheFlag.ALL.toMutableSet()
-    private val shards = mutableListOf<Int>()
+    private val shards = mutableSetOf<Int>()
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
     /**
@@ -148,20 +151,43 @@ class DiscordWebSocketClientBuilder @Deprecated("Use the method buildClient", re
     /**
      * Use only specific shards. For more information see [Sharding](https://discord.com/developers/docs/topics/gateway#sharding)
      */
-    fun useShards(vararg shards: Int) { this.shards.addAll(shards.toList()) }
+    fun useShards(vararg shards: Int) {
+        this.shards.addAll(shards.toList())
+    }
 
     /**
      * Sets the default activity which is set after connecting to the websocket.
      */
-    fun activity(builder: PresenceModifier.() -> Unit) { activity = PresenceModifier().apply(builder) }
+    fun activity(builder: PresenceModifier.() -> Unit) {
+        activity = PresenceModifier().apply(builder)
+    }
 
-    fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
+    fun httpClient(builder: HttpClientConfig<*>.() -> Unit) {
+        httpClientConfig = builder
+    }
 
-    fun build() = DiscordWebSocketClient(token, encoding, compression, intents.toSet(), loggingLevel, activity.status, activity.activity, reconnectDelay, enabledCache, shards, totalShards, httpClientConfig)
+    fun build() = DiscordWebSocketClient(
+        ClientConfig(
+            token,
+            intents,
+            loggingLevel,
+            enabledCache,
+            httpClientConfig,
+            totalShards,
+            shards,
+            reconnectDelay,
+            activity.activity,
+            activity.status,
+            encoding,
+            compression
+        )
+    )
 
 }
 
 /**
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
-inline fun buildClient(token: String, builder: DiscordWebSocketClientBuilder.() -> Unit = {}) = DiscordWebSocketClientBuilder(token).apply(builder).build()
+@Suppress("DEPRECATION")
+inline fun buildClient(token: String, builder: DiscordWebSocketClientBuilder.() -> Unit = {}) =
+    DiscordWebSocketClientBuilder(token).apply(builder).build()

@@ -9,10 +9,8 @@
  */
 package io.github.jan.discordkm.internal.websocket
 
-import com.soywiz.klock.TimeSpan
 import com.soywiz.klogger.Logger
-import io.github.jan.discordkm.api.entities.activity.Presence
-import io.github.jan.discordkm.api.entities.activity.PresenceStatus
+import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
 import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
@@ -70,17 +68,19 @@ import io.github.jan.discordkm.internal.serialization.send
 import io.github.jan.discordkm.internal.utils.LoggerOutput
 import io.github.jan.discordkm.internal.utils.generateWebsocketURL
 import io.ktor.client.HttpClient
-import io.ktor.client.features.websocket.DefaultClientWebSocketSession
-import io.ktor.client.features.websocket.WebSockets
-import io.ktor.client.features.websocket.webSocketSession
+import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.http.HttpMethod
-import io.ktor.http.cio.websocket.close
-import io.ktor.http.cio.websocket.readBytes
-import io.ktor.http.cio.websocket.send
 import io.ktor.http.takeFrom
+import io.ktor.websocket.close
+import io.ktor.websocket.readBytes
+import io.ktor.websocket.send
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
@@ -92,14 +92,9 @@ import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
 
 class DiscordGateway(
-    val encoding: Encoding,
-    val compression: Compression,
+    private val config: ClientConfig,
     val client: DiscordWebSocketClient,
-    val status: PresenceStatus,
-    val activity: Presence?,
-    val reconnectDelay: TimeSpan,
     val shardId: Int = 0,
-    val totalShards: Int = -1
 ) {
 
     private val LOGGER = Logger("Websocket")
@@ -114,21 +109,21 @@ class DiscordGateway(
     }
     private var disconnect: Boolean = false
     lateinit var ws: DefaultClientWebSocketSession
+    private val mutex = Mutex()
 
     init {
-        LOGGER.level = client.loggingLevel
+        LOGGER.level = config.loggingLevel
         LOGGER.output = LoggerOutput
     }
 
     suspend fun start(normalStart: Boolean = true) {
-        isClosed = false
-        if(sessionId != null || !normalStart) com.soywiz.korio.async.delay(reconnectDelay)
+        if(sessionId != null || !normalStart) com.soywiz.korio.async.delay(config.reconnectDelay)
         LOGGER.info { "Connecting to gateway..." }
         ws = http.webSocketSession() {
             method = HttpMethod.Get
-            url.takeFrom(generateWebsocketURL(encoding, compression))
+            url.takeFrom(generateWebsocketURL(config.encoding, config.compression))
         }
-
+        mutex.withLock { isClosed = false }
         LOGGER.info { "Connected to gateway!" }
         while(!isClosed) {
             try {
@@ -137,7 +132,7 @@ class DiscordGateway(
             } catch(_: Exception) {
                 isClosed = true
                 if(disconnect) return
-                LOGGER.error { "Disconnected due to an error: ${ws.closeReason.await()}. Trying to reconnect in ${reconnectDelay.seconds} seconds" }
+                LOGGER.error { "Disconnected due to an error: ${ws.closeReason.await()}. Trying to reconnect in ${config.reconnectDelay.seconds} seconds" }
                 client.launch { start(false) }
                 break
             }
@@ -165,7 +160,7 @@ class DiscordGateway(
     private suspend fun onEvent(payload: Payload) {
         when(OpCode.fromCode(payload.opCode)) {
             OpCode.DISPATCH -> {
-                payload.eventName?.let { LOGGER.debug { "Received event $it" } }
+                payload.eventName?.let { LOGGER.debug { "Received event $it on shard $shardId" } }
                 lastSequenceNumber = payload.sequenceNumber
                 handleRawEvent(payload)
             }
@@ -179,9 +174,7 @@ class DiscordGateway(
             OpCode.INVALID_SESSION -> {
                 LOGGER.warn { "Failed to resume! Trying to reconnect manually..." }
                 close()
-                sessionId = null
-                isClosed = true
-                this@DiscordGateway.start(false)
+                this@DiscordGateway.start(true)
             }
             OpCode.HELLO -> {
                 heartbeatInterval = payload.eventData!!["heartbeat_interval"]!!.jsonPrimitive.long
@@ -194,13 +187,13 @@ class DiscordGateway(
                         if(sessionId != null) {
                             LOGGER.info { "Trying to resume..." }
                             send(Payload(6, buildJsonObject {
-                                put("token", client.token)
+                                put("token", config.token)
                                 put("session_id", sessionId)
                                 put("seq", lastSequenceNumber)
                             }))
                         } else {
                             LOGGER.debug { "Authenticate..." }
-                            send(IdentifyPayload(client.token, client.intents.rawValue(), status, activity, shardId, totalShards))
+                            send(IdentifyPayload(config.token, config.intents.rawValue(), config.status, config.activity, shardId, config.totalShards))
                         }
                     }
                 }
@@ -229,12 +222,20 @@ class DiscordGateway(
     }
 
     suspend fun close() {
-        isClosed = true
-        disconnect = true
-        sessionId = null
-        lastSequenceNumber = null
+        mutex.withLock {
+            isClosed = true
+            disconnect = true
+            sessionId = null
+            lastSequenceNumber = null
+        }
         LOGGER.info { "Closing websocket connection on shard $shardId" }
         ws.close()
+    }
+
+    suspend fun reconnect() {
+        close()
+        LOGGER.warn { "Reconnecting to gateway on shard $shardId" }
+        this@DiscordGateway.start(true)
     }
 
     private suspend fun handleRawEvent(payload: Payload) = coroutineScope {
