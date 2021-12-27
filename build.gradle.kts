@@ -13,6 +13,10 @@ allprojects {
     repositories {
         mavenCentral()
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven") }
+        maven {
+            url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+            name = "ktor-eap"
+        }
     }
 }
 
@@ -142,7 +146,7 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
+                    implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
             }
         }
         val jvmTest by getting

@@ -3,7 +3,6 @@ package io.github.jan.discordkm.internal.utils
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
@@ -27,6 +26,11 @@ open class EnumWithValueGetter <V : EnumWithValue<T>, T>(val values: Collection<
         when(value.value) {
             is String -> encoder.encodeString(value.value as String)
             is Int -> encoder.encodeInt(value.value as Int)
+            is Long -> encoder.encodeLong(value.value as Long)
+            is Float -> encoder.encodeFloat(value.value as Float)
+            is Double -> encoder.encodeDouble(value.value as Double)
+            is Boolean -> encoder.encodeBoolean(value.value as Boolean)
+            else -> throw IllegalArgumentException("Unsupported type")
         }
     }
 

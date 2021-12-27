@@ -75,7 +75,7 @@ class RateLimiter(loggingLevel: Logger.Level) {
             headers["x-ratelimit-limit"]!!.toInt(),
             headers["x-ratelimit-remaining"]!!.toInt(),
             headers["x-ratelimit-reset-after"]!!.toDouble().seconds,
-            DateTimeTz.Companion.fromUnixLocal(headers["x-ratelimit-reset"]!!.toDouble() * 1000)
+            DateTimeTz.fromUnixLocal(headers["x-ratelimit-reset"]!!.toDouble() * 1000)
         )
         buckets[endpoint] = bucket
         LOGGER.debug { "Received bucket ${bucket.bucket} on endpoint \"${endpoint}\". Remaining requests: ${bucket.remaining}" }
