@@ -18,7 +18,7 @@ You can create a client easily by just using buildClient:
 
 ```kotlin
  val client = buildClient("TOKEN") {
-    intents = mutableListOf( //set intents
+    intents = mutableSetOf( //set intents
         Intent.GUILD_MEMBERS,
         Intent.GUILD_PRESENCES,
         Intent.GUILD_WEBHOOKS,
