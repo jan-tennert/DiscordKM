@@ -16,7 +16,6 @@ import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -26,6 +25,7 @@ import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
@@ -41,79 +41,82 @@ class RestClient(private val config: ClientConfig) {
             header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.3)")
         }
 
-        HttpResponseValidator {
-            handleResponseException {
-                val clientException = it as? ClientRequestException ?: return@handleResponseException
-                errorHandler.handle(clientException)
-            }
-        }
-
         expectSuccess = false
     }
     val rateLimiter = RateLimiter(config.loggingLevel)
 
-    suspend fun custom(method: HttpMethod, endpoint: String, data: Any? = null, reason: String? = null) = when(method.value) {
-        "GET" -> {
-            rateLimiter.queue(endpoint) {
-                http.get(generateUrl(endpoint)) {
-                    header("X-Audit-Log-Reason", reason)
-                }
-            }.body<String>()
-        }
-        "POST" -> {
-            rateLimiter.queue(endpoint) {
-                http.post(generateUrl(endpoint)) {
-                    header("X-Audit-Log-Reason", reason)
-                    data?.let {
-                        setBody(if(it is MultiPartFormDataContent) {
-                            it
-                        } else {
-                            contentType(ContentType.Application.Json)
-                            it.toString()
-                        })
+    suspend fun custom(method: HttpMethod, endpoint: String, data: Any? = null, reason: String? = null) =
+        when(method.value) {
+            "GET" -> {
+                rateLimiter.queue(endpoint) {
+                    http.get(generateUrl(endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
                     }
                 }
-            }.body()
-        }
-        "DELETE" -> {
-            rateLimiter.queue(endpoint) {
-                http.delete(generateUrl(endpoint)) {
-                    header("X-Audit-Log-Reason", reason)
-                }
-            }.body()
-        }
-        "PATCH" -> {
-            rateLimiter.queue(endpoint) {
-                http.patch(generateUrl(endpoint)) {
-                    header("X-Audit-Log-Reason", reason)
-                    data?.let {
-                        setBody(if(it is MultiPartFormDataContent) {
-                            it
-                        } else {
-                            contentType(ContentType.Application.Json)
-                            it.toString()
-                        })
+            }
+            "POST" -> {
+                rateLimiter.queue(endpoint) {
+                    http.post(generateUrl(endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
+                        data?.let {
+                            setBody(
+                                if (it is MultiPartFormDataContent) {
+                                    it
+                                } else {
+                                    contentType(ContentType.Application.Json)
+                                    it.toString()
+                                }
+                            )
+                        }
                     }
                 }
-            }.body()
-        }
-        "PUT" -> {
-            rateLimiter.queue(endpoint) {
-                http.put(generateUrl(endpoint)) {
-                    header("X-Audit-Log-Reason", reason)
-                    data?.let {
-                        setBody(if(it is MultiPartFormDataContent) {
-                            it
-                        } else {
-                            contentType(ContentType.Application.Json)
-                            it.toString()
-                        })
+            }
+            "DELETE" -> {
+                rateLimiter.queue(endpoint) {
+                    http.delete(generateUrl(endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
                     }
                 }
-            }.body()
+            }
+            "PATCH" -> {
+                rateLimiter.queue(endpoint) {
+                    http.patch(generateUrl(endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
+                        data?.let {
+                            setBody(if(it is MultiPartFormDataContent) {
+                                it
+                            } else {
+                                contentType(ContentType.Application.Json)
+                                it.toString()
+                            })
+                        }
+                    }
+                }
+            }
+            "PUT" -> {
+                rateLimiter.queue(endpoint) {
+                    http.put(generateUrl(endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
+                        data?.let {
+                            setBody(if(it is MultiPartFormDataContent) {
+                                it
+                            } else {
+                                contentType(ContentType.Application.Json)
+                                it.toString()
+                            })
+                        }
+                    }
+                }
+            }
+            else -> throw UnsupportedOperationException()
+        }.let {
+            if(it.status.value in 200..201) {
+                it.body<String>()
+            } else {
+                errorHandler.handle(it)
+            }
         }
-        else -> throw UnsupportedOperationException()
-    }
+
 
     data class Bucket(val bucket: String, val limit: Int, val remaining: Int, val resetAfter: TimeSpan, val reset: DateTimeTz)
 
