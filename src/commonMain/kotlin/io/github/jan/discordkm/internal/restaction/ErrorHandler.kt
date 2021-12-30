@@ -12,7 +12,8 @@ import io.ktor.http.content.TextContent
 
 class ErrorHandler(config: ClientConfig) {
 
-    suspend fun handle(response: HttpResponse) : Nothing {
+    suspend fun handle(response: HttpResponse) {
+        if(response.status.value in 200..204) return
         val statusCode = response.status.value
         val data = response.body<String>().toJsonObject()
         val message = data["message"]?.string ?: "Unknown error"

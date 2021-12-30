@@ -33,7 +33,7 @@ import io.github.jan.discordkm.internal.caching.ClientCacheManager
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
-import io.github.jan.discordkm.internal.restaction.RestClient
+import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.internal.serialization.SerializableEnum
@@ -56,7 +56,7 @@ sealed class Client(
     val config: ClientConfig
 ) : CoroutineScope, CommandHolder, BaseEntity {
 
-    val rest = RestClient(config)
+    val requester = Requester(config)
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client: Client get() = this
     val cacheManager = ClientCacheManager(this)

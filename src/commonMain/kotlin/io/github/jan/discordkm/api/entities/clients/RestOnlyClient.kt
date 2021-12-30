@@ -19,11 +19,10 @@ import io.ktor.client.HttpClientConfig
 class RestOnlyClient @Deprecated("Use the method buildRestOnlyClient") internal constructor (config: ClientConfig) : Client(config) {
 
     override suspend fun disconnect() {
-        rest.http.close()
+        requester.http.close()
     }
 
     override suspend fun login() {
-        rest.rateLimiter.startRequester()
     }
 
 }

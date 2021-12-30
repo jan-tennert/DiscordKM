@@ -28,7 +28,7 @@ open class ScheduledEventContainer(val guild: Guild) {
             put("with_user_count", withUserCount)
         }
         transform {
-            it.toJsonArray().map { e -> ScheduledEventSerializer.deserialize(e.jsonObject, client) }
+            it.toJsonArray().map { e -> ScheduledEventSerializer.deserialize(e.jsonObject, guild.client) }
         }
     }
 
@@ -37,7 +37,7 @@ open class ScheduledEventContainer(val guild: Guild) {
      */
     suspend fun retrieveScheduledEvent(id: Snowflake) = guild.client.buildRestAction<ScheduledEventCacheEntry> {
         route = Route.ScheduledEvent.GET_EVENT(guild.id, id).get()
-        transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), client) }
+        transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), guild.client) }
     }
 
     /**
@@ -46,7 +46,7 @@ open class ScheduledEventContainer(val guild: Guild) {
      */
     suspend fun <M : ScheduledEventModifier, T : ScheduledEventModifiable<M>> create(type: T, modifier: M.() -> Unit) = guild.client.buildRestAction<ScheduledEventCacheEntry> {
         route = Route.ScheduledEvent.CREATE_EVENT(guild.id).post(type.build(modifier))
-        transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), client) }
+        transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), guild.client) }
     }
 
 }

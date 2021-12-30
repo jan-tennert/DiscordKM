@@ -23,7 +23,7 @@ import kotlinx.serialization.encoding.Encoder
 
 @Serializable
 data class MessageEmbed(
-    val title: String?,
+    val title: String? = null,
     val type: EmbedType = EmbedType.UNKNOWN,
     val description: String? = null,
     val url: String? = null,

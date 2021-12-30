@@ -132,7 +132,7 @@ class DiscordGateway(
                     mutex.withLock { isConnected = false }
                     launch { start(resume = true, delay = true) }
                 }
-                com.soywiz.korio.async.delay(1.milliseconds)
+                com.soywiz.korio.async.delay(100.milliseconds)
             }
         }
         mutex.withLock { isConnected = false }
@@ -140,12 +140,13 @@ class DiscordGateway(
 
     private suspend fun DefaultClientWebSocketSession.startRequester() {
         while (isConnected) {
-            val tasksCopy = tasks.access { it.toList() }
-            for (task in tasksCopy) {
+            val toDelete = mutableSetOf<Payload>()
+            for (task in tasks) {
                 send(task)
-                tasks -= task
+                toDelete += task
             }
-            com.soywiz.korio.async.delay(1.milliseconds)
+            tasks.removeAll(toDelete)
+            com.soywiz.korio.async.delay(200.milliseconds)
         }
     }
 

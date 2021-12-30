@@ -9,113 +9,56 @@
  */
 package io.github.jan.discordkm.internal.restaction
 
-import co.touchlab.stately.collections.IsoMutableList
 import co.touchlab.stately.collections.IsoMutableMap
+import co.touchlab.stately.collections.IsoMutableSet
 import com.soywiz.klock.DateTime
-import com.soywiz.klock.milliseconds
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
+import com.soywiz.korio.async.async
 import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.launch
 import io.github.jan.discordkm.internal.utils.LoggerOutput
 import io.ktor.client.statement.HttpResponse
-import io.ktor.http.HttpMessage
-import io.ktor.util.StringValues
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.Job
+import kotlin.coroutines.coroutineContext
 
 class RateLimiter(loggingLevel: Logger.Level) {
 
-    private val buckets = IsoMutableMap<String, RestClient.Bucket>()
-    private val tasks = IsoMutableMap<String, IsoMutableList<Task>>()
-    private val scope = GlobalScope
+    private val buckets = IsoMutableMap<String, Bucket>()
     private val LOGGER = Logger("RateLimiter")
-    private var open = true
-    val mutex = Mutex()
+    private val jobs = IsoMutableSet<Job>()
 
     init {
         LOGGER.level = loggingLevel
         LOGGER.output = LoggerOutput
     }
 
-    suspend fun queue(endpoint: String, task: suspend () -> HttpResponse): HttpResponse {
-        while(tasks[endpoint]?.isNotEmpty() == true);
-        return waitForResponse(endpoint, task)
-    }
-
-    private suspend fun waitForResponse(endpoint: String, task: suspend () -> HttpResponse) = suspendCancellableCoroutine<HttpResponse> {
-        if(endpoint in tasks) {
-            tasks[endpoint]!!.add(task to it)
-        } else {
-            val list = IsoMutableList<Task>()
-            list.add(task to it)
-            tasks[endpoint] = list
+    suspend fun queue(request: Request): HttpResponse {
+        while(jobs.isNotEmpty())
+        if(buckets[request.endpoint] != null && buckets[request.endpoint]!!.remaining == 0) {
+            delay(buckets[request.endpoint]!!.resetAfter)
+            return queue(request)
         }
+        val job = async(coroutineContext) { request.execute() }
+        jobs.add(job)
+        val result = job.await()
+        jobs -= job
+        return result
     }
 
-    suspend fun startRequester() {
-        while(open) {
-            val tasksCopy = tasks.access { it.toList() }
-            for (task in tasksCopy) {
-                coroutineScope {
-                    launch {
-                        val (endpoint, tasks) = task
-                        val endpointTasks = tasks.access { it.toList() }
-                        for (endpointTask in endpointTasks) {
-                            runWithBucket(endpoint, endpointTask)
-                        }
-                    }
-                }
-            }
-            delay(1.milliseconds)
-        }
-    }
-
-    suspend fun stopRequester() {
-        mutex.withLock {
-            open = false
-        }
-    }
-
-    private suspend fun runWithBucket(endpoint: String, task: Task) {
-        val bucket = buckets[endpoint]
-        val (response, continuation) = task
-        if(bucket == null) {
-            continuation.resume(send(endpoint, response)) {
-                it.printStackTrace()
-            }
-        } else {
-            if(bucket.remaining == 0) {
-                LOGGER.warn { "Remaining requests on $endpoint are used up. Waiting ${bucket.resetAfter}" }
-                delay(bucket.resetAfter)
-            }
-            continuation.resume(send(endpoint, response)) {
-                it.printStackTrace()
-            }
-        }
-        tasks[endpoint]!!.remove(task)
-    }
-
-    private suspend fun send(endpoint: String, task: suspend () -> HttpResponse): HttpResponse {
-        val response = task()
-        val headers = (response as HttpMessage).headers as StringValues
-        if(headers["x-ratelimit-bucket"] == null) return response
-        val bucket = RestClient.Bucket(
+    fun updateRateLimits(request: Request, response: HttpResponse) {
+        val headers = response.headers
+        if("X-ratelimit-bucket" !in headers) return
+        val bucket = Bucket(
             headers["x-ratelimit-bucket"]!!,
             headers["x-ratelimit-limit"]!!.toInt(),
             headers["x-ratelimit-remaining"]!!.toInt(),
             headers["x-ratelimit-reset-after"]!!.toDouble().seconds,
             DateTime.fromUnix(headers["x-ratelimit-reset"]!!.toDouble() * 1000)
         )
-        buckets[endpoint] = bucket
-        LOGGER.debug { "Received bucket ${bucket.bucket} on endpoint \"${endpoint}\". Remaining requests: ${bucket.remaining}" }
-        return response
+        buckets[request.endpoint] = bucket
     }
 
 }
 
-typealias Task = Pair<suspend () -> HttpResponse, CancellableContinuation<HttpResponse>>
+data class Bucket(val bucket: String, val limit: Int, val remaining: Int, val resetAfter: TimeSpan, val reset: DateTime)

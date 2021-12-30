@@ -10,17 +10,28 @@
 package io.github.jan.discordkm.internal.restaction
 
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.ktor.client.call.body
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.header
+import io.ktor.client.request.prepareDelete
+import io.ktor.client.request.prepareGet
+import io.ktor.client.request.preparePatch
+import io.ktor.client.request.preparePost
+import io.ktor.client.request.preparePut
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 
 typealias RestActionListener <T> = suspend (T) -> Unit
 
 class FormattedRoute internal constructor(val endpoint: String, val method: HttpMethod, val body: Any? = null)
 
-class RestAction<T>(val client: Client)  {
+class RestAction<T>(val requester: Requester) {
 
     lateinit var route: FormattedRoute
     private lateinit var transformer: (String) -> T
-    private var check: () -> Unit = {  }
+    private var check: () -> Unit = { }
     private var onFinish: RestActionListener<T> = {}
     var reason: String? = null
 
@@ -29,26 +40,95 @@ class RestAction<T>(val client: Client)  {
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun await(): T {
+    suspend fun queue(): T {
+        val http = requester.http
         check()
-        val json = client.rest.custom(route.method, route.endpoint, route.body, reason)
-        val result = if(!this::transformer.isInitialized) Unit as T else transformer(json)
+        val request = Request(route.endpoint) {
+            when (route.method.value) {
+                "GET" -> {
+                    http.prepareGet(generateUrl(route.endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
+                    }
+                }
+                "POST" -> {
+                    http.preparePost(generateUrl(route.endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
+                        route.body.let {
+                            setBody(
+                                if (it is MultiPartFormDataContent) {
+                                    it
+                                } else {
+                                    contentType(ContentType.Application.Json)
+                                    it.toString()
+                                }
+                            )
+                        }
+                    }
+
+                }
+                "DELETE" -> {
+                    http.prepareDelete(generateUrl(route.endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
+                    }
+
+                }
+                "PATCH" -> {
+                    http.preparePatch(generateUrl(route.endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
+                        route.body?.let {
+                            setBody(
+                                if (it is MultiPartFormDataContent) {
+                                    it
+                                } else {
+                                    contentType(ContentType.Application.Json)
+                                    it.toString()
+                                }
+                            )
+                        }
+
+                    }
+                }
+                "PUT" -> {
+                    http.preparePut(generateUrl(route.endpoint)) {
+                        header("X-Audit-Log-Reason", reason)
+                        route.body?.let {
+                            setBody(
+                                if (it is MultiPartFormDataContent) {
+                                    it
+                                } else {
+                                    contentType(ContentType.Application.Json)
+                                    it.toString()
+                                }
+                            )
+                        }
+                    }
+
+                }
+                else -> throw UnsupportedOperationException()
+            }
+        }
+        val response = requester.handle(request)
+        val result = if (!this::transformer.isInitialized) Unit as T else transformer(response.body())
         onFinish(result)
         return result
     }
 
-    fun onFinish(onFinish: RestActionListener<T>) { this.onFinish = onFinish }
+    fun onFinish(onFinish: RestActionListener<T>) {
+        this.onFinish = onFinish
+    }
 
-    fun check(check: () -> Unit) { this.check = check }
+    fun check(check: () -> Unit) {
+        this.check = check
+    }
 
     companion object {
         fun get(endpoint: String) = FormattedRoute(endpoint, HttpMethod.Get)
         fun post(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, HttpMethod.Post, body)
         fun delete(endpoint: String) = FormattedRoute(endpoint, HttpMethod.Delete)
-        fun patch(endpoint: String, body: Any ? = null) = FormattedRoute(endpoint, HttpMethod.Patch, body)
+        fun patch(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, HttpMethod.Patch, body)
         fun put(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, HttpMethod.Put, body)
     }
 
 }
 
-suspend inline fun <T> Client.buildRestAction(init: RestAction<T>.() -> Unit) = RestAction<T>(this).apply(init).await()
+suspend inline fun <T> Client.buildRestAction(init: RestAction<T>.() -> Unit) = RestAction<T>(client.requester).apply(init).queue()

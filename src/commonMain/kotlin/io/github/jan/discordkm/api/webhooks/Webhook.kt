@@ -14,8 +14,10 @@ import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
+import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 import io.github.jan.discordkm.api.entities.messages.buildMessage
 import io.github.jan.discordkm.api.entities.modifiers.WebhookModifier
 import io.github.jan.discordkm.internal.Route
@@ -23,20 +25,16 @@ import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
-import io.github.jan.discordkm.internal.restaction.RateLimiter
+import io.github.jan.discordkm.internal.post
+import io.github.jan.discordkm.internal.restaction.Requester
+import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.restaction.generateUrl
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.github.jan.discordkm.internal.utils.valueOfIndex
 import io.ktor.client.HttpClient
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 import kotlinx.serialization.json.JsonObject
 
 class Webhook(override val client: Client, override val data: JsonObject) : SerializableEntity, WebhookExecutor {
@@ -70,10 +68,10 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
     val applicationId = data.getOrNull<Snowflake>("application_id")
 
     override val http: HttpClient
-        get() = client.rest.http
+        get() = client.requester.http
 
-    override val rateLimiter: RateLimiter
-        get() = client.rest.rateLimiter
+    override val requester: Requester
+        get() = client.requester
 
     /**
      * Deletes this webhook
@@ -124,7 +122,7 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
 
             override val http = HttpClient()
 
-            override val rateLimiter = RateLimiter(Logger.Level.DEBUG)
+            override val requester = Requester(ClientConfig("", loggingLevel = Logger.Level.DEBUG, httpClientConfig = {}))
 
         }
 
@@ -135,19 +133,11 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
 interface WebhookExecutor : SnowflakeEntity {
 
     val token: String
-    val rateLimiter: RateLimiter
+    val requester: Requester
     val http: HttpClient
 
-    suspend fun send(message: DataMessage) = rateLimiter.queue(Route.Webhook.EXECUTE_WEBHOOK(id, token)) {
-        http.post(generateUrl(Route.Webhook.EXECUTE_WEBHOOK(id, token))) {
-            val msg = message.build()
-            setBody(if (msg is MultiPartFormDataContent) {
-                msg
-            } else {
-                contentType(ContentType.Application.Json)
-                msg.toString()
-            })
-        }
+    suspend fun send(message: DataMessage) = RestAction<MessageCacheEntry>(requester).apply {
+        route = Route.Webhook.EXECUTE_WEBHOOK(id, token).post(message.build())
     }
 
     suspend fun send(message: MessageBuilder.() -> Unit) = send(buildMessage(message))

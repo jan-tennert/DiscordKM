@@ -2,9 +2,9 @@ package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
+import io.github.jan.discordkm.api.entities.channels.PrivateChannel
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.api.entities.channels.PrivateChannel
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.RestAction
@@ -21,7 +21,7 @@ class MessageContainer(override val values: Collection<Message>, val channel: Me
      */
     suspend fun retrieve(id: Snowflake) = channel.client.buildRestAction<Message> {
         route = Route.Message.GET_MESSAGE(channel.id, id).get()
-        transform { Message(it.toJsonObject(), client) }
+        transform { Message(it.toJsonObject(), channel.client) }
     }
 
     /**
@@ -35,7 +35,7 @@ class MessageContainer(override val values: Collection<Message>, val channel: Me
             putOptional("limit", limit)
             if(before != null) put("before", before) else if(after != null) put("after", after) else if(around != null) put("around", around)
         })
-        transform { it.toJsonArray().map { json -> Message(json.jsonObject, client) } }
+        transform { it.toJsonArray().map { json -> Message(json.jsonObject, channel.client) } }
     }
 
     /**
@@ -44,7 +44,7 @@ class MessageContainer(override val values: Collection<Message>, val channel: Me
     suspend fun retrievePinnedMessages() = if(channel is PrivateChannel) emptyList() else channel.client.buildRestAction<List<Message>> {
         route = RestAction.get("/channels/$${channel.id}/pins")
         transform {
-            it.toJsonArray().map { msg -> Message(msg.jsonObject, client) }
+            it.toJsonArray().map { msg -> Message(msg.jsonObject, channel.client) }
         }
     }
 
