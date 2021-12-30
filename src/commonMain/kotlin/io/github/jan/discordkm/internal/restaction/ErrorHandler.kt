@@ -18,7 +18,7 @@ class ErrorHandler(config: ClientConfig) {
         val message = data["message"]?.string ?: "Unknown error"
         val errorCode = data["code"]?.int ?: 0
         val body = response.request.content as TextContent
-        throw RestException(message, errorCode, statusCode, body.text, response.request.url.toString())
+        throw RestException(message, errorCode, statusCode, body.text, response.request.url.toString(), data.toString())
     }
 
 }

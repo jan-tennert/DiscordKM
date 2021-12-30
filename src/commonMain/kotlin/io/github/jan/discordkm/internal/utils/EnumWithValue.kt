@@ -20,7 +20,10 @@ open class EnumWithValueGetter <V : EnumWithValue<T>, T>(val values: Collection<
 
     override val descriptor = PrimitiveSerialDescriptor("EnumWithValue", PrimitiveKind.INT)
 
-    override fun deserialize(decoder: Decoder) = decoder.decodeInt().let { values.first { it.value == it } }
+    override fun deserialize(decoder: Decoder): V {
+        val value = decoder.decodeInt()
+        return values.first { it.value == value }
+    }
 
     override fun serialize(encoder: Encoder, value: V) {
         when(value.value) {

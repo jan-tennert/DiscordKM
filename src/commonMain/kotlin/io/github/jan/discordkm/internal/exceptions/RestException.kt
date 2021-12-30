@@ -9,8 +9,9 @@
  */
 package io.github.jan.discordkm.internal.exceptions
 
-class RestException(message: String, val errorCode: Int, val statusCode: Int, val body: String?, val url: String) : Exception("""
+class RestException(message: String, val errorCode: Int, val statusCode: Int, val body: String?, val url: String, val fullError: String) : Exception("""
     Error $errorCode: $message (Status Code: $statusCode)
     URL: $url
+    Full Error: $fullError
     Body: $body
 """.trimIndent())
