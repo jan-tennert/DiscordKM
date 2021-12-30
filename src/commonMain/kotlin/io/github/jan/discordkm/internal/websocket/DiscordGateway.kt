@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.internal.websocket
 
 import co.touchlab.stately.collections.IsoMutableList
+import com.soywiz.klock.milliseconds
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
@@ -131,6 +132,7 @@ class DiscordGateway(
                     mutex.withLock { isConnected = false }
                     launch { start(resume = true, delay = true) }
                 }
+                com.soywiz.korio.async.delay(1.milliseconds)
             }
         }
         mutex.withLock { isConnected = false }
@@ -143,6 +145,7 @@ class DiscordGateway(
                 send(task)
                 tasks -= task
             }
+            com.soywiz.korio.async.delay(1.milliseconds)
         }
     }
 

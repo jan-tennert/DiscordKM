@@ -12,6 +12,7 @@ package io.github.jan.discordkm.internal.restaction
 import co.touchlab.stately.collections.IsoMutableList
 import co.touchlab.stately.collections.IsoMutableMap
 import com.soywiz.klock.DateTime
+import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
 import com.soywiz.korio.async.delay
@@ -70,6 +71,7 @@ class RateLimiter(loggingLevel: Logger.Level) {
                     }
                 }
             }
+            delay(1.milliseconds)
         }
     }
 
