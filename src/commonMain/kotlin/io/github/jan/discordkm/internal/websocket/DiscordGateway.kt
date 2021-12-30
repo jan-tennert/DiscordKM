@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.internal.websocket
 
+import co.touchlab.stately.collections.IsoMutableList
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
@@ -70,12 +71,8 @@ import io.github.jan.discordkm.internal.utils.generateWebsocketURL
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.plugins.websocket.webSocketSession
-import io.ktor.http.HttpMethod
-import io.ktor.http.takeFrom
-import io.ktor.websocket.close
+import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.websocket.readBytes
-import io.ktor.websocket.send
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -83,6 +80,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.intOrNull
@@ -90,6 +88,8 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
+
+//TODO: Ratelimit handling
 
 class DiscordGateway(
     private val config: ClientConfig,
@@ -102,63 +102,73 @@ class DiscordGateway(
     private var lastSequenceNumber: Int? = null
     var sessionId: String? = null
         internal set
-    var isClosed = true
-        private set
     private val http = HttpClient() {
         install(WebSockets)
     }
-    private var disconnect: Boolean = false
-    lateinit var ws: DefaultClientWebSocketSession
-    private val mutex = Mutex()
+    private val tasks = IsoMutableList<Task>()
+    val mutex = Mutex()
+    var isConnected = false
+        private set
 
     init {
         LOGGER.level = config.loggingLevel
         LOGGER.output = LoggerOutput
     }
 
-    suspend fun start(normalStart: Boolean = true) {
-        if(sessionId != null || !normalStart) com.soywiz.korio.async.delay(config.reconnectDelay)
+    suspend fun start(resume: Boolean, delay: Boolean = false) {
+        if (delay) com.soywiz.korio.async.delay(config.reconnectDelay)
         LOGGER.info { "Connecting to gateway..." }
-        ws = http.webSocketSession() {
-            method = HttpMethod.Get
-            url.takeFrom(generateWebsocketURL(config.encoding, config.compression))
-        }
-        mutex.withLock { isClosed = false }
-        LOGGER.info { "Connected to gateway!" }
-        while(!isClosed) {
-            try {
-                val message = ws.incoming.receive().readBytes().decodeToString()
-                onMessage(message)
-            } catch(_: Exception) {
-                isClosed = true
-                if(disconnect) return
-                LOGGER.error { "Disconnected due to an error: ${ws.closeReason.await()}. Trying to reconnect in ${config.reconnectDelay.seconds} seconds" }
-                client.launch { start(false) }
-                break
+        mutex.withLock { isConnected = true }
+        http.webSocket(generateWebsocketURL(config.encoding, config.compression)) {
+            LOGGER.info { "Connected to gateway!" }
+            launch { startRequester() }
+            while (isConnected) {
+                try {
+                    val message = incoming.receive().readBytes().decodeToString()
+                    onMessage(message)
+                } catch (e: Exception) {
+                    LOGGER.error { "Disconnected due to an error: ${closeReason.await()}. Trying to reconnect in ${config.reconnectDelay.seconds} seconds" }
+                    mutex.withLock { isConnected = false }
+                    launch { start(resume = true, delay = true) }
+                }
             }
+        }
+        mutex.withLock { isConnected = false }
+    }
 
+    private suspend fun DefaultClientWebSocketSession.startRequester() {
+        while (isConnected) {
+            val tasksCopy = tasks.access { it.toList() }
+            for (task in tasksCopy) {
+                send(task)
+                tasks -= task
+            }
         }
     }
 
-    suspend fun send(payload: Payload) = ws.send(payload)
+    fun send(payload: Payload) {
+        tasks += payload
+    }
 
     private fun onMessage(message: String) {
         val json = Json.parseToJsonElement(message).jsonObject
         var data = json["d"]
-        if(data is JsonNull) data = null
-        if(data.toString() == "false") data = null
+        if (data is JsonNull) data = null
+        if (data.toString() == "false") data = null
         client.launch {
-            onEvent(Payload(
-                json.getValue("op").jsonPrimitive.int,
-                data?.jsonObject,
-                json["s"]?.jsonPrimitive?.intOrNull,
-                json["t"]?.jsonPrimitive?.content
-            ))
+            onEvent(
+                Payload(
+                    json.getValue("op").jsonPrimitive.int,
+                    data?.jsonObject,
+                    json["s"]?.jsonPrimitive?.intOrNull,
+                    json["t"]?.jsonPrimitive?.content
+                )
+            )
         }
     }
 
     private suspend fun onEvent(payload: Payload) {
-        when(OpCode.fromCode(payload.opCode)) {
+        when (OpCode.fromCode(payload.opCode)) {
             OpCode.DISPATCH -> {
                 payload.eventName?.let { LOGGER.debug { "Received event $it on shard $shardId" } }
                 lastSequenceNumber = payload.sequenceNumber
@@ -177,14 +187,14 @@ class DiscordGateway(
                 this@DiscordGateway.start(true)
             }
             OpCode.HELLO -> {
-                heartbeatInterval = payload.eventData!!["heartbeat_interval"]!!.jsonPrimitive.long
+                heartbeatInterval = payload.eventData!!.jsonObject["heartbeat_interval"]!!.jsonPrimitive.long
                 coroutineScope {
                     launch {
                         LOGGER.debug { "Start heartbeating..." }
                         startHeartbeating()
                     }
                     launch {
-                        if(sessionId != null) {
+                        if (sessionId != null) {
                             LOGGER.info { "Trying to resume..." }
                             send(Payload(6, buildJsonObject {
                                 put("token", config.token)
@@ -193,7 +203,16 @@ class DiscordGateway(
                             }))
                         } else {
                             LOGGER.debug { "Authenticate..." }
-                            send(IdentifyPayload(config.token, config.intents.rawValue(), config.status, config.activity, shardId, config.totalShards))
+                            send(
+                                IdentifyPayload(
+                                    config.token,
+                                    config.intents.rawValue(),
+                                    config.status,
+                                    config.activity,
+                                    shardId,
+                                    config.totalShards
+                                )
+                            )
                         }
                     }
                 }
@@ -205,110 +224,98 @@ class DiscordGateway(
     }
 
     private suspend fun startHeartbeating() {
-        while(!isClosed && !disconnect) {
+        while (isConnected) {
             delay(heartbeatInterval)
-            if(disconnect) return
             sendHeartbeat()
             LOGGER.debug { "Sending heartbeat..." }
         }
     }
 
-  private suspend fun sendHeartbeat() {
-        ws.send(buildJsonObject {
-            put("op", 1)
-            put("d", heartbeatInterval)
-            put("s", lastSequenceNumber)
-        }.toString())
-    }
+    private suspend fun sendHeartbeat() = send(Payload(1, JsonPrimitive(heartbeatInterval), lastSequenceNumber, null))
 
-    suspend fun close(resume: Boolean = false) {
-        mutex.withLock {
-            isClosed = true
-            disconnect = true
-            if(!resume) {
-                sessionId = null
-                lastSequenceNumber = null
-            }
-        }
+    suspend fun close() {
         LOGGER.info { "Closing websocket connection on shard $shardId" }
-        ws.close()
+        mutex.withLock {
+            isConnected = false
+        }
     }
 
     private suspend fun handleRawEvent(payload: Payload) = coroutineScope {
         client.handleEvent(RawEvent(client, payload))
+        val data = payload.eventData!!.jsonObject
         launch {
-            val event = when(payload.eventName!!) {
-                "READY" -> ReadyEventHandler(client).handle(payload.eventData!!)
+            val event = when (payload.eventName!!) {
+                "READY" -> ReadyEventHandler(client).handle(data)
 
                 //guild events
-                "GUILD_CREATE" -> GuildCreateEventHandler(client).handle(payload.eventData!!)
-                "GUILD_UPDATE" -> GuildUpdateEventHandler(client).handle(payload.eventData!!)
-                "GUILD_DELETE" -> GuildDeleteEventHandler(client, LOGGER).handle(payload.eventData!!)
-                "GUILD_BAN_ADD" -> BanEventHandler(client).handle<GuildBanAddEvent>(payload.eventData!!)
-                "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(payload.eventData!!)
-                "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(payload.eventData!!)
-                "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(payload.eventData!!)
+                "GUILD_CREATE" -> GuildCreateEventHandler(client).handle(data)
+                "GUILD_UPDATE" -> GuildUpdateEventHandler(client).handle(data)
+                "GUILD_DELETE" -> GuildDeleteEventHandler(client, LOGGER).handle(data)
+                "GUILD_BAN_ADD" -> BanEventHandler(client).handle<GuildBanAddEvent>(data)
+                "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(data)
+                "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(data)
+                "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(data)
 
                 //stage instances
-                "STAGE_INSTANCE_CREATE" -> StageInstanceCreateEventHandler(client).handle(payload.eventData!!)
-                "STAGE_INSTANCE_UPDATE" -> StageInstanceUpdateEventHandler(client).handle(payload.eventData!!)
-                "STAGE_INSTANCE_DELETE" -> StageInstanceDeleteEventHandler(client).handle(payload.eventData!!)
+                "STAGE_INSTANCE_CREATE" -> StageInstanceCreateEventHandler(client).handle(data)
+                "STAGE_INSTANCE_UPDATE" -> StageInstanceUpdateEventHandler(client).handle(data)
+                "STAGE_INSTANCE_DELETE" -> StageInstanceDeleteEventHandler(client).handle(data)
 
                 //misc
-                "WEBHOOKS_UPDATE" -> WebhooksUpdateEventHandler(client).handle(payload.eventData!!)
-                "TYPING_START" -> TypingStartEventHandler(client).handle(payload.eventData!!)
-                "USER_UPDATE" -> SelfUserUpdateEventHandler(client).handle(payload.eventData!!)
-                "PRESENCE_UPDATE" -> PresenceUpdateEventHandler(client).handle(payload.eventData!!)
-                "VOICE_SERVER_UPDATE" -> VoiceServerUpdate(client, payload.eventData!!)
+                "WEBHOOKS_UPDATE" -> WebhooksUpdateEventHandler(client).handle(data)
+                "TYPING_START" -> TypingStartEventHandler(client).handle(data)
+                "USER_UPDATE" -> SelfUserUpdateEventHandler(client).handle(data)
+                "PRESENCE_UPDATE" -> PresenceUpdateEventHandler(client).handle(data)
+                "VOICE_SERVER_UPDATE" -> VoiceServerUpdate(client, data)
 
                 //roles
-                "GUILD_ROLE_CREATE" -> RoleCreateEventHandler(client).handle(payload.eventData!!)
-                "GUILD_ROLE_UPDATE" -> RoleUpdateEventHandler(client).handle(payload.eventData!!)
-                "GUILD_ROLE_DELETE" -> RoleDeleteEventHandler(client).handle(payload.eventData!!)
+                "GUILD_ROLE_CREATE" -> RoleCreateEventHandler(client).handle(data)
+                "GUILD_ROLE_UPDATE" -> RoleUpdateEventHandler(client).handle(data)
+                "GUILD_ROLE_DELETE" -> RoleDeleteEventHandler(client).handle(data)
 
                 //scheduled events
-                "GUILD_SCHEDULED_EVENT_CREATE" -> ScheduledEventCreateHandler(client).handle(payload.eventData!!)
-                "GUILD_SCHEDULED_EVENT_UPDATE" -> ScheduledEventUpdateHandler(client).handle(payload.eventData!!)
-                "GUILD_SCHEDULED_EVENT_DELETE" -> ScheduledEventDeleteHandler(client).handle(payload.eventData!!)
-                "GUILD_SCHEDULED_EVENT_USER_ADD" -> ScheduledEventUserAddEventHandler(client).handle(payload.eventData!!)
-                "GUILD_SCHEDULED_EVENT_USER_REMOVE" -> ScheduledEventUserRemoveEventHandler(client).handle(payload.eventData!!)
+                "GUILD_SCHEDULED_EVENT_CREATE" -> ScheduledEventCreateHandler(client).handle(data)
+                "GUILD_SCHEDULED_EVENT_UPDATE" -> ScheduledEventUpdateHandler(client).handle(data)
+                "GUILD_SCHEDULED_EVENT_DELETE" -> ScheduledEventDeleteHandler(client).handle(data)
+                "GUILD_SCHEDULED_EVENT_USER_ADD" -> ScheduledEventUserAddEventHandler(client).handle(data)
+                "GUILD_SCHEDULED_EVENT_USER_REMOVE" -> ScheduledEventUserRemoveEventHandler(client).handle(data)
 
                 //invites
-                "INVITE_CREATE" -> InviteCreateEventHandler(client).handle(payload.eventData!!)
-                "INVITE_DELETE" -> InviteDeleteEventHandler(client).handle(payload.eventData!!)
+                "INVITE_CREATE" -> InviteCreateEventHandler(client).handle(data)
+                "INVITE_DELETE" -> InviteDeleteEventHandler(client).handle(data)
 
                 //interactions
-                "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(payload.eventData!!)
+                "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(data)
 
                 //channels
-                "CHANNEL_CREATE" -> ChannelCreateEventHandler(client).handle(payload.eventData!!)
-                "CHANNEL_UPDATE" -> ChannelUpdateEventHandler(client).handle(payload.eventData!!)
-                "CHANNEL_DELETE" -> ChannelDeleteEventHandler(client).handle(payload.eventData!!)
-                "CHANNEL_PINS_UPDATE" -> ChannelPinUpdateEventHandler(client).handle(payload.eventData!!)
+                "CHANNEL_CREATE" -> ChannelCreateEventHandler(client).handle(data)
+                "CHANNEL_UPDATE" -> ChannelUpdateEventHandler(client).handle(data)
+                "CHANNEL_DELETE" -> ChannelDeleteEventHandler(client).handle(data)
+                "CHANNEL_PINS_UPDATE" -> ChannelPinUpdateEventHandler(client).handle(data)
 
                 //members
-                "GUILD_MEMBER_ADD" -> GuildMemberAddEventHandler(client).handle(payload.eventData!!)
-                "GUILD_MEMBER_UPDATE" -> GuildMemberUpdateEventHandler(client).handle(payload.eventData!!)
-                "GUILD_MEMBER_REMOVE" -> GuildMemberRemoveEventHandler(client).handle(payload.eventData!!)
+                "GUILD_MEMBER_ADD" -> GuildMemberAddEventHandler(client).handle(data)
+                "GUILD_MEMBER_UPDATE" -> GuildMemberUpdateEventHandler(client).handle(data)
+                "GUILD_MEMBER_REMOVE" -> GuildMemberRemoveEventHandler(client).handle(data)
 
                 //threads
-                "THREAD_CREATE" -> ThreadCreateEventHandler(client).handle(payload.eventData!!)
-                "THREAD_UPDATE" -> ThreadUpdateEventHandler(client).handle(payload.eventData!!)
-                "THREAD_DELETE" -> ThreadDeleteEventHandler(client).handle(payload.eventData!!)
-                "THREAD_MEMBERS_UPDATE" -> ThreadMembersUpdateEventHandler(client).handle(payload.eventData!!)
+                "THREAD_CREATE" -> ThreadCreateEventHandler(client).handle(data)
+                "THREAD_UPDATE" -> ThreadUpdateEventHandler(client).handle(data)
+                "THREAD_DELETE" -> ThreadDeleteEventHandler(client).handle(data)
+                "THREAD_MEMBERS_UPDATE" -> ThreadMembersUpdateEventHandler(client).handle(data)
 
                 //message events
-                "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(payload.eventData!!)
-                "MESSAGE_UPDATE" -> MessageUpdateEventHandler(client).handle(payload.eventData!!)
-                "MESSAGE_DELETE" -> MessageDeleteEventHandler(client).handle(payload.eventData!!)
-                "MESSAGE_DELETE_BULK" -> MessageBulkDeleteEventHandler(client).handle(payload.eventData!!)
-                "MESSAGE_REACTION_ADD" -> MessageReactionAddEventHandler(client).handle(payload.eventData!!)
-                "MESSAGE_REACTION_REMOVE" -> MessageReactionRemoveEventHandler(client).handle(payload.eventData!!)
-                "MESSAGE_REACTION_REMOVE_ALL" -> MessageReactionRemoveAllEventHandler(client).handle(payload.eventData!!)
-                "MESSAGE_REACTION_REMOVE_EMOJI" -> MessageReactionEmojiRemoveEventHandler(client).handle(payload.eventData!!)
+                "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(data)
+                "MESSAGE_UPDATE" -> MessageUpdateEventHandler(client).handle(data)
+                "MESSAGE_DELETE" -> MessageDeleteEventHandler(client).handle(data)
+                "MESSAGE_DELETE_BULK" -> MessageBulkDeleteEventHandler(client).handle(data)
+                "MESSAGE_REACTION_ADD" -> MessageReactionAddEventHandler(client).handle(data)
+                "MESSAGE_REACTION_REMOVE" -> MessageReactionRemoveEventHandler(client).handle(data)
+                "MESSAGE_REACTION_REMOVE_ALL" -> MessageReactionRemoveAllEventHandler(client).handle(data)
+                "MESSAGE_REACTION_REMOVE_EMOJI" -> MessageReactionEmojiRemoveEventHandler(client).handle(data)
 
                 //voice states
-                "VOICE_STATE_UPDATE" -> VoiceStateUpdateEventHandler(client).handle(payload.eventData!!)
+                "VOICE_STATE_UPDATE" -> VoiceStateUpdateEventHandler(client).handle(data)
                 else -> return@launch
             }
             client.handleEvent(event)
@@ -331,3 +338,5 @@ class DiscordGateway(
     }
 
 }
+
+typealias Task = Payload

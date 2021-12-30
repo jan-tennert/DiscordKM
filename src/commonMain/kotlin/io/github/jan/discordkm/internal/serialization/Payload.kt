@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -34,7 +34,7 @@ data class Payload(
     val opCode: Int,
     @SerialName("d")
     @Contextual
-    val eventData: JsonObject? = null,
+    val eventData: JsonElement? = null,
     @SerialName("s")
     val sequenceNumber: Int? = null,
     @SerialName("t")

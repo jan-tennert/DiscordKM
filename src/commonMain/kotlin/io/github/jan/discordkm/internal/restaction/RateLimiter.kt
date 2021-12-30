@@ -88,7 +88,7 @@ class RateLimiter(loggingLevel: Logger.Level) {
             }
         } else {
             if(bucket.remaining == 0) {
-                LOGGER.debug { "Received bucket ${bucket.bucket} on endpoint \"${endpoint}\". Remaining requests: 0. Waiting ${bucket.resetAfter}" }
+                LOGGER.warn { "Remaining requests on $endpoint are used up. Waiting ${bucket.resetAfter}" }
                 delay(bucket.resetAfter)
             }
             continuation.resume(send(endpoint, response)) {
