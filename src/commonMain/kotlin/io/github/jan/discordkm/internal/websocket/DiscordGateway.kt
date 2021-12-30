@@ -169,7 +169,7 @@ class DiscordGateway(
             }
             OpCode.RECONNECT -> {
                 close()
-                start(true)
+                start(false)
             }
             OpCode.INVALID_SESSION -> {
                 LOGGER.warn { "Failed to resume! Trying to reconnect manually..." }
@@ -221,21 +221,17 @@ class DiscordGateway(
         }.toString())
     }
 
-    suspend fun close() {
+    suspend fun close(resume: Boolean = false) {
         mutex.withLock {
             isClosed = true
             disconnect = true
-            sessionId = null
-            lastSequenceNumber = null
+            if(!resume) {
+                sessionId = null
+                lastSequenceNumber = null
+            }
         }
         LOGGER.info { "Closing websocket connection on shard $shardId" }
         ws.close()
-    }
-
-    suspend fun reconnect() {
-        close()
-        LOGGER.warn { "Reconnecting to gateway on shard $shardId" }
-        this@DiscordGateway.start(true)
     }
 
     private suspend fun handleRawEvent(payload: Payload) = coroutineScope {

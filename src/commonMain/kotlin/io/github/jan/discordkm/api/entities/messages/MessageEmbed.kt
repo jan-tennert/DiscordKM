@@ -14,6 +14,7 @@ import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.utils.ColorSerializer
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -39,16 +40,16 @@ data class MessageEmbed(
 ) {
 
     @Serializable
-    data class Author(val name: String? = null, val url: String? = null, val iconUrl: String? = null, val proxyIconUrl: String? = null)
+    data class Author(val name: String? = null, val url: String? = null, @SerialName("icon_url") val iconUrl: String? = null, @SerialName("proxy_icon_url") val proxyIconUrl: String? = null)
 
     @Serializable
     data class Provider(val url: String? = null, val name: String? = null)
 
     @Serializable
-    data class Media(val url: String = "", val proxyUrl: String? = null, val height: Int = 0, val width: Int = 0)
+    data class Media(val url: String = "", @SerialName("proxy_url") val proxyUrl: String? = null, val height: Int = 0, val width: Int = 0)
 
     @Serializable
-    data class Footer(val text: String = "", val iconUrl: String? = null, val proxyIconUrl: String? = null)
+    data class Footer(val text: String = "", @SerialName("icon_url") val iconUrl: String? = null, @SerialName("proxy_icon_url") val proxyIconUrl: String? = null)
 
     @Serializable
     data class Field(val name: String = "", val value: String = "", val inline: Boolean = false)
@@ -142,5 +143,5 @@ enum class EmbedType {
     }
 }
 
-
+@Suppress("DEPRECATION")
 inline fun buildEmbed(builder: EmbedBuilder.() -> Unit) = EmbedBuilder().apply(builder).build()

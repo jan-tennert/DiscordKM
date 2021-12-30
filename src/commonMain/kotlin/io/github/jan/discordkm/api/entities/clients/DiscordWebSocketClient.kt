@@ -79,8 +79,9 @@ class DiscordWebSocketClient internal constructor(
     suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) =
         shardConnections[0].send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
 
-    suspend fun login() {
+    override suspend fun login() {
         if (loggedIn) throw IllegalStateException("Discord Client already connected to the discord gateway")
+        launch { rest.rateLimiter.startRequester() }
         loggedIn = true
         shardConnections.forEach {
             it.start(); if (config.totalShards != -1) handleEvent(
@@ -92,9 +93,11 @@ class DiscordWebSocketClient internal constructor(
         }
     }
 
-    suspend fun disconnect() {
+    override suspend fun disconnect() {
         if (!loggedIn) throw IllegalStateException("Discord Client is already disconnected from the discord gateway")
         loggedIn = false
+        rest.http.close()
+        rest.rateLimiter.stopRequester()
         shardConnections.forEach { it.close() }
     }
 

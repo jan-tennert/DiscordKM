@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.internal.restaction
 
-import com.soywiz.klock.DateTimeTz
+import com.soywiz.klock.DateTime
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.DiscordKMInfo
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
@@ -38,6 +38,7 @@ class RestClient(private val config: ClientConfig) {
             header("Authorization", "Bot ${config.token}")
             header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.3)")
         }
+
 
         expectSuccess = false
     }
@@ -116,7 +117,7 @@ class RestClient(private val config: ClientConfig) {
         }
 
 
-    data class Bucket(val bucket: String, val limit: Int, val remaining: Int, val resetAfter: TimeSpan, val reset: DateTimeTz)
+    data class Bucket(val bucket: String, val limit: Int, val remaining: Int, val resetAfter: TimeSpan, val reset: DateTime)
 
 }
 

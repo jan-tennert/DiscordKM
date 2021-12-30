@@ -3,11 +3,19 @@ plugins {
     kotlin("plugin.serialization") version Versions.KOTLIN
     id("maven-publish")
     signing
+    id("com.github.johnrengelman.shadow") version "6.0.0"
     id("org.jetbrains.dokka") version Versions.DOKKA
+    application
 }
 
 group = "io.github.jan-tennert.discordkm"
 version = Versions.DISCORDKM
+
+application {
+    mainClassName = "TestKt"
+    mainClass.set("TestKt")
+}
+
 
 allprojects {
     repositories {

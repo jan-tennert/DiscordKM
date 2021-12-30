@@ -113,6 +113,16 @@ sealed class Client(
         this.image = image
     }
 
+    /**
+     * Disconnects the bot from the rest api and the websocket
+     */
+    abstract suspend fun disconnect()
+
+    /**
+     * Starts the requester
+     */
+    abstract suspend fun login()
+
     data class SelfUserEdit(var username: String? = null, var image: Image? = null)
 
 
