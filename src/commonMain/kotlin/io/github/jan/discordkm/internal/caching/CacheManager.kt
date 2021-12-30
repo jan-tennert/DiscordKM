@@ -2,11 +2,9 @@ package io.github.jan.discordkm.internal.caching
 
 import co.touchlab.stately.collections.IsoMutableMap
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
@@ -37,11 +35,9 @@ sealed class CacheManager <T : CacheManager<T>>{
 class ClientCacheManager internal constructor(override val client: Client) : CacheManager<ClientCacheManager>() {
 
     val guildCache = createCache<Snowflake, GuildCacheEntry>(CacheFlag.GUILDS)
-    val userCache = createCache<Snowflake, UserCacheEntry>(CacheFlag.USERS)
 
     override fun fillCache(cache: ClientCacheManager) = cache.let {
         it.guildCache.putAll(guildCache)
-        it.userCache.putAll(userCache)
     }
 }
 

@@ -56,64 +56,6 @@ data class MessageEmbed(
 
 }
 
-class EmbedBuilder @Deprecated("Use buildEmbed instead") constructor() {
-
-    var title: String? = null
-    var description: String? = null
-    var url: String? = null
-    var timestamp: DateTimeTz? = null
-    var color: Color? = null
-    var footer: Footer? = null
-    var image: Media? = null
-    var thumbnail: Media? = null
-    var author: Author? = null
-    val fields: MutableList<Field> = mutableListOf()
-
-    fun field(name: String = "", value: String = "", inline: Boolean = false, builder: Field.() -> Unit = {}) { fields += Field(name, value, inline).apply(builder) }
-
-    fun footer(text: String = "", iconUrl: String? = null, builder: Footer.() -> Unit = {}) {
-        footer = Footer(text, iconUrl).apply(builder)
-    }
-    fun thumbnail(url: String = "", builder: Media.() -> Unit = {}) {
-        thumbnail = Media(url).apply(builder)
-    }
-    fun image(url: String = "", builder: Media.() -> Unit = {}) {
-        image = Media(url).apply(builder)
-    }
-    fun author(name: String? = null, url: String? = null, iconUrl: String? = null, builder: Author.() -> Unit = {}) {
-        author = Author(name, url, iconUrl).apply(builder)
-    }
-
-    fun mapFields() = fields.map { MessageEmbed.Field(it.name, it.value, it.inline) }
-
-    data class Author(var name: String? = null, var url: String? = null, var iconUrl: String? = null) {
-
-        fun asAuthor() = MessageEmbed.Author(name, url)
-
-    }
-
-    data class Media(var url: String = "") {
-
-        fun asMedia() = MessageEmbed.Media(url)
-
-    }
-
-    data class Footer(var text: String = "", var iconUrl: String? = null) {
-
-        fun asFooter() = MessageEmbed.Footer(text, iconUrl)
-
-    }
-
-    data class Field(var name: String = "", var value: String = "", var inline: Boolean = false) {
-
-        fun asField() = MessageEmbed.Field(name, value, inline)
-
-    }
-
-    fun build() = MessageEmbed(title, EmbedType.RICH, description, url, timestamp, color, footer?.asFooter(), image?.asMedia(), thumbnail?.asMedia(), null, null, author?.asAuthor(), mapFields())
-
-}
-
 @Serializable(with = EmbedType.EmbedTypeSerializer::class)
 enum class EmbedType {
     UNKNOWN,
@@ -142,6 +84,3 @@ enum class EmbedType {
 
     }
 }
-
-@Suppress("DEPRECATION")
-inline fun buildEmbed(builder: EmbedBuilder.() -> Unit) = EmbedBuilder().apply(builder).build()

@@ -25,7 +25,7 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntity, Cach
     override val asMention: String
         get() = "<@$id>"
     override val cache: UserCacheEntry?
-        get() = client.cacheManager.userCache[id]
+        get() = client.users[id]
     /**
      * Creates a new [PrivateChannel]
      */

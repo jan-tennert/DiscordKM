@@ -15,6 +15,7 @@ import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
@@ -135,7 +136,7 @@ interface Member : SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<MemberM
 data class MemberCacheEntry(
     override val guild: Guild,
     override val id: Snowflake,
-    override val user: User,
+    override val user: UserCacheEntry,
     val joinedAt: DateTimeTz,
     val premiumSince: DateTimeTz?,
     val isDeafened: Boolean,

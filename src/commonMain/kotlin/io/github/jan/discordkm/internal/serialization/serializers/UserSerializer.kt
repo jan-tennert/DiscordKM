@@ -14,19 +14,20 @@ import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.get
-import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.long
+import io.github.jan.discordkm.internal.utils.snowflake
+import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.JsonObject
 
 
 object UserSerializer {
 
     fun deserialize(data: JsonObject, value: Client) = UserCacheEntry(
-        id = data.getOrThrow("id"),
-        name = data["username"].toString(),
-        discriminator = data["discriminator"].toString(),
-        avatarHash = data["avatar"]?.toString(),
+        id = data["id"]!!.snowflake,
+        name = data["username", true]?.string ?: "",
+        discriminator = data["discriminator", true]?.string ?: "",
+        avatarHash = data["avatar", true]?.string,
         isBot = data["bot", true]?.boolean ?: false,
         hasMfaEnabled = data["mfa_enabled", true]?.boolean ?: false,
         flags = data["flags", true]?.long?.let { User.UserFlag.decode(it) } ?: setOf(),

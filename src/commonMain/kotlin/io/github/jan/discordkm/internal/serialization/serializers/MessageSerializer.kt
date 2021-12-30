@@ -8,9 +8,7 @@ import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Role
-import io.github.jan.discordkm.api.entities.interactions.Interaction
 import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.Button
@@ -22,6 +20,7 @@ import io.github.jan.discordkm.api.entities.messages.MessageType
 import io.github.jan.discordkm.api.entities.messages.componentJson
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
+import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.isoTimestamp
@@ -34,7 +33,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import io.github.jan.discordkm.internal.utils.get
 
 object MessageSerializer : BaseEntitySerializer<MessageCacheEntry> {
     override fun deserialize(data: JsonObject, value: Client): MessageCacheEntry {
@@ -58,7 +56,7 @@ object MessageSerializer : BaseEntitySerializer<MessageCacheEntry> {
             type = data["type"]?.int?.let { MessageType[it] } ?: MessageType.DEFAULT,
             activity = data["activity"]?.let { Json.decodeFromJsonElement(it.jsonObject) },
             reference = data["message_reference"]?.let { Json.decodeFromJsonElement(it.jsonObject) },
-            flags = Message.Flag.decode(data["flags"]!!.long),
+            flags = Message.Flag.decode(data["flags", true]?.long ?: 0),
             guild = guild,
             member = author?.id?.let { guild?.cache?.members?.get(it) },
             components = data["components"]?.let { json ->
