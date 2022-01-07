@@ -8,7 +8,6 @@ import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.toJsonObject
 
 class UserContainer(val client: Client, override val values: Collection<UserCacheEntry>) : NameableSnowflakeContainer<UserCacheEntry> {
@@ -18,7 +17,7 @@ class UserContainer(val client: Client, override val values: Collection<UserCach
      */
     suspend fun retrieve(id: Snowflake) = client.buildRestAction<User> {
         route = Route.User.GET_USER(id).get()
-        transform { it.toJsonObject().extractClientEntity(client) }
+        transform { User(it.toJsonObject(), client) }
     }
 
 }

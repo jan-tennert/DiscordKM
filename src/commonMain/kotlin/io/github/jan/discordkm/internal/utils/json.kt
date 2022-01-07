@@ -13,11 +13,6 @@ import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import com.soywiz.klock.parse
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.invites.Invite
-import io.github.jan.discordkm.api.entities.guild.invites.InviteApplication
-import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
-import io.github.jan.discordkm.api.entities.interactions.commands.ChatInputCommand
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -62,31 +57,11 @@ inline fun <reified T> JsonObject.getOrThrow(key: String): T {
     }
 }
 
-inline fun <reified T> JsonObject.getOrDefault(key: String, default: T) = try {
-    getOrThrow<T>(key)
-} catch(_: NoSuchElementException) {
-    default
-}
-
 inline fun <reified T> JsonObject.getOrNull(key: String) = try {
     getOrThrow<T>(key)
 } catch(_: NoSuchElementException) {
     null
 }
-
-inline fun JsonObject.extractApplicationCommand(client: Client) = when((getOrNull<Int>("type") ?: 1)) {
-    1 -> ChatInputCommand(client, this)
-    else -> ApplicationCommand(client, this)
-}
-
-inline fun <reified T>JsonObject.extractClientEntity(client: Client) = when(T::class) {
-    Invite::class -> Invite(client, this) as T
-    InviteApplication::class -> InviteApplication(client, this) as T
-    else -> throw IllegalStateException()
-}
-
-
-
 
 fun <V>JsonObjectBuilder.putOptional(key: String, value: V?) { value?.let { put(key, value.toString()) }}
 

@@ -12,12 +12,15 @@ package io.github.jan.discordkm.api.entities.clients
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
+import com.soywiz.korio.file.VfsFile
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.events.ShardCreateEvent
 import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
+import io.github.jan.discordkm.internal.utils.LoggerConfig
+import io.github.jan.discordkm.internal.utils.LoggerOutput
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
 import io.github.jan.discordkm.internal.websocket.Encoding
@@ -35,10 +38,8 @@ class DiscordWebSocketClient internal constructor(
 ) : Client(config) {
 
     val shardConnections = mutableListOf<DiscordGateway>()
+    val shardById: Map<Int, DiscordGateway> get() = shardConnections.associateBy { it.shardId }
 
-    @get:JvmName("isClosed")
-    var loggedIn = false
-        private set
     val eventListeners = mutableListOf<EventListener>()
 
     init {
@@ -46,8 +47,6 @@ class DiscordWebSocketClient internal constructor(
             shardConnections.add(DiscordGateway(config, this, it))
         }
     }
-
-    internal fun getGatewayByShardId(shardId: Int) = shardConnections.first { it.shardId == shardId }
 
     inline fun <reified E : Event> on(
         crossinline predicate: (E) -> Boolean = { true },
@@ -79,8 +78,6 @@ class DiscordWebSocketClient internal constructor(
     suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) = shardConnections[0].send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
 
     override suspend fun login() {
-        if (loggedIn) throw IllegalStateException("Discord Client already connected to the discord gateway")
-        loggedIn = true
         shardConnections.forEach {
             it.start(false); if (config.totalShards != -1) handleEvent(
             ShardCreateEvent(
@@ -92,8 +89,6 @@ class DiscordWebSocketClient internal constructor(
     }
 
     override suspend fun disconnect() {
-        if (!loggedIn) throw IllegalStateException("Discord Client is already disconnected from the discord gateway")
-        loggedIn = false
         requester.http.close()
         shardConnections.forEach { it.close() }
     }
@@ -125,10 +120,6 @@ class DiscordWebSocketClientBuilder @Deprecated(
      */
     var intents = mutableSetOf<Intent>()
 
-    /**
-     * The logging level specifies which messages the console should get. [Logger.Level.DEBUG] receives all messages
-     */
-    var loggingLevel = Logger.Level.DEBUG
     private var activity = PresenceModifier()
 
     /**
@@ -140,6 +131,12 @@ class DiscordWebSocketClientBuilder @Deprecated(
      * The cache specifies which entities should be cached.
      */
     var enabledCache = CacheFlag.ALL.toMutableSet()
+
+    /**
+     * Configures the logger
+     */
+    var logging = LoggerConfig()
+
     private val shards = mutableSetOf<Int>()
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
@@ -170,7 +167,7 @@ class DiscordWebSocketClientBuilder @Deprecated(
         ClientConfig(
             token,
             intents,
-            loggingLevel,
+            logging,
             enabledCache,
             httpClientConfig,
             totalShards,
@@ -184,6 +181,7 @@ class DiscordWebSocketClientBuilder @Deprecated(
     )
 
 }
+
 
 /**
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities

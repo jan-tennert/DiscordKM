@@ -9,8 +9,7 @@ import io.ktor.client.statement.HttpResponse
 
 class Requester(private val config: ClientConfig) {
 
-    private val rateLimiter = RateLimiter(config.loggingLevel)
-    private val errorHandler = ErrorHandler(config)
+    private val rateLimiter = RateLimiter(config.logging)
 
     val http = HttpClient {
         config.httpClientConfig(this)
@@ -25,7 +24,7 @@ class Requester(private val config: ClientConfig) {
     suspend fun handle(request: Request) : HttpResponse {
         val response = rateLimiter.queue(request)
         rateLimiter.updateRateLimits(request, response)
-        errorHandler.handle(response)
+        ErrorHandler.handle(response)
         return response
     }
 

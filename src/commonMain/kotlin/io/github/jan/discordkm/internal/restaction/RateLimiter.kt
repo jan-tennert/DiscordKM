@@ -17,20 +17,20 @@ import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
 import com.soywiz.korio.async.async
 import com.soywiz.korio.async.delay
-import io.github.jan.discordkm.internal.utils.LoggerOutput
+import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.Job
 import kotlin.coroutines.coroutineContext
 
-class RateLimiter(loggingLevel: Logger.Level) {
+class RateLimiter(logging: LoggerConfig) {
 
     private val buckets = IsoMutableMap<String, Bucket>()
     private val LOGGER = Logger("RateLimiter")
     private val jobs = IsoMutableSet<Job>()
 
     init {
-        LOGGER.level = loggingLevel
-        LOGGER.output = LoggerOutput
+        LOGGER.level = logging.level
+        LOGGER.output = logging.output
     }
 
     suspend fun queue(request: Request): HttpResponse {

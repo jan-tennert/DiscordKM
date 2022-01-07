@@ -63,6 +63,7 @@ import io.github.jan.discordkm.internal.events.ThreadUpdateEventHandler
 import io.github.jan.discordkm.internal.events.TypingStartEventHandler
 import io.github.jan.discordkm.internal.events.VoiceStateUpdateEventHandler
 import io.github.jan.discordkm.internal.events.WebhooksUpdateEventHandler
+import io.github.jan.discordkm.internal.restaction.ErrorHandler
 import io.github.jan.discordkm.internal.serialization.IdentifyPayload
 import io.github.jan.discordkm.internal.serialization.Payload
 import io.github.jan.discordkm.internal.serialization.rawValue
@@ -112,25 +113,26 @@ class DiscordGateway(
         private set
 
     init {
-        LOGGER.level = config.loggingLevel
-        LOGGER.output = LoggerOutput
+        LOGGER.level = config.logging.level
+        LOGGER.output = config.logging.output
     }
 
-    suspend fun start(resume: Boolean, delay: Boolean = false) {
+    suspend fun start(delay: Boolean = false) {
         if (delay) com.soywiz.korio.async.delay(config.reconnectDelay)
-        LOGGER.info { "Connecting to gateway..." }
+        LoggerOutput.output("Connecting to gateway...", "Websocket")
         mutex.withLock { isConnected = true }
         http.webSocket(generateWebsocketURL(config.encoding, config.compression)) {
-            LOGGER.info { "Connected to gateway!" }
+            LoggerOutput.output("Connected to gateway!", "Websocket")
             launch { startRequester() }
             while (isConnected) {
                 try {
                     val message = incoming.receive().readBytes().decodeToString()
                     onMessage(message)
                 } catch (e: Exception) {
-                    LOGGER.error { "Disconnected due to an error: ${closeReason.await()}. Trying to reconnect in ${config.reconnectDelay.seconds} seconds" }
                     mutex.withLock { isConnected = false }
-                    launch { start(resume = true, delay = true) }
+                    val reason = closeReason.await()!!
+                    ErrorHandler.handle(reason, LOGGER, config.reconnectDelay)
+                    launch { start(delay = true) }
                 }
                 com.soywiz.korio.async.delay(100.milliseconds)
             }
@@ -183,11 +185,13 @@ class DiscordGateway(
             }
             OpCode.RECONNECT -> {
                 close()
-                start(false)
+                start(true)
             }
             OpCode.INVALID_SESSION -> {
-                LOGGER.warn { "Failed to resume! Trying to reconnect manually..." }
+                LOGGER.error { "Failed to resume! Trying to reconnect manually..." }
                 close()
+                sessionId = null
+                lastSequenceNumber = null
                 this@DiscordGateway.start(true)
             }
             OpCode.HELLO -> {
@@ -230,12 +234,13 @@ class DiscordGateway(
     private suspend fun startHeartbeating() {
         while (isConnected) {
             delay(heartbeatInterval)
+            if(!isConnected) return
             sendHeartbeat()
             LOGGER.debug { "Sending heartbeat..." }
         }
     }
 
-    private suspend fun sendHeartbeat() = send(Payload(1, JsonPrimitive(heartbeatInterval), lastSequenceNumber, null))
+    private fun sendHeartbeat() = send(Payload(1, JsonPrimitive(heartbeatInterval), lastSequenceNumber, null))
 
     suspend fun close() {
         LOGGER.info { "Closing websocket connection on shard $shardId" }

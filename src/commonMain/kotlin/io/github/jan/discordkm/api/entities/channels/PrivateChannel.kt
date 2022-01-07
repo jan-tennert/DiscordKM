@@ -9,16 +9,20 @@
  */
 package io.github.jan.discordkm.api.entities.channels
 
-import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.channels.ChannelType
-import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.internal.utils.extractClientEntity
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
+import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.clients.Client
 
 interface PrivateChannel : MessageChannel {
 
     override val type: ChannelType
         get() = ChannelType.DM
+
+    companion object {
+        operator fun invoke(id: Snowflake, client: Client) = object : PrivateChannel {
+            override val cache: Nothing? = null
+            override val id: Snowflake = id
+            override val client = client
+        }
+    }
 
 }

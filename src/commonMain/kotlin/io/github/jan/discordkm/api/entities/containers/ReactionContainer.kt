@@ -1,6 +1,7 @@
 package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageReaction
@@ -10,8 +11,8 @@ import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.extractClientEntity
-import io.github.jan.discordkm.internal.utils.toJsonObject
+import io.github.jan.discordkm.internal.utils.toJsonArray
+import kotlinx.serialization.json.jsonObject
 
 open class ReactionContainer(val message: Message) {
 
@@ -41,9 +42,9 @@ open class ReactionContainer(val message: Message) {
     /**
      * Retrieves all reactions with the specified emoji
      */
-    suspend fun retrieveReactions(emoji: Emoji) = message.client.buildRestAction<List<User>> {
+    suspend fun retrieveReactions(emoji: Emoji) = message.client.buildRestAction<List<UserCacheEntry>> {
         route = Route.Message.GET_REACTIONS(message.channel.id, message.id, emoji.asMention).get()
-        transform { it.toJsonObject().extractClientEntity(message.client) }
+        transform { it.toJsonArray().map{ json -> User(json.jsonObject, message.client)} }
     }
 
     /**

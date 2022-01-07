@@ -29,6 +29,7 @@ import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
@@ -122,7 +123,7 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
 
             override val http = HttpClient()
 
-            override val requester = Requester(ClientConfig("", loggingLevel = Logger.Level.DEBUG, httpClientConfig = {}))
+            override val requester = Requester(ClientConfig("", logging = LoggerConfig(Logger.Level.DEBUG), httpClientConfig = {}))
 
         }
 

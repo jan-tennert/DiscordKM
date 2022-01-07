@@ -13,6 +13,7 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.ReadyEvent
+import io.github.jan.discordkm.internal.utils.LoggerOutput
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.intOrNull
@@ -26,8 +27,10 @@ internal class ReadyEventHandler(val client: DiscordWebSocketClient) : InternalE
         val shardId = data["shard"]?.jsonArray?.get(1)?.jsonPrimitive?.intOrNull
         val selfUser = User(data["user"]!!.jsonObject, client)
         if(shardId != null) {
-            client.getGatewayByShardId(shardId).mutex.withLock {
-                client.getGatewayByShardId(shardId).sessionId = data.getValue("session_id").jsonPrimitive.content
+            client.shardById[shardId]?.let {
+                it.mutex.withLock {
+                    it.sessionId = data.getValue("session_id").jsonPrimitive.content
+                }
             }
         } else {
             client.shardConnections[0].mutex.withLock {
@@ -39,6 +42,8 @@ internal class ReadyEventHandler(val client: DiscordWebSocketClient) : InternalE
         client.mutex.withLock {
             client.selfUser = selfUser
         }
+        LoggerOutput.output("Finished authentication!", "Websocket")
+        LoggerOutput.output("Successfully connected to the Discord Gateway!", "Websocket")
         return ReadyEvent(guilds, client, shardId)
     }
 }

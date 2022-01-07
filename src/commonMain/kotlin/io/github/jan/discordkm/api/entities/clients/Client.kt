@@ -11,7 +11,6 @@ package io.github.jan.discordkm.api.entities.clients
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.UserCacheEntry
@@ -39,6 +38,7 @@ import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
+import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.github.jan.discordkm.internal.websocket.Compression
@@ -157,7 +157,7 @@ enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
 data class ClientConfig(
     val token: String,
     val intents: Set<Intent> = emptySet(),
-    val loggingLevel: Logger.Level,
+    val logging: LoggerConfig,
     val enabledCache: Set<CacheFlag> = emptySet(),
     val httpClientConfig: HttpClientConfig<*>.() -> Unit,
     val totalShards: Int = -1,

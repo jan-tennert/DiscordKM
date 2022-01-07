@@ -9,8 +9,8 @@
  */
 package io.github.jan.discordkm.api.entities.clients
 
-import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.internal.caching.CacheFlag
+import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.ktor.client.HttpClientConfig
 
 /**
@@ -29,12 +29,12 @@ class RestOnlyClient @Deprecated("Use the method buildRestOnlyClient") internal 
 
 class RestOnlyClientBuilder(var token: String) {
 
-    var loggingLevel = Logger.Level.DEBUG
+    var logging = LoggerConfig()
     var enabledCache = CacheFlag.values().toMutableSet()
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
     @Suppress("DEPRECATION")
-    fun build() = RestOnlyClient(ClientConfig(token = token, loggingLevel = loggingLevel, enabledCache = enabledCache, httpClientConfig = httpClientConfig))
+    fun build() = RestOnlyClient(ClientConfig(token = token, logging = logging, enabledCache = enabledCache, httpClientConfig = httpClientConfig))
 
     fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
 

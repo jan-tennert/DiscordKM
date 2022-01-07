@@ -12,7 +12,6 @@ import io.github.jan.discordkm.api.entities.interactions.commands.builders.messa
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.userCommand
 import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.utils.extractApplicationCommand
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonArray
@@ -25,7 +24,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      */
     suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.post(baseURL, builder.build())
-        transform { it.toJsonObject().extractApplicationCommand(holder.client) }
+        transform { ApplicationCommand(holder.client, it.toJsonObject()) }
     }
 
     /**
@@ -48,7 +47,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      */
     suspend fun retrieveCommands() = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.get(baseURL)
-        transform { it.toJsonArray().map { json -> json.jsonObject.extractApplicationCommand(holder.client) } }
+        transform { it.toJsonArray().map { json -> ApplicationCommand(holder.client, json.jsonObject) } }
     }
 
     /**
@@ -56,7 +55,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      */
     suspend fun retrieve(id: Snowflake) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.get("$baseURL/$id")
-        transform { it.toJsonObject().extractApplicationCommand(holder.client) }
+        transform { ApplicationCommand(holder.client, it.toJsonObject()) }
     }
 
     /**
@@ -64,7 +63,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      */
     suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.patch("$baseURL/$id", builder.build())
-        transform { it.toJsonObject().extractApplicationCommand(holder.client) }
+        transform { ApplicationCommand(holder.client, it.toJsonObject()) }
     }
 
     /**
@@ -79,7 +78,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      */
     suspend fun overrideCommands(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.put(baseURL, JsonArray(CommandBulkOverride().apply(commands).commands.map(ApplicationCommandBuilder::build)))
-        transform { it.toJsonArray().map { json -> json.jsonObject.extractApplicationCommand(holder.client) } }
+        transform { it.toJsonArray().map { json -> ApplicationCommand(holder.client, json.jsonObject) } }
     }
 
 }

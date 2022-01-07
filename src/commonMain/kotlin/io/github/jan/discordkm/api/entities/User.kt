@@ -13,7 +13,7 @@ import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
-import io.github.jan.discordkm.internal.utils.extractClientEntity
+import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -38,7 +38,7 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntity, Cach
             if (id == client.selfUser.id) throw UnsupportedOperationException("You can't create a private channel with yourself")
         }
 
-        transform { it.toJsonObject().extractClientEntity(client) }
+        transform { PrivateChannel(it.toJsonObject()["id"]!!.snowflake, client) }
     }
 
     enum class PremiumType : EnumWithValue<Int> {
