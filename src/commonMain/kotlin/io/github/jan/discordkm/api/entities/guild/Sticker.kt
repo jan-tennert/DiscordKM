@@ -10,8 +10,6 @@
 package io.github.jan.discordkm.api.entities.guild
 
 import io.github.jan.discordkm.api.entities.BaseEntity
-import io.github.jan.discordkm.api.entities.Nameable
-import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
@@ -19,14 +17,6 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
-import io.github.jan.discordkm.internal.utils.getId
-import io.github.jan.discordkm.internal.utils.getOrDefault
-import io.github.jan.discordkm.internal.utils.getOrNull
-import io.github.jan.discordkm.internal.utils.getOrThrow
-import io.github.jan.discordkm.internal.utils.valueOfIndex
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.json.JsonObject
-import kotlin.jvm.JvmName
 
 /**
  * Represents a Sticker. Can be a default sticker or a guild sticker

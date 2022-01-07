@@ -12,7 +12,6 @@ import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
-import io.github.jan.discordkm.internal.utils.extractClientEntity
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put

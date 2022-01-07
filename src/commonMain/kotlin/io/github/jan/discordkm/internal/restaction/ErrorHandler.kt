@@ -32,7 +32,7 @@ object ErrorHandler {
 
     fun handle(error: CloseReason, logger: Logger, reconnect: TimeSpan) {
         val code = error.code
-        val message = GatewayErrors.values().first { it.code == code }
+        val message = GatewayErrors.values().firstOrNull { it.code == code } ?: return
         logger.error { "Disconnected due to an error: ${message.message} Code: $code. Trying to reconnect in $reconnect" }
     }
 
