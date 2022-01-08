@@ -531,7 +531,7 @@ class GuildCacheEntry(
     val ownerId: Snowflake,
     val welcomeScreen: Guild.WelcomeScreen?,
     val discoveryHash: String?,
-    val hasPremiumProgressBarEnabled: Boolean
+    val hasPremiumProgressBarEnabled: Boolean,
 ) : Guild, Nameable, CacheEntry {
 
     //cache
@@ -580,6 +580,8 @@ class GuildCacheEntry(
      */
     val splashUrl = splashHash?.let { DiscordImage.guildSplash(id, it) }
 
+    val shardId get() = (if (client.config.totalShards != -1) (id.long shr 22) % client.config.totalShards else 0).toInt()
+
     override fun toString() = "Guild[id=$id, name=$name]"
 
     /**
@@ -596,9 +598,8 @@ class GuildCacheEntry(
         users: Collection<Snowflake> = emptyList()
     ) {
         if (client is DiscordWebSocketClient) {
-            if (client.config.totalShards == -1) {
-                client.shardConnections[0].send(RequestGuildMemberPayload(id, query, limit, receivePresences, users))
-            }
+            val shard = client.shardById[shardId] ?: return
+            shard.send(RequestGuildMemberPayload(id, query, limit, receivePresences, users))
         }
     }
 
@@ -619,21 +620,21 @@ class GuildCacheEntry(
         timeout: TimeSpan? = null,
     ): List<MemberCacheEntry> {
         if (client !is DiscordWebSocketClient) return emptyList()
-        if (client.config.totalShards == -1) {
-            client.shardConnections[0].send(RequestGuildMemberPayload(id, query, limit, receivePresences, users))
-        }
+        val shard = client.shardById[shardId] ?: return emptyList()
+        shard.send(RequestGuildMemberPayload(id, query, limit, receivePresences, users))
 
         suspend fun receiveMembers() = suspendCancellableCoroutine<List<MemberCacheEntry>> {
             val members = mutableListOf<MemberCacheEntry>()
             client.on<GuildMembersChunkEvent> {
                 members.addAll(this.members)
-                if(chunkCount == chunkIndex + 1) {
+                if (chunkCount == chunkIndex + 1) {
                     it.resume(members) { it.printStackTrace() }
                 }
             }
         }
 
-        return if(timeout != null) withTimeoutOrNull(timeout.millisecondsLong) { receiveMembers() } ?: emptyList() else receiveMembers()
+        return if (timeout != null) withTimeoutOrNull(timeout.millisecondsLong) { receiveMembers() }
+            ?: emptyList() else receiveMembers()
     }
 
 }
