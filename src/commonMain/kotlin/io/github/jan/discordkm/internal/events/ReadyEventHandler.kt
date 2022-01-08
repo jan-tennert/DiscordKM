@@ -9,11 +9,12 @@
  */
 package io.github.jan.discordkm.internal.events
 
+import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.ReadyEvent
-import io.github.jan.discordkm.internal.utils.LoggerOutput
+import io.github.jan.discordkm.internal.utils.log
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.intOrNull
@@ -42,8 +43,9 @@ internal class ReadyEventHandler(val client: DiscordWebSocketClient) : InternalE
         client.mutex.withLock {
             client.selfUser = selfUser
         }
-        LoggerOutput.output("Finished authentication!", "Websocket")
-        LoggerOutput.output("Successfully connected to the Discord Gateway!", "Websocket")
+        val LOGGER = client.shardById[shardId ?: 0]?.LOGGER
+        LOGGER?.log(true, Logger.Level.INFO) { "Finished authentication!" }
+        LOGGER?.log(true, Logger.Level.INFO) { "Logged in as ${selfUser.name}#${selfUser.discriminator}" }
         return ReadyEvent(guilds, client, shardId)
     }
 }

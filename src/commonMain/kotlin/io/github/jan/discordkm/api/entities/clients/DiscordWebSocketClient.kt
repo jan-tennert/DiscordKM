@@ -11,8 +11,6 @@ package io.github.jan.discordkm.api.entities.clients
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.klogger.Logger
-import com.soywiz.korio.file.VfsFile
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
@@ -20,7 +18,6 @@ import io.github.jan.discordkm.api.events.ShardCreateEvent
 import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
 import io.github.jan.discordkm.internal.utils.LoggerConfig
-import io.github.jan.discordkm.internal.utils.LoggerOutput
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
 import io.github.jan.discordkm.internal.websocket.Encoding
@@ -28,7 +25,6 @@ import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.jvm.JvmName
 
 /**
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
@@ -116,6 +112,11 @@ class DiscordWebSocketClientBuilder @Deprecated(
     var compression = Compression.NONE
 
     /**
+     * The maximum amount of tries to reconnect (and resume) to the websocket.
+     */
+    var maxResumeTries = 3
+
+    /**
      * The intents specify which events you should receive. For example if you don't use VoiceStates remove the [Intent.GUILD_VOICE_STATES] intent
      */
     var intents = mutableSetOf<Intent>()
@@ -176,7 +177,8 @@ class DiscordWebSocketClientBuilder @Deprecated(
             activity.activity,
             activity.status,
             encoding,
-            compression
+            compression,
+            maxResumeTries
         )
     )
 

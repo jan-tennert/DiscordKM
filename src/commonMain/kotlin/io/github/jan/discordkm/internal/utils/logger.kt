@@ -56,3 +56,11 @@ object ConsoleColors {
     const val RESET = "\u001b[0m"
 
 }
+
+fun Logger.log(ignoreLevel: Boolean, level: Logger.Level = Logger.Level.INFO, msg: () -> Any?) {
+    if(ignoreLevel) {
+        output.output(this, level, msg())
+    } else {
+        log(level, msg)
+    }
+}

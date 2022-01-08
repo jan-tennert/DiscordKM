@@ -73,6 +73,18 @@ fun UpdateVoiceStatePayload(guildId: Snowflake, channelId: Snowflake?, selfMute:
     put("self_deaf", selfDeaf)
 })
 
+fun RequestGuildMemberPayload(guildId: Snowflake, query: String?, limit: Int = 0, receivePresences: Boolean = false, users: Collection<Snowflake>) = Payload(8, eventData = buildJsonObject {
+    put("guild_id", guildId.string)
+    put("query", query ?: "")
+    put("limit", limit)
+    put("presence", receivePresences)
+    putJsonArray("user_ids") {
+        users.forEach {
+            add(it.string)
+        }
+    }
+})
+
 fun UpdatePresencePayload(modifier: PresenceModifier) = Payload(3, eventData = modifier.build())
 
 suspend fun DefaultClientWebSocketSession.send(payload: Payload) = send(Json.encodeToString(payload))

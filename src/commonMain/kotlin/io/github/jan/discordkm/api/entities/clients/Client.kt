@@ -167,6 +167,7 @@ data class ClientConfig(
     val status: PresenceStatus = PresenceStatus.ONLINE,
     val encoding: Encoding = Encoding.JSON,
     val compression: Compression = Compression.NONE,
+    val maxResumeTries: Int = 3,
 )
 
 

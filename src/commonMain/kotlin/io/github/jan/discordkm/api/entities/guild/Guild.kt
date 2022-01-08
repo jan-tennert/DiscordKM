@@ -45,6 +45,7 @@ import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildModifier
+import io.github.jan.discordkm.api.events.GuildMembersChunkEvent
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -57,6 +58,7 @@ import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
+import io.github.jan.discordkm.internal.serialization.RequestGuildMemberPayload
 import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
@@ -66,6 +68,8 @@ import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
@@ -75,7 +79,8 @@ import kotlin.reflect.KProperty
 /**
  * A guild can contain channels and members.
  */
-interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, CommandHolder, Modifiable<GuildModifier, Unit> {
+interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, CommandHolder,
+    Modifiable<GuildModifier, Unit> {
 
     override val cache: GuildCacheEntry?
         get() = client.cacheManager.guildCache[id]
@@ -131,7 +136,14 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
      * Requires a websocket connection.
      */
     suspend fun leaveVoiceChannel() = if (client is DiscordWebSocketClient) {
-        (client as DiscordWebSocketClient).shardConnections[0].send(UpdateVoiceStatePayload(id, null, selfMute = false, selfDeaf = false))
+        (client as DiscordWebSocketClient).shardConnections[0].send(
+            UpdateVoiceStatePayload(
+                id,
+                null,
+                selfMute = false,
+                selfDeaf = false
+            )
+        )
     } else {
         throw UnsupportedOperationException("You can't leave a voice channel without having a gateway connection!")
     }
@@ -158,7 +170,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
      */
     suspend fun delete() = client.buildRestAction<Unit> {
         route = Route.Guild.DELETE_GUILD(id).delete()
-        
+
     }
 
     /**
@@ -343,7 +355,7 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
     /*+
     See [Discord Docs](https://discord.com/developers/docs/resources/guild#guild-object-mfa-level) for more information
      */
-    enum class MfaLevel : EnumWithValue<Int>{
+    enum class MfaLevel : EnumWithValue<Int> {
         NONE,
         ELEVATED;
 
@@ -541,7 +553,7 @@ class GuildCacheEntry(
     val stageInstances: Map<Snowflake, StageInstanceCacheEntry>
         get() = cacheManager.stageInstanceCache.safeValues.associateBy { it.id }
     override val emotes: CacheEmoteContainer
-        get() = CacheEmoteContainer(this,  cacheManager.emoteCache.safeValues)
+        get() = CacheEmoteContainer(this, cacheManager.emoteCache.safeValues)
     override val scheduledEvents: CacheScheduledEventContainer
         get() = CacheScheduledEventContainer(this, cacheManager.guildScheduledEventCache.safeValues)
 
@@ -569,5 +581,59 @@ class GuildCacheEntry(
     val splashUrl = splashHash?.let { DiscordImage.guildSplash(id, it) }
 
     override fun toString() = "Guild[id=$id, name=$name]"
+
+    /**
+     * Requests the guild's members from the gateway and updates the guild's cache
+     * @param query The member's username should start with
+     * @param limit The maximum amount of members to request (required when using [query])
+     * @param receivePresences Use this to also receive the members' presences
+     * @param users The users you want to receive the member for. Can be left empty
+     */
+    suspend fun requestGuildMembersAsync(
+        query: String? = null,
+        limit: Int = 0,
+        receivePresences: Boolean = false,
+        users: Collection<Snowflake> = emptyList()
+    ) {
+        if (client is DiscordWebSocketClient) {
+            if (client.config.totalShards == -1) {
+                client.shardConnections[0].send(RequestGuildMemberPayload(id, query, limit, receivePresences, users))
+            }
+        }
+    }
+
+    /**
+     * Requests the guild's members from the gateway and updates the guild's cache
+     * @param query The member's username should start with
+     * @param limit The maximum amount of members to request (required when using [query])
+     * @param receivePresences Use this to also receive the members' presences
+     * @param users The users you want to receive the member for. Can be left empty
+     * @param timeout When something goes wrong, the function will not block forever and will just return an empty list when the timeout is reached
+     * @return All members requested
+     */
+    suspend fun requestGuildMembers(
+        query: String? = null,
+        limit: Int = 0,
+        receivePresences: Boolean = false,
+        users: Collection<Snowflake> = emptyList(),
+        timeout: TimeSpan? = null,
+    ): List<MemberCacheEntry> {
+        if (client !is DiscordWebSocketClient) return emptyList()
+        if (client.config.totalShards == -1) {
+            client.shardConnections[0].send(RequestGuildMemberPayload(id, query, limit, receivePresences, users))
+        }
+
+        suspend fun receiveMembers() = suspendCancellableCoroutine<List<MemberCacheEntry>> {
+            val members = mutableListOf<MemberCacheEntry>()
+            client.on<GuildMembersChunkEvent> {
+                members.addAll(this.members)
+                if(chunkCount == chunkIndex + 1) {
+                    it.resume(members) { it.printStackTrace() }
+                }
+            }
+        }
+
+        return if(timeout != null) withTimeoutOrNull(timeout.millisecondsLong) { receiveMembers() } ?: emptyList() else receiveMembers()
+    }
 
 }

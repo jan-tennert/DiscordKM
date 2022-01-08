@@ -9,9 +9,10 @@
  */
 package io.github.jan.discordkm.internal.websocket
 
-import co.touchlab.stately.collections.IsoMutableList
+import com.soywiz.klock.DateTime
 import com.soywiz.klock.milliseconds
 import com.soywiz.klogger.Logger
+import com.soywiz.korio.async.launch
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
@@ -29,6 +30,7 @@ import io.github.jan.discordkm.internal.events.GuildEmojisUpdateEventHandler
 import io.github.jan.discordkm.internal.events.GuildMemberAddEventHandler
 import io.github.jan.discordkm.internal.events.GuildMemberRemoveEventHandler
 import io.github.jan.discordkm.internal.events.GuildMemberUpdateEventHandler
+import io.github.jan.discordkm.internal.events.GuildMembersChunkEventHandler
 import io.github.jan.discordkm.internal.events.GuildStickersUpdateEventHandler
 import io.github.jan.discordkm.internal.events.GuildUpdateEventHandler
 import io.github.jan.discordkm.internal.events.InteractionCreateEventHandler
@@ -68,16 +70,19 @@ import io.github.jan.discordkm.internal.serialization.IdentifyPayload
 import io.github.jan.discordkm.internal.serialization.Payload
 import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.serialization.send
-import io.github.jan.discordkm.internal.utils.LoggerOutput
 import io.github.jan.discordkm.internal.utils.generateWebsocketURL
+import io.github.jan.discordkm.internal.utils.log
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.timeout
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.client.plugins.websocket.webSocketSession
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.close
 import io.ktor.websocket.readBytes
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -90,8 +95,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
-
-//TODO: Ratelimit handling
+import kotlin.coroutines.coroutineContext
 
 class DiscordGateway(
     private val config: ClientConfig,
@@ -99,16 +103,21 @@ class DiscordGateway(
     val shardId: Int = 0,
 ) {
 
-    private val LOGGER = Logger("Websocket")
+    internal val LOGGER = Logger("Websocket")
     private var heartbeatInterval = 0L
     private var lastSequenceNumber: Int? = null
     var sessionId: String? = null
         internal set
     private val http = HttpClient() {
         install(WebSockets)
+        install(HttpTimeout)
     }
-    private val tasks = IsoMutableList<Task>()
     val mutex = Mutex()
+    private var payloadTime = DateTime.now()
+    private var resumeTries = 0
+    private var receivedHeartbeatResponse = false
+    private var authenticated = false
+    private lateinit var socket: DefaultClientWebSocketSession
     var isConnected = false
         private set
 
@@ -119,44 +128,44 @@ class DiscordGateway(
 
     suspend fun start(delay: Boolean = false) {
         if (delay) com.soywiz.korio.async.delay(config.reconnectDelay)
-        LoggerOutput.output("Connecting to gateway...", "Websocket")
-        mutex.withLock { isConnected = true }
-        http.webSocket(generateWebsocketURL(config.encoding, config.compression)) {
-            LoggerOutput.output("Connected to gateway!", "Websocket")
-            launch { startRequester() }
-            while (isConnected) {
-                try {
-                    val message = incoming.receive().readBytes().decodeToString()
-                    onMessage(message)
-                } catch (e: Exception) {
-                    mutex.withLock { isConnected = false }
-                    val reason = closeReason.await()!!
-                    ErrorHandler.handle(reason, LOGGER, config.reconnectDelay)
-                    launch { start(delay = true) }
+        LOGGER.log(true, Logger.Level.INFO) { "Connecting to gateway..." }
+        mutex.withLock { isConnected = true; authenticated = false }
+        try {
+            socket = http.webSocketSession(
+                generateWebsocketURL(
+                    config.encoding,
+                    config.compression
+                )
+            ) { timeout { this.connectTimeoutMillis = 5000; this.socketTimeoutMillis = 2 * 60 * 1000 } }
+            with(socket) {
+                LOGGER.log(true, Logger.Level.INFO) { "Connected to gateway!" }
+                while (isConnected) {
+                    try {
+                        val message = incoming.receive().readBytes().decodeToString()
+                        onMessage(message)
+                    } catch (e: Exception) {
+                        mutex.withLock { isConnected = false }
+                        val reason = closeReason.await()!!
+                        ErrorHandler.handle(reason, LOGGER, config.reconnectDelay)
+                        launch(kotlin.coroutines.coroutineContext) { start(delay = true) }
+                    }
+                    com.soywiz.korio.async.delay(100.milliseconds)
                 }
-                com.soywiz.korio.async.delay(100.milliseconds)
             }
+        } catch (e: Exception) {
+            mutex.withLock { isConnected = false }
+            LOGGER.log(true, Logger.Level.ERROR) { "Failed to connect to the gateway!. Retrying in ${config.reconnectDelay}..." }
+            launch(coroutineContext) { start(delay = true) }
         }
-        mutex.withLock { isConnected = false }
+        mutex.withLock{ isConnected = false }
     }
 
-    private suspend fun DefaultClientWebSocketSession.startRequester() {
-        while (isConnected) {
-            val toDelete = mutableSetOf<Payload>()
-            for (task in tasks) {
-                send(task)
-                toDelete += task
-            }
-            tasks.removeAll(toDelete)
-            com.soywiz.korio.async.delay(200.milliseconds)
-        }
-    }
-
-    fun send(payload: Payload) {
-        tasks += payload
+    suspend fun send(payload: Payload) {
+        socket.send(payload)
     }
 
     private fun onMessage(message: String) {
+        println(message)
         val json = Json.parseToJsonElement(message).jsonObject
         var data = json["d"]
         if (data is JsonNull) data = null
@@ -176,8 +185,13 @@ class DiscordGateway(
     private suspend fun onEvent(payload: Payload) {
         when (OpCode.fromCode(payload.opCode)) {
             OpCode.DISPATCH -> {
+                resumeTries = 0
                 payload.eventName?.let { LOGGER.debug { "Received event $it on shard $shardId" } }
-                lastSequenceNumber = payload.sequenceNumber
+                mutex.withLock {
+                    lastSequenceNumber = payload.sequenceNumber
+                    resumeTries = 0
+                    authenticated = true
+                }
                 handleRawEvent(payload)
             }
             OpCode.HEARTBEAT -> {
@@ -188,10 +202,8 @@ class DiscordGateway(
                 start(true)
             }
             OpCode.INVALID_SESSION -> {
-                LOGGER.error { "Failed to resume! Trying to reconnect manually..." }
+                LOGGER.warn { "Invalid session, reconnecting..." }
                 close()
-                sessionId = null
-                lastSequenceNumber = null
                 this@DiscordGateway.start(true)
             }
             OpCode.HELLO -> {
@@ -202,14 +214,19 @@ class DiscordGateway(
                         startHeartbeating()
                     }
                     launch {
-                        if (sessionId != null) {
-                            LOGGER.info { "Trying to resume..." }
+                        if (sessionId != null || resumeTries > config.maxResumeTries) {
+                            resumeTries++
+                            val tryMessage =
+                                if (resumeTries == 0) "First try" else if (resumeTries == 1) "Second try" else if (resumeTries == 2) "Third try" else "${resumeTries - 1}th try"
+                            LOGGER.info { "Trying to resume... ($tryMessage)" }
                             send(Payload(6, buildJsonObject {
                                 put("token", config.token)
                                 put("session_id", sessionId)
                                 put("seq", lastSequenceNumber)
                             }))
                         } else {
+                            sessionId = null
+                            lastSequenceNumber = null
                             LOGGER.debug { "Authenticate..." }
                             send(
                                 IdentifyPayload(
@@ -227,6 +244,7 @@ class DiscordGateway(
             }
             OpCode.HEARTBEAT_ACK -> {
                 LOGGER.debug { "Received heartbeat acknowledge" }
+                mutex.withLock { receivedHeartbeatResponse = true }
             }
         }
     }
@@ -234,18 +252,28 @@ class DiscordGateway(
     private suspend fun startHeartbeating() {
         while (isConnected) {
             delay(heartbeatInterval)
-            if(!isConnected) return
+            if (!isConnected || !authenticated) return
+            mutex.withLock { receivedHeartbeatResponse = false }
             sendHeartbeat()
             LOGGER.debug { "Sending heartbeat..." }
+            launch(coroutineContext) {
+                delay(10 * 1000)
+                if (!receivedHeartbeatResponse) {
+                    LOGGER.warn { "No heartbeat response received, reconnecting in ${config.reconnectDelay}..." }
+                    close()
+                    start(true)
+                }
+            }
         }
     }
 
-    private fun sendHeartbeat() = send(Payload(1, JsonPrimitive(heartbeatInterval), lastSequenceNumber, null))
+    private suspend fun sendHeartbeat() = send(Payload(1, JsonPrimitive(heartbeatInterval), lastSequenceNumber, null))
 
     suspend fun close() {
-        LOGGER.info { "Closing websocket connection on shard $shardId" }
+        LOGGER.warn { "Closing websocket connection on shard $shardId" }
         mutex.withLock {
             isConnected = false
+            socket.close(CloseReason(1000, "Normal closure"))
         }
     }
 
@@ -264,6 +292,7 @@ class DiscordGateway(
                 "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(data)
                 "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(data)
                 "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(data)
+                "GUILD_MEMBERS_CHUNK" -> GuildMembersChunkEventHandler(client).handle(data)
 
                 //stage instances
                 "STAGE_INSTANCE_CREATE" -> StageInstanceCreateEventHandler(client).handle(data)
@@ -347,5 +376,3 @@ class DiscordGateway(
     }
 
 }
-
-typealias Task = Payload
