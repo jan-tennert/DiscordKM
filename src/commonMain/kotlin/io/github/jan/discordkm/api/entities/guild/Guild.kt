@@ -12,6 +12,7 @@ package io.github.jan.discordkm.api.entities.guild
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.BaseEntity
+import io.github.jan.discordkm.api.entities.DiscordLocale
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Reference
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -526,7 +527,7 @@ class GuildCacheEntry(
     val bannerHash: String?,
     val premiumTier: Guild.PremiumTier,
     val premiumSubscriptionCount: Int,
-    val preferredLocale: String,
+    val preferredLocale: DiscordLocale,
     val publicUpdatesChannelId: Snowflake?,
     val ownerId: Snowflake,
     val welcomeScreen: Guild.WelcomeScreen?,

@@ -146,7 +146,9 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-okhttp:${Versions.KTOR}")
+                implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
+                // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+
             }
         }
         val jvmTest by getting

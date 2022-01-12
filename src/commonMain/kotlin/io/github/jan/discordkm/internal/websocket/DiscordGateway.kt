@@ -271,9 +271,9 @@ class DiscordGateway(
 
     suspend fun close() {
         LOGGER.warn { "Closing websocket connection on shard $shardId" }
+        socket.close(CloseReason(1000, "Normal closure"))
         mutex.withLock {
             isConnected = false
-            socket.close(CloseReason(1000, "Normal closure"))
         }
     }
 

@@ -20,6 +20,7 @@ import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.isoTimestamp
+import io.github.jan.discordkm.internal.utils.locale
 import io.github.jan.discordkm.internal.utils.long
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
@@ -57,7 +58,7 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
             bannerHash = data["banner", true]?.string,
             premiumTier = Guild.PremiumTier[data["premium_tier"]!!.int],
             premiumSubscriptionCount = data["premium_subscription_count", true]?.int ?: 0,
-            preferredLocale = data["preferred_locale"]!!.string,
+            preferredLocale = data["preferred_locale"]!!.locale,
             publicUpdatesChannelId = data["public_updates_channel_id", true]?.snowflake,
             isUnavailable = data["unavailable", true]?.boolean ?: false,
             client = value,

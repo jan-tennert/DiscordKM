@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.interactions
 
+import io.github.jan.discordkm.api.entities.DiscordLocale
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
@@ -28,6 +29,7 @@ import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.int
+import io.github.jan.discordkm.internal.utils.locale
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.JsonObject
@@ -83,6 +85,16 @@ open class Interaction(override val client: Client, override val data: JsonObjec
      * The user, if this interaction was sent in a private channel
      */
     val user: User get() = data["user"]?.let { User(it.jsonObject, client) } ?: member!!.user
+
+    /**
+     * The selected language of the user who invoked this interaction
+     */
+    val locale: DiscordLocale? get() = data["locale", true]?.locale
+
+    /**
+     * The preferred locale of the guild, if invoked in a guild
+     */
+    val guildLocale: DiscordLocale? get() = data["guild_locale", true]?.locale
 
 
     /**

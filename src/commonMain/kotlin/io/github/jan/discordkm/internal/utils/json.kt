@@ -12,6 +12,7 @@ package io.github.jan.discordkm.internal.utils
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import com.soywiz.klock.parse
+import io.github.jan.discordkm.api.entities.DiscordLocale
 import io.github.jan.discordkm.api.entities.Snowflake
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -75,6 +76,7 @@ val JsonElement.double : Double get() = jsonPrimitive.double
 val JsonElement.string : String get() = jsonPrimitive.contentOrNull ?: ""
 val JsonElement.snowflake : Snowflake get() = Snowflake(string)
 val JsonElement.isoTimestamp : DateTimeTz get() = ISO8601.DATETIME_UTC_COMPLETE.parse(string)
+val JsonElement.locale: DiscordLocale get() = DiscordLocale[string]
 
 operator fun JsonObject.get(key: String, nonNull: Boolean): JsonElement? = this[key]?.let { it -> if(nonNull && it is JsonPrimitive && it.jsonPrimitive.content != "null") it else null }
 
