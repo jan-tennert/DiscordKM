@@ -9,15 +9,15 @@
  */
 package io.github.jan.discordkm.internal.websocket
 
-import com.soywiz.klock.DateTime
 import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
-import com.soywiz.korio.async.launch
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
 import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
 import io.github.jan.discordkm.api.events.RawEvent
+import io.github.jan.discordkm.api.events.ResumeEvent
 import io.github.jan.discordkm.api.events.VoiceServerUpdate
 import io.github.jan.discordkm.internal.events.BanEventHandler
 import io.github.jan.discordkm.internal.events.ChannelCreateEventHandler
@@ -73,16 +73,21 @@ import io.github.jan.discordkm.internal.serialization.send
 import io.github.jan.discordkm.internal.utils.generateWebsocketURL
 import io.github.jan.discordkm.internal.utils.log
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.timeout
-import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
-import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.plugins.websocket.webSocketSession
-import io.ktor.websocket.CloseReason
-import io.ktor.websocket.close
-import io.ktor.websocket.readBytes
+import io.ktor.client.features.HttpTimeout
+import io.ktor.client.features.timeout
+import io.ktor.client.features.websocket.DefaultClientWebSocketSession
+import io.ktor.client.features.websocket.WebSockets
+import io.ktor.client.features.websocket.webSocketSession
+import io.ktor.http.cio.websocket.CloseReason
+import io.ktor.http.cio.websocket.close
+import io.ktor.http.cio.websocket.readBytes
+import io.ktor.http.takeFrom
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -113,13 +118,15 @@ class DiscordGateway(
         install(HttpTimeout)
     }
     val mutex = Mutex()
-    private var payloadTime = DateTime.now()
     private var resumeTries = 0
-    private var receivedHeartbeatResponse = false
+    private var heartbeatSent = 0
+    private var heartbeatReceived = 0
     private var authenticated = false
     private lateinit var socket: DefaultClientWebSocketSession
     var isConnected = false
         private set
+    private lateinit var heartbeatTask: Job
+    private lateinit var heartbeatWatcher: Job
 
     init {
         LOGGER.level = config.logging.level
@@ -127,16 +134,18 @@ class DiscordGateway(
     }
 
     suspend fun start(delay: Boolean = false) {
+        if(isConnected) return
         if (delay) com.soywiz.korio.async.delay(config.reconnectDelay)
         LOGGER.log(true, Logger.Level.INFO) { "Connecting to gateway..." }
-        mutex.withLock { isConnected = true; authenticated = false }
         try {
-            socket = http.webSocketSession(
-                generateWebsocketURL(
+            socket = http.webSocketSession {
+                url.takeFrom(generateWebsocketURL(
                     config.encoding,
                     config.compression
-                )
-            ) { timeout { this.connectTimeoutMillis = 5000; this.socketTimeoutMillis = 2 * 60 * 1000 } }
+                ))
+                timeout { this.connectTimeoutMillis = 5000; this.socketTimeoutMillis = 2 * 60 * 1000 }
+            }
+            mutex.withLock { isConnected = true; authenticated = false }
             with(socket) {
                 LOGGER.log(true, Logger.Level.INFO) { "Connected to gateway!" }
                 while (isConnected) {
@@ -155,7 +164,7 @@ class DiscordGateway(
         } catch (e: Exception) {
             mutex.withLock { isConnected = false }
             LOGGER.log(true, Logger.Level.ERROR) { "Failed to connect to the gateway!. Retrying in ${config.reconnectDelay}..." }
-            launch(coroutineContext) { start(delay = true) }
+            com.soywiz.korio.async.launch(coroutineContext) { start(delay = true) }
         }
         mutex.withLock{ isConnected = false }
     }
@@ -164,13 +173,12 @@ class DiscordGateway(
         socket.send(payload)
     }
 
-    private fun onMessage(message: String) {
-        println(message)
+    private suspend fun onMessage(message: String) {
         val json = Json.parseToJsonElement(message).jsonObject
         var data = json["d"]
         if (data is JsonNull) data = null
         if (data.toString() == "false") data = null
-        client.launch {
+        com.soywiz.korio.async.launch(coroutineContext) {
             onEvent(
                 Payload(
                     json.getValue("op").jsonPrimitive.int,
@@ -185,13 +193,12 @@ class DiscordGateway(
     private suspend fun onEvent(payload: Payload) {
         when (OpCode.fromCode(payload.opCode)) {
             OpCode.DISPATCH -> {
-                resumeTries = 0
-                payload.eventName?.let { LOGGER.debug { "Received event $it on shard $shardId" } }
                 mutex.withLock {
                     lastSequenceNumber = payload.sequenceNumber
                     resumeTries = 0
                     authenticated = true
                 }
+                payload.eventName?.let { LOGGER.debug { "Received event $it on shard $shardId" } }
                 handleRawEvent(payload)
             }
             OpCode.HEARTBEAT -> {
@@ -209,9 +216,13 @@ class DiscordGateway(
             OpCode.HELLO -> {
                 heartbeatInterval = payload.eventData!!.jsonObject["heartbeat_interval"]!!.jsonPrimitive.long
                 coroutineScope {
-                    launch {
+                    heartbeatTask = launch {
                         LOGGER.debug { "Start heartbeating..." }
                         startHeartbeating()
+                    }
+                    heartbeatWatcher = launch {
+                        LOGGER.debug { "Start heartbeat watcher..." }
+                        startHeartbeatWatcher()
                     }
                     launch {
                         if (sessionId != null || resumeTries > config.maxResumeTries) {
@@ -244,26 +255,31 @@ class DiscordGateway(
             }
             OpCode.HEARTBEAT_ACK -> {
                 LOGGER.debug { "Received heartbeat acknowledge" }
-                mutex.withLock { receivedHeartbeatResponse = true }
+                mutex.withLock { heartbeatReceived++ }
             }
         }
     }
 
-    private suspend fun startHeartbeating() {
-        while (isConnected) {
-            delay(heartbeatInterval)
-            if (!isConnected || !authenticated) return
-            mutex.withLock { receivedHeartbeatResponse = false }
-            sendHeartbeat()
-            LOGGER.debug { "Sending heartbeat..." }
-            launch(coroutineContext) {
-                delay(10 * 1000)
-                if (!receivedHeartbeatResponse) {
-                    LOGGER.warn { "No heartbeat response received, reconnecting in ${config.reconnectDelay}..." }
-                    close()
-                    start(true)
-                }
+    private suspend fun CoroutineScope.startHeartbeatWatcher() {
+        while(isActive) {
+            com.soywiz.korio.async.delay(10.seconds)
+            if(heartbeatSent > heartbeatReceived) {
+                com.soywiz.korio.async.delay(2.seconds)
+                LOGGER.warn { "No heartbeat response received, reconnecting in ${config.reconnectDelay}..." }
+                close()
+                start(true)
+                break
             }
+        }
+    }
+
+    private suspend fun CoroutineScope.startHeartbeating() {
+        while (isActive) {
+            delay(heartbeatInterval)
+            if (!isActive) return
+            LOGGER.debug { "Sending heartbeat..." }
+            sendHeartbeat()
+            mutex.withLock { heartbeatSent++ }
         }
     }
 
@@ -271,8 +287,12 @@ class DiscordGateway(
 
     suspend fun close() {
         LOGGER.warn { "Closing websocket connection on shard $shardId" }
+        if(::heartbeatTask.isInitialized) heartbeatTask.cancel()
+        if(::heartbeatWatcher.isInitialized) heartbeatWatcher.cancel()
         socket.close(CloseReason(1000, "Normal closure"))
         mutex.withLock {
+            heartbeatSent = 0
+            heartbeatReceived = 0
             isConnected = false
         }
     }
@@ -283,6 +303,7 @@ class DiscordGateway(
         launch {
             val event = when (payload.eventName!!) {
                 "READY" -> ReadyEventHandler(client).handle(data)
+                "RESUMED" -> ResumeEvent(client)
 
                 //guild events
                 "GUILD_CREATE" -> GuildCreateEventHandler(client).handle(data)

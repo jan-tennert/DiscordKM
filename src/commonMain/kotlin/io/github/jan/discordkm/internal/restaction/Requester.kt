@@ -3,7 +3,7 @@ package io.github.jan.discordkm.internal.restaction
 import io.github.jan.discordkm.DiscordKMInfo
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.features.defaultRequest
 import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
 

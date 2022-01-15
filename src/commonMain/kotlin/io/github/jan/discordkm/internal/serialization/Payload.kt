@@ -14,8 +14,8 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
-import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
-import io.ktor.websocket.send
+import io.ktor.client.features.websocket.DefaultClientWebSocketSession
+import io.ktor.http.cio.websocket.send
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

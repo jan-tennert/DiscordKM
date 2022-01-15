@@ -10,15 +10,14 @@
 package io.github.jan.discordkm.internal.restaction
 
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.ktor.client.call.body
+import io.ktor.client.call.receive
+import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.request.prepareDelete
-import io.ktor.client.request.prepareGet
-import io.ktor.client.request.preparePatch
-import io.ktor.client.request.preparePost
-import io.ktor.client.request.preparePut
-import io.ktor.client.request.setBody
+import io.ktor.client.request.patch
+import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
@@ -46,60 +45,54 @@ class RestAction<T>(val requester: Requester) {
         val request = Request(route.endpoint) {
             when (route.method.value) {
                 "GET" -> {
-                    http.prepareGet(generateUrl(route.endpoint)) {
+                    http.get(generateUrl(route.endpoint)) {
                         header("X-Audit-Log-Reason", reason)
                     }
                 }
                 "POST" -> {
-                    http.preparePost(generateUrl(route.endpoint)) {
+                    http.post(generateUrl(route.endpoint)) {
                         header("X-Audit-Log-Reason", reason)
                         route.body.let {
-                            setBody(
-                                if (it is MultiPartFormDataContent) {
-                                    it
-                                } else {
-                                    contentType(ContentType.Application.Json)
-                                    it.toString()
-                                }
-                            )
+                            body = if (it is MultiPartFormDataContent) {
+                                it
+                            } else {
+                                contentType(ContentType.Application.Json)
+                                it.toString()
+                            }
                         }
                     }
 
                 }
                 "DELETE" -> {
-                    http.prepareDelete(generateUrl(route.endpoint)) {
+                    http.delete(generateUrl(route.endpoint)) {
                         header("X-Audit-Log-Reason", reason)
                     }
 
                 }
                 "PATCH" -> {
-                    http.preparePatch(generateUrl(route.endpoint)) {
+                    http.patch(generateUrl(route.endpoint)) {
                         header("X-Audit-Log-Reason", reason)
                         route.body?.let {
-                            setBody(
-                                if (it is MultiPartFormDataContent) {
-                                    it
-                                } else {
-                                    contentType(ContentType.Application.Json)
-                                    it.toString()
-                                }
-                            )
+                            body = if (it is MultiPartFormDataContent) {
+                                it
+                            } else {
+                                contentType(ContentType.Application.Json)
+                                it.toString()
+                            }
                         }
 
                     }
                 }
                 "PUT" -> {
-                    http.preparePut(generateUrl(route.endpoint)) {
+                    http.put(generateUrl(route.endpoint)) {
                         header("X-Audit-Log-Reason", reason)
                         route.body?.let {
-                            setBody(
-                                if (it is MultiPartFormDataContent) {
-                                    it
-                                } else {
-                                    contentType(ContentType.Application.Json)
-                                    it.toString()
-                                }
-                            )
+                            body = if (it is MultiPartFormDataContent) {
+                                it
+                            } else {
+                                contentType(ContentType.Application.Json)
+                                it.toString()
+                            }
                         }
                     }
 
@@ -108,7 +101,7 @@ class RestAction<T>(val requester: Requester) {
             }
         }
         val response = requester.handle(request)
-        val result = if (!this::transformer.isInitialized) Unit as T else transformer(response.body())
+        val result = if (!this::transformer.isInitialized) Unit as T else transformer(response.receive())
         onFinish(result)
         return result
     }
