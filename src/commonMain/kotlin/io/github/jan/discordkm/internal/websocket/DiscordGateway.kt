@@ -225,7 +225,7 @@ class DiscordGateway(
                         startHeartbeatWatcher()
                     }
                     launch {
-                        if (sessionId != null || resumeTries > config.maxResumeTries) {
+                        if (sessionId != null && resumeTries < config.maxResumeTries) {
                             resumeTries++
                             val tryMessage =
                                 if (resumeTries == 0) "First try" else if (resumeTries == 1) "Second try" else if (resumeTries == 2) "Third try" else "${resumeTries - 1}th try"
@@ -238,6 +238,7 @@ class DiscordGateway(
                         } else {
                             sessionId = null
                             lastSequenceNumber = null
+                            resumeTries = 0
                             LOGGER.debug { "Authenticate..." }
                             send(
                                 IdentifyPayload(
