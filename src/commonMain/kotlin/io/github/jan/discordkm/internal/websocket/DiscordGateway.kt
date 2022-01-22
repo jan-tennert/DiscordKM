@@ -206,6 +206,7 @@ class DiscordGateway(
             }
             OpCode.RECONNECT -> {
                 close("reconnect")
+                LOGGER.info { "Received opcode RECONNECT, reconnecting..." }
                 start(true)
             }
             OpCode.INVALID_SESSION -> {
@@ -226,9 +227,11 @@ class DiscordGateway(
                     }
                     launch {
                         if (sessionId != null && resumeTries < config.maxResumeTries) {
-                            resumeTries++
                             val tryMessage =
                                 if (resumeTries == 0) "First try" else if (resumeTries == 1) "Second try" else if (resumeTries == 2) "Third try" else "${resumeTries - 1}th try"
+                            mutex.withLock { resumeTries++ }
+                            print(sessionId)
+                            println(lastSequenceNumber)
                             LOGGER.info { "Trying to resume... ($tryMessage)" }
                             send(Payload(6, buildJsonObject {
                                 put("token", config.token)
@@ -264,9 +267,9 @@ class DiscordGateway(
     private suspend fun CoroutineScope.startHeartbeatWatcher() {
         while(isActive) {
             com.soywiz.korio.async.delay(10.seconds)
-            if(heartbeatSent > heartbeatReceived) {
+            if(heartbeatSent > heartbeatReceived && isActive) {
                 com.soywiz.korio.async.delay(30.seconds)
-                if(heartbeatSent == heartbeatReceived) continue
+                if(heartbeatSent == heartbeatReceived || !isActive) continue
                 LOGGER.warn { "No heartbeat response received, reconnecting in ${config.reconnectDelay}..." }
                 close("watcher")
                 start(true)
