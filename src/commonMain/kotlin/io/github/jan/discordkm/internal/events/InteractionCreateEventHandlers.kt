@@ -24,6 +24,7 @@ import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.components.SelectOption
 import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.messages.MessageAttachment
 import io.github.jan.discordkm.api.events.AutoCompleteEvent
 import io.github.jan.discordkm.api.events.ButtonClickEvent
 import io.github.jan.discordkm.api.events.InteractionCreateEvent
@@ -36,9 +37,11 @@ import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.string
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
@@ -166,6 +169,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
                 else -> throw IllegalStateException()
             }
             CommandOption.OptionType.NUMBER -> InteractionOption(name, type, option.getOrThrow<Double>("value"))
+            CommandOption.OptionType.ATTACHMENT -> InteractionOption(name, type, Json.decodeFromJsonElement<MessageAttachment>(resolved!!.getValue("attachments").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject))
             else -> throw IllegalStateException()
         }
     }

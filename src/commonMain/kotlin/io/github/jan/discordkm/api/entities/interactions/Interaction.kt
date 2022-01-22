@@ -24,6 +24,7 @@ import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
+import io.github.jan.discordkm.api.entities.messages.MessageAttachment
 import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
@@ -131,6 +132,10 @@ class InteractionOption(override val name: String, val type: CommandOption.Optio
 
     val boolean: Boolean
         get() = value as Boolean
+
+    @DiscordKMUnstable
+    val attachment: MessageAttachment
+        get() = value as MessageAttachment
 
 }
 
