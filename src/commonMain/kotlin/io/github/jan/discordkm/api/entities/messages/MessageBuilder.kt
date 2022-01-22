@@ -15,10 +15,11 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
-import io.github.jan.discordkm.api.entities.interactions.components.ActionRowBuilder
 import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.Component
+import io.github.jan.discordkm.api.entities.interactions.components.MessageLayout
 import io.github.jan.discordkm.api.entities.interactions.components.RowBuilder
+import io.github.jan.discordkm.api.entities.interactions.components.RowLayoutBuilder
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
 import io.github.jan.discordkm.api.media.Attachment
 import io.github.jan.discordkm.internal.utils.putJsonObject
@@ -77,9 +78,9 @@ class MessageBuilder {
 
    // fun import(message: Message) = import(message.copy())
 
-    fun actionRow(builder: RowBuilder.() -> Unit) { actionRows += RowBuilder().apply(builder).build() }
+    fun actionRow(builder: RowBuilder<MessageLayout>.() -> Unit) { actionRows += RowBuilder<MessageLayout>().apply(builder).build() }
 
-    fun actionRows(builder: ActionRowBuilder.() -> Unit) { actionRows += ActionRowBuilder().apply(builder).rows }
+    fun actionRows(builder: RowLayoutBuilder<MessageLayout>.() -> Unit) { actionRows += RowLayoutBuilder<MessageLayout>().apply(builder).rows }
 
     fun sticker(id: Snowflake) { stickerIds += id }
 

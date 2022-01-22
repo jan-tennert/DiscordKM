@@ -15,7 +15,7 @@ import io.github.jan.discordkm.api.entities.containers.OptionContainer
 import io.github.jan.discordkm.api.entities.interactions.StandardInteraction
 import io.github.jan.discordkm.api.entities.messages.Message
 
-interface CommandEvent : InteractionCreateEvent {
+interface CommandEvent : StandardInteractionEvent {
     val commandName: String
     override val interaction: StandardInteraction
 }

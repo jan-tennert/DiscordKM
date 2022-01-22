@@ -23,15 +23,18 @@ import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCom
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.components.SelectOption
+import io.github.jan.discordkm.api.entities.interactions.modals.components.ModalRow
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageAttachment
 import io.github.jan.discordkm.api.events.AutoCompleteEvent
 import io.github.jan.discordkm.api.events.ButtonClickEvent
 import io.github.jan.discordkm.api.events.InteractionCreateEvent
 import io.github.jan.discordkm.api.events.MessageCommandEvent
+import io.github.jan.discordkm.api.events.ModalSubmitEvent
 import io.github.jan.discordkm.api.events.SelectionMenuEvent
 import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.api.events.UserCommandEvent
+import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.double
@@ -52,12 +55,22 @@ import kotlinx.serialization.json.jsonPrimitive
 
 class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<InteractionCreateEvent> {
 
+    @OptIn(DiscordKMUnstable::class)
     override suspend fun handle(data: JsonObject) = when(InteractionType[data["type"]!!.int]) {
         InteractionType.PING -> TODO()
         InteractionType.APPLICATION_COMMAND -> extractApplicationCommand(data)
         InteractionType.MESSAGE_COMPONENT -> extractMessageComponent(data)
         InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE -> extractCommandAutoComplete(data)
-        else -> TODO()
+        InteractionType.MODAL_SUBMIT -> extractModalSubmit(data)
+    }
+
+    private fun extractModalSubmit(data: JsonObject) : InteractionCreateEvent {
+        val modalData = data["data"]!!.jsonObject
+        val customId = modalData["custom_id"]!!.string
+        val components = modalData["components"]!!.jsonArray.map {
+            Json.decodeFromJsonElement<ModalRow>(it)
+        }
+        return ModalSubmitEvent(client, customId, components)
     }
 
     private fun extractCommandAutoComplete(data: JsonObject) : InteractionCreateEvent {

@@ -14,7 +14,7 @@ import io.github.jan.discordkm.api.entities.interactions.ComponentInteraction
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.components.SelectOption
 
-interface ComponentEvent : InteractionCreateEvent {
+interface ComponentEvent : StandardInteractionEvent {
     override val interaction: ComponentInteraction
     val componentId: String
     val componentType: ComponentType

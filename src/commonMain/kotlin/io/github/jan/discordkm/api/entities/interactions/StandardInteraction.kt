@@ -10,11 +10,7 @@
 package io.github.jan.discordkm.api.entities.interactions
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.UserCacheEntry
-import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
@@ -32,7 +28,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-open class StandardInteraction(client: Client, data: JsonObject) : Interaction(client, data) {
+open class StandardInteraction(override val client: Client, override val data: JsonObject) : Interaction, ModalInteraction {
 
     /**
      * Replies to this interaction without a message
@@ -46,8 +42,6 @@ open class StandardInteraction(client: Client, data: JsonObject) : Interaction(c
                 })
             }
         })
-        transform { }
-        onFinish { isAcknowledged = true }
     }
 
     /**
@@ -55,8 +49,6 @@ open class StandardInteraction(client: Client, data: JsonObject) : Interaction(c
      */
     suspend fun reply(message: DataMessage, ephemeral: Boolean = false) = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(message.buildCallback(4, ephemeral))
-
-        onFinish { isAcknowledged = true }
     }
 
     /**
@@ -90,7 +82,6 @@ open class StandardInteraction(client: Client, data: JsonObject) : Interaction(c
      */
     suspend fun deleteOriginalMessage() = client.buildRestAction<Unit> {
         route = Route.Interaction.DELETE_ORIGINAL(applicationId, token).delete()
-        transform { }
     }
 
     /**

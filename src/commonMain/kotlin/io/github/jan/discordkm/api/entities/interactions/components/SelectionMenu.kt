@@ -55,7 +55,7 @@ class SelectionMenuBuilder(var customId: String, var minValues: Int, var maxValu
      */
     fun onSelected(client: Client, action: OnSelected) {
         if(client is DiscordWebSocketClient) {
-            client.on<SelectionMenuEvent>(predicate = { it.componentId == customId }) { action(this) }
+            client.on<SelectionMenuEvent>(predicate = { it.componentId == customId }, action)
         }
     }
 
@@ -84,7 +84,7 @@ typealias OnSelected = suspend SelectionMenuEvent.() -> Unit
  * @param isDisabled Whether the user can interact with this selection menu
  * @param options The options of the selection menu
 */
-fun RowBuilder.selectionMenu(customId: String = "", isDisabled: Boolean = false, minValues: Int = 1, maxValues: Int = 1, options: List<SelectOption> = emptyList(), builder: SelectionMenuBuilder.() -> Unit) { components += SelectionMenuBuilder(minValues = minValues, maxValues = maxValues, options = options.toMutableList(), isDisabled = isDisabled, customId = customId).apply(builder).build()}
+fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisabled: Boolean = false, minValues: Int = 1, maxValues: Int = 1, options: List<SelectOption> = emptyList(), builder: SelectionMenuBuilder.() -> Unit) { components += SelectionMenuBuilder(minValues = minValues, maxValues = maxValues, options = options.toMutableList(), isDisabled = isDisabled, customId = customId).apply(builder).build()}
 
 /**
  * @param label The label of the selection menu option

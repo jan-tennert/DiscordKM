@@ -17,4 +17,4 @@ import io.github.jan.discordkm.api.entities.interactions.AutoCompleteInteraction
  * Sent when a user interacts with a slash command where the current option has the **autocomplete** option. This allows bots to send specific choices depending on the input
  */
 class AutoCompleteEvent <T>(override val client: Client, override val interaction: AutoCompleteInteraction<T>, val commandName: String, val commandId: Snowflake, val optionName: String, val optionValue: T?, val focused: Boolean, val subCommand: String?, val subCommandGroup: String?) :
-    InteractionCreateEvent
+    StandardInteractionEvent

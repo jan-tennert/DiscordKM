@@ -37,8 +37,6 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
             put("type", 6) //defer edit
         })
-        
-        onFinish { isAcknowledged = true }
     }
 
     /**
@@ -49,8 +47,6 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
             put("type", 7) //edit
             put("data", message.build().toString().toJsonObject())
         })
-        
-        onFinish { isAcknowledged = true }
     }
 
     /**

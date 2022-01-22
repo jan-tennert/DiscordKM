@@ -52,7 +52,7 @@ class ButtonBuilder(var customId: String? = null, var isDisabled: Boolean, val s
      */
     fun onClick(client: Client, action: ButtonClick) {
         if(client is DiscordWebSocketClient) {
-            client.on<ButtonClickEvent>(predicate = { it.componentId == customId}) { action(this) }
+            client.on<ButtonClickEvent>(predicate = { it.componentId == customId}, action)
         }
     }
 
@@ -78,7 +78,7 @@ enum class ButtonStyle {
  * @param label The label of this button. Can be empty if an emoji is available
  * @param emoji The emoji of this button. Can be empty if a label is available
  */
-fun RowBuilder.primaryButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.PRIMARY).apply(builder).build() }
+fun RowBuilder<MessageLayout>.primaryButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.PRIMARY).apply(builder).build() }
 
 /**
  * A red button
@@ -87,7 +87,7 @@ fun RowBuilder.primaryButton(customId: String = "", label: String? = null, emoji
  * @param label The label of this button. Can be empty if an emoji is available
  * @param emoji The emoji of this button. Can be empty if a label is available
  */
-fun RowBuilder.dangerButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.DANGER).apply(builder).build() }
+fun RowBuilder<MessageLayout>.dangerButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.DANGER).apply(builder).build() }
 
 /**
  * A green button
@@ -96,7 +96,7 @@ fun RowBuilder.dangerButton(customId: String = "", label: String? = null, emoji:
  * @param label The label of this button. Can be empty if an emoji is available
  * @param emoji The emoji of this button. Can be empty if a label is available
  */
-fun RowBuilder.successButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.SUCCESS).apply(builder).build() }
+fun RowBuilder<MessageLayout>.successButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.SUCCESS).apply(builder).build() }
 
 /**
  * A grey button
@@ -105,7 +105,7 @@ fun RowBuilder.successButton(customId: String = "", label: String? = null, emoji
  * @param label The label of this button. Can be empty if an emoji is available
  * @param emoji The emoji of this button. Can be empty if a label is available
  */
-fun RowBuilder.secondaryButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.SECONDARY).apply(builder).build() }
+fun RowBuilder<MessageLayout>.secondaryButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.SECONDARY).apply(builder).build() }
 
 /**
  * A button used for opening urls
@@ -114,7 +114,7 @@ fun RowBuilder.secondaryButton(customId: String = "", label: String? = null, emo
  * @param label The label of this button. Can be empty if an emoji is available
  * @param emoji The emoji of this button. Can be empty if a label is available
  */
-fun RowBuilder.linkButton(url: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(url = url, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.LINK).apply(builder).build() }
+fun RowBuilder<MessageLayout>.linkButton(url: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, builder: ButtonBuilder.() -> Unit = {}) { components += ButtonBuilder(url = url, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.LINK).apply(builder).build() }
 
 object ButtonStyleSerializer : KSerializer<ButtonStyle> {
     override fun deserialize(decoder: Decoder) = valueOfIndex<ButtonStyle>(decoder.decodeInt(), 1)

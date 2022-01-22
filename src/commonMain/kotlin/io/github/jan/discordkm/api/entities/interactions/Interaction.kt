@@ -18,7 +18,6 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
@@ -33,11 +32,10 @@ import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.locale
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
 
-open class Interaction(override val client: Client, override val data: JsonObject) : SerializableEntity {
+sealed interface Interaction : SerializableEntity {
 
     /**
      * The interaction token
@@ -96,13 +94,6 @@ open class Interaction(override val client: Client, override val data: JsonObjec
      * The preferred locale of the guild, if invoked in a guild
      */
     val guildLocale: DiscordLocale? get() = data["guild_locale", true]?.locale
-
-
-    /**
-     * Whether this interaction was already acknowledged
-     */
-    var isAcknowledged: Boolean = false
-        internal set
 
 }
 
