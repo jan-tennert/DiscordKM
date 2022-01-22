@@ -15,6 +15,7 @@ import io.github.jan.discordkm.api.entities.activity.PresenceModifier
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.events.ShardCreateEvent
+import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
 import io.github.jan.discordkm.internal.utils.LoggerConfig
@@ -86,7 +87,7 @@ class DiscordWebSocketClient internal constructor(
 
     override suspend fun disconnect() {
         requester.http.close()
-        shardConnections.forEach { it.close() }
+        shardConnections.forEach { it.close("client") }
     }
 
     suspend fun handleEvent(event: Event) = coroutineScope { eventListeners.forEach { launch { it(event) } } }
@@ -96,10 +97,7 @@ class DiscordWebSocketClient internal constructor(
 /**
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
-class DiscordWebSocketClientBuilder @Deprecated(
-    "Use the method buildClient",
-    replaceWith = ReplaceWith("buildClient()", "io.github.jan.discordkm.api.entities.clients.buildClient")
-) constructor(var token: String) {
+class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: String) {
 
     /**
      * The encoding used for the websocket. Currently, only [Encoding.JSON] is supported
@@ -188,6 +186,6 @@ class DiscordWebSocketClientBuilder @Deprecated(
 /**
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
-@Suppress("DEPRECATION")
+@OptIn(DiscordKMInternal::class)
 inline fun buildClient(token: String, builder: DiscordWebSocketClientBuilder.() -> Unit = {}) =
     DiscordWebSocketClientBuilder(token).apply(builder).build()

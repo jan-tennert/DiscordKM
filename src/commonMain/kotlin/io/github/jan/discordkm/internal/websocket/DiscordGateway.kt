@@ -205,12 +205,12 @@ class DiscordGateway(
                 sendHeartbeat()
             }
             OpCode.RECONNECT -> {
-                close()
+                close("reconnect")
                 start(true)
             }
             OpCode.INVALID_SESSION -> {
                 LOGGER.warn { "Invalid session, reconnecting..." }
-                close()
+                close("invalid session")
                 this@DiscordGateway.start(true)
             }
             OpCode.HELLO -> {
@@ -268,7 +268,7 @@ class DiscordGateway(
                 com.soywiz.korio.async.delay(30.seconds)
                 if(heartbeatSent == heartbeatReceived) continue
                 LOGGER.warn { "No heartbeat response received, reconnecting in ${config.reconnectDelay}..." }
-                close()
+                close("watcher")
                 start(true)
                 break
             }
@@ -287,7 +287,7 @@ class DiscordGateway(
 
     private suspend fun sendHeartbeat() = send(Payload(1, JsonPrimitive(heartbeatInterval), lastSequenceNumber, null))
 
-    suspend fun close() {
+    suspend fun close(source: String) {
         LOGGER.warn { "Closing websocket connection on shard $shardId" }
         if(::heartbeatTask.isInitialized) heartbeatTask.cancel()
         if(::heartbeatWatcher.isInitialized) heartbeatWatcher.cancel()

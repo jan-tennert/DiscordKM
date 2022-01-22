@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.clients
 
+import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.ktor.client.HttpClientConfig
@@ -16,7 +17,7 @@ import io.ktor.client.HttpClientConfig
 /**
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
-class RestOnlyClient @Deprecated("Use the method buildRestOnlyClient") internal constructor (config: ClientConfig) : Client(config) {
+class RestOnlyClient @DiscordKMInternal constructor (config: ClientConfig) : Client(config) {
 
     override suspend fun disconnect() {
         requester.http.close()
@@ -33,7 +34,7 @@ class RestOnlyClientBuilder(var token: String) {
     var enabledCache = CacheFlag.values().toMutableSet()
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
-    @Suppress("DEPRECATION")
+    @OptIn(DiscordKMInternal::class)
     fun build() = RestOnlyClient(ClientConfig(token = token, logging = logging, enabledCache = enabledCache, httpClientConfig = httpClientConfig))
 
     fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
