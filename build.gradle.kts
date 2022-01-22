@@ -147,8 +147,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
-                // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-
+                implementation("com.google.guava:guava:31.0.1-jre")
             }
         }
         val jvmTest by getting
