@@ -29,7 +29,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 
-interface ScheduledEvent : SnowflakeEntity, GuildEntity, CacheEntity {
+sealed interface ScheduledEvent : SnowflakeEntity, GuildEntity, CacheEntity {
 
     override val cache: ScheduledEventCacheEntry?
         get() = guild.cache?.scheduledEvents?.get(id)
@@ -103,13 +103,12 @@ interface ScheduledEvent : SnowflakeEntity, GuildEntity, CacheEntity {
     )
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = object : ScheduledEvent {
-            override val guild = guild
-            override val id = id
-        }
+        operator fun invoke(id: Snowflake, guild: Guild): ScheduledEvent = IndependentScheduledEvent(id, guild)
     }
 
 }
+
+data class IndependentScheduledEvent(override val id: Snowflake, override val guild: Guild) : ScheduledEvent
 
 /**
  * Represents a cached scheduled event

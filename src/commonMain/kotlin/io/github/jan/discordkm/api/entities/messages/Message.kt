@@ -27,14 +27,11 @@ import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
-import io.github.jan.discordkm.api.entities.interactions.Interaction
 import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
-import io.github.jan.discordkm.api.media.Attachment
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
-import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.caching.ReactionCacheManager
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
@@ -58,7 +55,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.jvm.JvmName
 
-interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
+sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
 
     override val id: Snowflake
     override val client: Client
@@ -187,13 +184,12 @@ interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
     )
 
     companion object {
-        operator fun invoke(id: Snowflake, channel: MessageChannel) = object : Message {
-            override val channel = channel
-            override val id = id
-        }
+        operator fun invoke(id: Snowflake, channel: MessageChannel): Message = IndependentMessage(id, channel)
         operator fun invoke(data: JsonObject, client: Client) = MessageSerializer.deserialize(data, client)
     }
 }
+
+data class IndependentMessage(override val id: Snowflake, override val channel: MessageChannel) : Message
 
 /**
  * Represents a message sent in a [MessageChannel]
@@ -234,7 +230,7 @@ data class MessageCacheEntry(
     val mentions: List<User>,
     val mentionedRoles: List<Role>,
     val mentionedChannels: List<GuildChannel>,
-    val attachments: List<Attachment>,
+    val attachments: List<MessageAttachment>,
     val embeds: List<MessageEmbed>,
     val nonce: String?,
     val isPinned: Boolean,

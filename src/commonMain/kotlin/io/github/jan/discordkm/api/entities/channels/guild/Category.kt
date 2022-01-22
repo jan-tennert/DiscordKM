@@ -15,7 +15,7 @@ import io.github.jan.discordkm.internal.serialization.serializers.channel.Channe
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 
-interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryCacheEntry> {
+sealed interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryCacheEntry> {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_CATEGORY
@@ -31,14 +31,13 @@ interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryCacheEnt
     companion object : GuildChannelBuilder<CategoryModifier, Category> {
         override fun create(modifier: CategoryModifier.() -> Unit) = CategoryModifier().apply(modifier)
 
-        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? CategoryCacheEntry ?: object : Category {
-            override val guild = guild
-            override val id = id
-        }
+        operator fun invoke(id: Snowflake, guild: Guild): Category = IndependentCategory(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<CategoryCacheEntry>(data, guild)
     }
 
 }
+
+data class IndependentCategory(override val id: Snowflake, override val guild: Guild) : Category
 
 class CategoryCacheEntry(
     override val guild: Guild,

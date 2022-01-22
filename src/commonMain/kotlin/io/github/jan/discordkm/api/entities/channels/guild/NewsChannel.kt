@@ -18,7 +18,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-interface NewsChannel: GuildTextChannel {
+sealed interface NewsChannel: GuildTextChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_NEWS
@@ -40,14 +40,13 @@ interface NewsChannel: GuildTextChannel {
     companion object : GuildChannelBuilder<TextChannelModifier, NewsChannel> {
         override fun create(modifier: TextChannelModifier.() -> Unit) = TextChannelModifier().apply { convertToNewsChannel(); modifier(this) }
 
-        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? NewsChannelCacheEntry ?: object : NewsChannel {
-            override val guild = guild
-            override val id = id
-        }
+        operator fun invoke(id: Snowflake, guild: Guild): NewsChannel = IndependentNewsChannel(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<NewsChannelCacheEntry>(data, guild)
     }
 
 }
+
+data class IndependentNewsChannel(override val id: Snowflake, override val guild: Guild) : NewsChannel
 
 class NewsChannelCacheEntry(
     override val guild: Guild,

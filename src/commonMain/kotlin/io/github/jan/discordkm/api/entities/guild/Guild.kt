@@ -80,7 +80,7 @@ import kotlin.reflect.KProperty
 /**
  * A guild can contain channels and members.
  */
-interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, CommandHolder,
+sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, CommandHolder,
     Modifiable<GuildModifier, Unit> {
 
     override val cache: GuildCacheEntry?
@@ -440,16 +440,15 @@ interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, Co
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client) = object : Guild {
-            override val id = id
-            override val client = client
-        }
+        operator fun invoke(id: Snowflake, client: Client): Guild = IndependentGuild(id, client)
     }
 
     override fun getValue(ref: Any?, property: KProperty<*>) = client.guilds[id]!!
 
     override suspend fun retrieve() = client.guilds.retrieve(id)
 }
+
+data class IndependentGuild(override val id: Snowflake, override val client: Client) : Guild
 
 /**
  * A guild cache entry contains all information given by the Discord API
@@ -596,7 +595,7 @@ class GuildCacheEntry(
         query: String? = null,
         limit: Int = 0,
         receivePresences: Boolean = false,
-        users: Collection<Snowflake> = emptyList()
+        users: Collection<Snowflake> = emptyList(),
     ) {
         if (client is DiscordWebSocketClient) {
             val shard = client.shardById[shardId] ?: return

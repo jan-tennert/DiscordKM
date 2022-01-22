@@ -12,7 +12,7 @@ import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import kotlinx.serialization.json.JsonObject
 
-interface TextChannel : GuildTextChannel {
+sealed interface TextChannel : GuildTextChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_TEXT
@@ -22,14 +22,13 @@ interface TextChannel : GuildTextChannel {
     companion object : GuildChannelBuilder<TextChannelModifier, TextChannel> {
         override fun create(modifier: TextChannelModifier.() -> Unit) = TextChannelModifier().apply { convertToTextChannel(); modifier(this) }
 
-        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? TextChannelCacheEntry ?:  object : TextChannel {
-            override val guild = guild
-            override val id = id
-        }
+        operator fun invoke(id: Snowflake, guild: Guild): TextChannel = IndependentTextChannel(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<TextChannelCacheEntry>(data, guild)
     }
 
 }
+
+data class IndependentTextChannel(override val id: Snowflake, override val guild: Guild) : TextChannel
 
 class TextChannelCacheEntry(
     override val guild: Guild,

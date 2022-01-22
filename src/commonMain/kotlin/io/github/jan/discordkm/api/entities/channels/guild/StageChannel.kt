@@ -3,9 +3,9 @@ package io.github.jan.discordkm.api.entities.channels.guild
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
+import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifiable
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventVoiceChannel
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
@@ -21,7 +21,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-interface StageChannel : VoiceChannel {
+sealed interface StageChannel : VoiceChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_STAGE_VOICE
@@ -55,16 +55,15 @@ interface StageChannel : VoiceChannel {
     companion object : GuildChannelBuilder<VoiceChannelModifier, StageChannel>, ScheduledEventModifiable<ScheduledEventVoiceChannel> {
         override fun create(modifier: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(ChannelType.GUILD_STAGE_VOICE).apply(modifier)
 
-        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? StageChannelCacheEntry ?: object : StageChannel {
-            override val guild = guild
-            override val id = id
-        }
+        operator fun invoke(id: Snowflake, guild: Guild): StageChannel = IndependentStageChannel(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<StageChannelCacheEntry>(data, guild)
 
         override fun build(modifier: ScheduledEventVoiceChannel.() -> Unit) = ScheduledEventVoiceChannel(true).apply(modifier).build()
     }
 
 }
+
+data class IndependentStageChannel(override val id: Snowflake, override val guild: Guild) : StageChannel
 
 class StageChannelCacheEntry(
     userLimit: Int,

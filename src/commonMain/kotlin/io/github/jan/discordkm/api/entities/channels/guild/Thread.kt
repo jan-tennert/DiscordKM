@@ -14,7 +14,6 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.TextChannelModifier
 import io.github.jan.discordkm.api.entities.modifiers.guild.ThreadModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.MessageCacheManager
@@ -34,7 +33,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmInline
 
-interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, ThreadCacheEntry> {
+sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, ThreadCacheEntry> {
 
     val members: ThreadMemberContainer
         get() = ThreadMemberContainer(this)
@@ -97,11 +96,7 @@ interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, ThreadCacheEn
     )
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild, type: ChannelType) = guild.client.threads[id] ?: object : Thread {
-            override val guild = guild
-            override val id = id
-            override val type = guild.cache?.threads?.get(id)?.type ?: type
-        }
+        operator fun invoke(id: Snowflake, guild: Guild, type: ChannelType): Thread = IndependentThread(id, guild, type)
 
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<ThreadCacheEntry>(data, guild)
     }
@@ -126,6 +121,8 @@ interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, ThreadCacheEn
     }
 
 }
+
+data class IndependentThread(override val id: Snowflake, override val guild: Guild, override val type: ChannelType) : Thread
 
 class ThreadCacheEntry(
     override val guild: Guild,

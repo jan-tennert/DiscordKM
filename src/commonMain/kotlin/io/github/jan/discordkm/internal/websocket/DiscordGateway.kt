@@ -265,7 +265,8 @@ class DiscordGateway(
         while(isActive) {
             com.soywiz.korio.async.delay(10.seconds)
             if(heartbeatSent > heartbeatReceived) {
-                com.soywiz.korio.async.delay(2.seconds)
+                com.soywiz.korio.async.delay(30.seconds)
+                if(heartbeatSent == heartbeatReceived) continue
                 LOGGER.warn { "No heartbeat response received, reconnecting in ${config.reconnectDelay}..." }
                 close()
                 start(true)

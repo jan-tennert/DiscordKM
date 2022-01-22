@@ -21,7 +21,7 @@ import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 
-interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceChannelCacheEntry>, InvitableGuildChannel {
+sealed interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceChannelCacheEntry>, InvitableGuildChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_VOICE
@@ -53,21 +53,21 @@ interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceCha
     companion object : GuildChannelBuilder<VoiceChannelModifier, VoiceChannel>, ScheduledEventModifiable<ScheduledEventVoiceChannel> {
         override fun create(modifier: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(ChannelType.GUILD_VOICE).apply(modifier)
 
-        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? VoiceChannelCacheEntry ?: object : VoiceChannel {
-            override val guild = guild
-            override val id = id
-            override val type: ChannelType
-                get() = if(guild.cache?.cacheManager?.channelCache?.get(id) is StageChannelCacheEntry) {
-                    ChannelType.GUILD_STAGE_VOICE
-                } else {
-                    ChannelType.GUILD_VOICE
-                }
-        }
+        operator fun invoke(id: Snowflake, guild: Guild): VoiceChannel = IndependentVoiceChannel(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<VoiceChannelCacheEntry>(data, guild)
 
         override fun build(modifier: ScheduledEventVoiceChannel.() -> Unit) = ScheduledEventVoiceChannel(false).apply(modifier).build()
     }
 
+}
+
+data class IndependentVoiceChannel(override val id: Snowflake, override val guild: Guild) : VoiceChannel {
+    override val type: ChannelType
+        get() = if(guild.cache?.cacheManager?.channelCache?.get(id) is StageChannelCacheEntry) {
+            ChannelType.GUILD_STAGE_VOICE
+        } else {
+            ChannelType.GUILD_VOICE
+        }
 }
 
 open class VoiceChannelCacheEntry(

@@ -62,7 +62,7 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
     /**
      * The channel this invite is for
      */
-    val channel = Channel(data["channel_id"]!!.snowflake, ChannelType.UNKNOWN, client)
+    val channel = data["channel_id"]?.snowflake?.let { Channel(it, ChannelType.UNKNOWN, client) }
 
     /**
      * The inviter who created this invite
@@ -121,6 +121,9 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
     )
 
     enum class TargetType : EnumWithValue<Int> {
+        UNKNOWN {
+            override fun create(targetId: Snowflake) = throw UnsupportedOperationException("You cannot create a target type from an unknown type")
+        },
         STREAM {
             override fun create(targetId: Snowflake) = Target(targetId, STREAM)
         },
@@ -129,7 +132,7 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
         };
 
         override val value: Int
-            get() = ordinal + 1
+            get() = ordinal
 
         abstract fun create(targetId: Snowflake) : Target
 

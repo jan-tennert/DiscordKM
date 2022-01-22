@@ -20,7 +20,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.reflect.KProperty
 
-interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntity, CacheEntity {
+sealed interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntity, CacheEntity {
 
     override val asMention: String
         get() = "<@$id>"
@@ -77,14 +77,13 @@ interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntity, Cach
     override suspend fun retrieve() = client.users.retrieve(id)
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client) = object : User {
-            override val id: Snowflake = id
-            override val client: Client = client
-        }
+        operator fun invoke(id: Snowflake, client: Client): User = IndependentUser(id, client)
         operator fun invoke(data: JsonObject, client: Client) = UserSerializer.deserialize(data, client)
     }
 
 }
+
+data class IndependentUser(override val id: Snowflake, override val client: Client) : User
 
 /**
  * The user cache entry contains all information given by the Discord API

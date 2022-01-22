@@ -12,17 +12,17 @@ package io.github.jan.discordkm.api.entities.channels
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
 
-interface PrivateChannel : MessageChannel {
+sealed interface PrivateChannel : MessageChannel {
 
     override val type: ChannelType
         get() = ChannelType.DM
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client) = object : PrivateChannel {
-            override val cache: Nothing? = null
-            override val id: Snowflake = id
-            override val client = client
-        }
+        operator fun invoke(id: Snowflake, client: Client): PrivateChannel = IndependentPrivateChannel(id, client)
     }
 
+}
+
+data class IndependentPrivateChannel(override val id: Snowflake, override val client: Client) : PrivateChannel {
+    override val cache: Nothing? = null
 }
