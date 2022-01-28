@@ -137,6 +137,7 @@ kotlin {
                 api("co.touchlab:stately-iso-collections:${Versions.STATELY}")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.COROUTINES}")
                 api("com.soywiz.korlibs.korio:korio:${Versions.KORLIBS}")
+                api("io.arrow-kt:arrow-core:${Versions.ARROW}")
             }
         }
         val commonTest by getting {
@@ -147,7 +148,6 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
-                implementation("com.google.guava:guava:31.0.1-jre")
             }
         }
         val jvmTest by getting

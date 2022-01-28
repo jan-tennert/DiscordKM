@@ -17,6 +17,7 @@ object Versions {
     const val COROUTINES = "1.6.0"
     const val STATELY = "1.2.1"
     const val DISCORDKM = "0.6.15-local7"
+    const val ARROW = "1.0.1"
 
 }
 

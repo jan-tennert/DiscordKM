@@ -108,10 +108,10 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
      * @param limit The maximum amount of entries to retrieve.
      */
     suspend fun retrieveAuditLogs(
-        userId: Snowflake?,
-        before: Snowflake?,
-        limit: Int,
-        action: AuditLogAction?
+        limit: Int = 50,
+        userId: Snowflake? = null,
+        before: Snowflake? = null,
+        action: AuditLogAction? = null
     ) = client.buildRestAction<AuditLog> {
         route = Route.Guild.GET_AUDIT_LOGS(id).get {
             putOptional("user_id", userId)
