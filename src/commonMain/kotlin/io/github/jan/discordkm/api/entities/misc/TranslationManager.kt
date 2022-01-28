@@ -20,10 +20,6 @@ class TranslationManager private constructor(private val rawTranslations: List<T
     val translations
         get() = rawTranslations.associateBy(TranslationFile::language)
 
-    init {
-        println(rawTranslations)
-    }
-
     operator fun get(locale: DiscordLocale, key: String, vararg args: Any): Option<String> {
         val translation = translations[locale].toOption().orElse { if(locale.isEnglish && mergeEnglish) this.translations[DiscordLocale.ENGLISH_GREAT_BRITAIN].toOption() else None }
         return translation.flatMap { it.translations[key].toOption() }.map { it.format(args) }

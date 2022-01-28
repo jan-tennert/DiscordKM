@@ -18,7 +18,6 @@ internal class GuildCreateEventHandler(val client: Client) :
     InternalEventHandler<GuildCreateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildCreateEvent {
-        println(data)
         val guild = GuildSerializer.deserialize(data, client)
         client.cacheManager.guildCache[guild.id] = guild
         return GuildCreateEvent(guild, client)

@@ -15,12 +15,12 @@ annotation class CommandExecutor(
     val subCommandGroup: String = "",
 )
 
-fun DiscordWebSocketClient.importCommands(packageName: String, subPackages: Boolean = false) {
+fun DiscordWebSocketClient.importCommands(packageName: String, subPackages: Boolean = false, args: Map<String, Any> = emptyMap()) {
     ClassPath.from(ClassLoader.getSystemClassLoader()).allClasses.filter { it.packageName == packageName || (subPackages && it.packageName.startsWith(packageName)) }.map(
         ClassPath.ClassInfo::load).forEach {
-        it.methods.filter { m -> Modifier.isStatic(m.modifiers) && m.isAnnotationPresent(CommandExecutor::class.java) && m.parameterCount == 2 }.forEach { method ->
+        it.methods.filter { m -> Modifier.isStatic(m.modifiers) && m.isAnnotationPresent(CommandExecutor::class.java) && m.parameterCount >= 2 }.forEach { method ->
             val annotation = method.getAnnotation(CommandExecutor::class.java)
-            println("ello")
+            val arguments = method.extractArguments(args)
             eventListeners += EventListener { e ->
                 if(e is CommandEvent) {
                     if(e.commandName != annotation.name) return@EventListener
@@ -28,7 +28,13 @@ fun DiscordWebSocketClient.importCommands(packageName: String, subPackages: Bool
                         if (annotation.subCommand.isNotBlank() && e.subCommand != annotation.subCommand) return@EventListener
                         if (annotation.subCommandGroup.isNotBlank() && e.subCommandGroup != annotation.subCommandGroup) return@EventListener
                     }
-                    method.invokeSuspend(null, listOf(e))
+                    method.invokeSuspend(null, listOf(e).let { mArgs ->
+                        if(arguments != null) {
+                            (mArgs + arguments).flatten()
+                        } else {
+                            mArgs
+                        }
+                    })
                 }
             }
         }

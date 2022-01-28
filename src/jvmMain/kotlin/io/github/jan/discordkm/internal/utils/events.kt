@@ -9,13 +9,20 @@ import java.lang.reflect.Modifier
 @Target(AnnotationTarget.FUNCTION)
 annotation class EventListener
 
-fun DiscordWebSocketClient.importListeners(packageName: String, subPackages: Boolean = false) {
+fun DiscordWebSocketClient.importListeners(packageName: String, subPackages: Boolean = false, args: Map<String, Any> = emptyMap()) {
     ClassPath.from(ClassLoader.getSystemClassLoader()).allClasses.filter { it.packageName == packageName || (subPackages && it.packageName.startsWith(packageName)) }.map(ClassPath.ClassInfo::load).forEach {
-        it.methods.filter { m -> Modifier.isStatic(m.modifiers) && m.isAnnotationPresent(io.github.jan.discordkm.internal.utils.EventListener::class.java) && m.parameterCount == 2 }.forEach { method ->
+        it.methods.filter { m -> Modifier.isStatic(m.modifiers) && m.isAnnotationPresent(io.github.jan.discordkm.internal.utils.EventListener::class.java) && m.parameterCount >= 2 }.forEach { method ->
             val event = method.parameterTypes[0]
+            val arguments = method.extractArguments(args)
             eventListeners += EventListener { e ->
                 if(event.isInstance(e)) {
-                    method.invokeSuspend(null, listOf(e))
+                    method.invokeSuspend(null, listOf(e).let { mArgs ->
+                        if (arguments != null) {
+                            (mArgs + arguments).flatten()
+                        } else {
+                            mArgs
+                        }
+                    })
                 }
             }
         }
