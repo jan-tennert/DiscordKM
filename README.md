@@ -77,10 +77,33 @@ Maven:
     <version>VERSION</version>
 </dependency>
 ```
-
 If you want a specific target add it to the artifactId like: DiscordKM-jvm and DiscordKM-js
+
+# JVM-Only
+If you want to easily add event listeners without having to use the Kotlin DSL you can use the following:
+```kotlin
+client.importCommands("io.github.jan.bot.commands", subPackages = true, mapOf(
+   "someValue" to 1.0 
+) /* Map for argument injection */)
+
+//then you can add top level functions in the commands package and in all its subpackages
+@CommandExecutor(name = "test", subCommand = "subCommand") //You can optionally use subCommand and subCommandGroup
+fun SlashCommandEvent.testCommand(@Inject("someValue") someValue: Double) {
+    interaction.reply("injected value: $someValue")
+}
+
+//same with events:
+client.importEvents("io.github.jan.bot.events", subPackages = true, mapOf(
+    "node" to lavalinkNode
+))
+
+@EventListener
+fun MessageCreateEvent.play(@Inject("node") node: LavalinkNode) {
+    //play music
+}
+
+```
 
 # Addons
 
 - [DiscordKM-Lavalink](https://github.com/jan-tennert/DiscordKM-Lavalink) - Lavalink client for DiscordKM
-- [DiscordKM-Utils](https://github.com/jan-tennert/DiscordKM-Utils) - Utilities like button paginators
