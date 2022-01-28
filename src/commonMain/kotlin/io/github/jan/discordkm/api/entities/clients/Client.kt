@@ -12,6 +12,7 @@ package io.github.jan.discordkm.api.entities.clients
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import io.github.jan.discordkm.api.entities.BaseEntity
+import io.github.jan.discordkm.api.entities.DiscordLocale
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.activity.Presence
@@ -25,6 +26,7 @@ import io.github.jan.discordkm.api.entities.containers.UserContainer
 import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
+import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheFlag
@@ -113,6 +115,8 @@ sealed class Client(
         this.image = image
     }
 
+    fun textFor(locale: DiscordLocale, key: String, mergeEnglish: Boolean = false) = config.translationManager[locale, key, mergeEnglish]
+
     /**
      * Disconnects the bot from the rest api and the websocket
      */
@@ -168,6 +172,7 @@ data class ClientConfig(
     val encoding: Encoding = Encoding.JSON,
     val compression: Compression = Compression.NONE,
     val maxResumeTries: Int = 3,
+    val translationManager: TranslationManager = TranslationManager.empty()
 )
 
 

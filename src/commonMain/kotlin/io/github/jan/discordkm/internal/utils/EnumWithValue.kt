@@ -1,5 +1,6 @@
 package io.github.jan.discordkm.internal.utils
 
+import arrow.core.firstOrNone
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -17,6 +18,8 @@ open class EnumWithValueGetter <V : EnumWithValue<T>, T>(val values: Collection<
     constructor(values: Array<V>) : this(values.toList())
 
     operator fun get(value: T) = values.first { it.value == value }
+
+    fun getOption(value: T) = values.firstOrNone { it.value == value }
 
     override val descriptor = PrimitiveSerialDescriptor("EnumWithValue", PrimitiveKind.INT)
 

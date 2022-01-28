@@ -12,6 +12,7 @@ package io.github.jan.discordkm.api.entities.clients
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
+import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.events.ShardCreateEvent
@@ -132,6 +133,11 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
     var enabledCache = CacheFlag.ALL.toMutableSet()
 
     /**
+     * The translation manager can be used to multi-language bots
+     */
+    var translationManager: TranslationManager = TranslationManager.empty()
+
+    /**
      * Configures the logger
      */
     var logging = LoggerConfig()
@@ -176,7 +182,8 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
             activity.status,
             encoding,
             compression,
-            maxResumeTries
+            maxResumeTries,
+            translationManager
         )
     )
 

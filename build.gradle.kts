@@ -138,6 +138,8 @@ kotlin {
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.COROUTINES}")
                 api("com.soywiz.korlibs.korio:korio:${Versions.KORLIBS}")
                 api("io.arrow-kt:arrow-core:${Versions.ARROW}")
+                // https://mvnrepository.com/artifact/com.google.guava/guava
+                implementation("com.google.guava:guava:31.0.1-jre")
             }
         }
         val commonTest by getting {

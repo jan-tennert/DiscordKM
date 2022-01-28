@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.clients
 
+import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.utils.LoggerConfig
@@ -32,10 +33,11 @@ class RestOnlyClientBuilder(var token: String) {
 
     var logging = LoggerConfig()
     var enabledCache = CacheFlag.values().toMutableSet()
+    var translationManager = TranslationManager.empty()
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
     @OptIn(DiscordKMInternal::class)
-    fun build() = RestOnlyClient(ClientConfig(token = token, logging = logging, enabledCache = enabledCache, httpClientConfig = httpClientConfig))
+    fun build() = RestOnlyClient(ClientConfig(token = token, logging = logging, enabledCache = enabledCache, httpClientConfig = httpClientConfig, translationManager = translationManager))
 
     fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
 
