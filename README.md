@@ -88,8 +88,8 @@ client.importCommands("io.github.jan.bot.commands", subPackages = true, mapOf(
 
 //then you can add top level functions in the commands package and in all its subpackages
 @CommandExecutor(name = "test", subCommand = "subCommand") //You can optionally use subCommand and subCommandGroup
-fun SlashCommandEvent.testCommand(@Inject("someValue") someValue: Double) {
-    interaction.reply("injected value: $someValue")
+fun SlashCommandEvent.testCommand(@Inject("someValue") value: Double) {
+    interaction.reply("injected value: $value")
 }
 
 //same with events:
@@ -98,7 +98,7 @@ client.importEvents("io.github.jan.bot.events", subPackages = true, mapOf(
 ))
 
 @EventListener
-fun MessageCreateEvent.play(@Inject("node") node: LavalinkNode) {
+fun MessageCreateEvent.play(@Inject("node") lavalinkNode: LavalinkNode) {
     //play music
 }
 
