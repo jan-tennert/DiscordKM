@@ -115,7 +115,7 @@ sealed class Client(
         this.image = image
     }
 
-    fun textFor(locale: DiscordLocale, key: String, mergeEnglish: Boolean = false) = config.translationManager[locale, key, mergeEnglish]
+    fun textFor(locale: DiscordLocale, key: String, vararg args: Any) = config.translationManager.get(locale, key, *args)
 
     /**
      * Disconnects the bot from the rest api and the websocket
