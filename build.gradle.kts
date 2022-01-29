@@ -6,6 +6,12 @@ plugins {
     id("org.jetbrains.dokka") version Versions.DOKKA
 }
 
+subprojects {
+    apply(plugin = "signing")
+    apply(plugin = "maven-publish")
+    apply(plugin = "org.jetbrains.dokka")
+}
+
 group = "io.github.jan-tennert.discordkm"
 version = Versions.DISCORDKM
 
@@ -18,9 +24,7 @@ allprojects {
             name = "ktor-eap"
         }
     }
-}
 
-allprojects {
     signing {
         val signingKey = providers
             .environmentVariable("GPG_SIGNING_KEY")
@@ -36,25 +40,7 @@ allprojects {
             sign(extension.publications)
         }
     }
-}
-//val dokkaOutputDir = "H:/Programming/Other/DiscordKMDocs"
-val dokkaOutputDir = "$buildDir/dokka"
 
-tasks.dokkaHtml {
-   outputDirectory.set(file(dokkaOutputDir))
-}
-
-val deleteDokkaOutputDir by tasks.register<Delete>("deleteDokkaOutputDirectory") {
-    delete(dokkaOutputDir)
-}
-
-val javadocJar = tasks.register<Jar>("javadocJar") {
-    dependsOn(deleteDokkaOutputDir, tasks.dokkaHtml)
-    archiveClassifier.set("javadoc")
-    from(dokkaOutputDir)
-}
-
-allprojects {
     publishing {
         repositories {
             maven {
@@ -75,6 +61,22 @@ allprojects {
                     password = Publishing.SONATYPE_PASSWORD
                 }
             }
+        }
+//val dokkaOutputDir = "H:/Programming/Other/DiscordKMDocs"
+        val dokkaOutputDir = "$buildDir/dokka"
+
+        tasks.dokkaHtml {
+            outputDirectory.set(file(dokkaOutputDir))
+        }
+
+        val deleteDokkaOutputDir by tasks.register<Delete>("deleteDokkaOutputDirectory") {
+            delete(dokkaOutputDir)
+        }
+
+        val javadocJar = tasks.register<Jar>("javadocJar") {
+            dependsOn(deleteDokkaOutputDir, tasks.dokkaHtml)
+            archiveClassifier.set("javadoc")
+            from(dokkaOutputDir)
         }
 
         publications {
@@ -110,15 +112,14 @@ allprojects {
     }
 }
 
+
+
 kotlin {
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
         }
         withJava()
-        testRuns["test"].executionTask.configure {
-            useJUnit()
-        }
     }
     js(IR) {
         browser()
@@ -142,23 +143,16 @@ kotlin {
                 implementation("com.google.guava:guava:31.0.1-jre")
             }
         }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-            }
-        }
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
             }
         }
-        val jvmTest by getting
         val jsMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-js:${Versions.KTOR}")
             }
         }
-        val jsTest by getting
     }
 }
 

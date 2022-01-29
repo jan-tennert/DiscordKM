@@ -54,7 +54,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.coroutines.CoroutineContext
 
-sealed class Client(
+abstract class Client(
     val config: ClientConfig
 ) : CoroutineScope, CommandHolder, BaseEntity {
 
@@ -158,7 +158,7 @@ enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
 
 }
 
-data class ClientConfig(
+open class ClientConfig(
     val token: String,
     val intents: Set<Intent> = emptySet(),
     val logging: LoggerConfig,
@@ -172,7 +172,7 @@ data class ClientConfig(
     val encoding: Encoding = Encoding.JSON,
     val compression: Compression = Compression.NONE,
     val maxResumeTries: Int = 3,
-    val translationManager: TranslationManager = TranslationManager.empty()
+    val translationManager: TranslationManager = TranslationManager.empty(),
 )
 
 
