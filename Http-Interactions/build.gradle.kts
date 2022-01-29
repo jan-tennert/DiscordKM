@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
 }
 
-group = "io.github.jan-tennert.discordkm.http-interactions"
+group = "io.github.jan-tennert.discordkm"
 version = Versions.DISCORDKM
 
 repositories {

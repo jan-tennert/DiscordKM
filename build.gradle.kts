@@ -63,7 +63,7 @@ allprojects {
             }
         }
 //val dokkaOutputDir = "H:/Programming/Other/DiscordKMDocs"
-        val dokkaOutputDir = "$buildDir/dokka"
+        val dokkaOutputDir = "$buildDir/dokka/${this@allprojects.name}"
 
         tasks.dokkaHtml {
             outputDirectory.set(file(dokkaOutputDir))
@@ -80,10 +80,10 @@ allprojects {
         }
 
         publications {
-            withType<MavenPublication> {
+            create<MavenPublication>("DiscordKM") {
                 artifact(javadocJar)
                 pom {
-                    name.set("DiscordKM")
+                    name.set(this@allprojects.name)
                     description.set("A Kotlin Multiplatform Discord API Wrapper ")
                     url.set("https://github.com/jan-tennert/DiscordKM")
                     licenses {
