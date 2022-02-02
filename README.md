@@ -1,13 +1,14 @@
 # DiscordKM
 
-A Kotlin Multiplatform Discord API 
-Wrapper [![Maven Central](https://img.shields.io/maven-central/v/io.github.jan-tennert.discordkm/DiscordKM)](https://search.maven.org/artifact/io.github.jan-tennert.discordkm/DiscordKM)
+A Kotlin Multiplatform Discord API Wrapper
 
-Note: currently **JS** and **JVM** are supported due to issues with Kotlin/Native
+Packages:
 
-You can use this [trello board](https://trello.com/b/EQqz7hAY/discordkm) to see my progress
+- DiscordKM (core) [![Maven Central](https://img.shields.io/maven-central/v/io.github.jan-tennert.discordkm/DiscordKM)](https://search.maven.org/artifact/io.github.jan-tennert.discordkm/DiscordKM) ![JVM](https://img.shields.io/badge/-jvm-brightgreen) ![JS](https://img.shields.io/badge/-js-ffd900)
+- DiscordKM-Lavalink [![Maven Central](https://img.shields.io/maven-central/v/io.github.jan-tennert.discordkm/DiscordKM)](https://search.maven.org/artifact/io.github.jan-tennert.discordkm/DiscordKM-Lavalink) ![JVM](https://img.shields.io/badge/-jvm-brightgreen) ![JS](https://img.shields.io/badge/-js-ffd900)
+- DiscordKM-Http-Interactions [![Maven Central](https://img.shields.io/maven-central/v/io.github.jan-tennert.discordkm/DiscordKM)](https://search.maven.org/artifact/io.github.jan-tennert.discordkm/DiscordKM-Http-Interactions) ![JVM](https://img.shields.io/badge/-jvm-brightgreen)
 
-Discord: [Click here](https://discord.gg/mxRqJa4pHe) \
+Discord: [Click here](https://discord.gg/mxRqJa4pHe)
 
 #### Warning: This project is in Alpha and can change without notice
 
@@ -56,29 +57,6 @@ client.on<SlashCommandEvent>(predicate = { it.commandName == "test" }) {
 
 client.login()
 ```
-
-# Installation
-
-You can just install DiscordKM using:
-
-Kotlin Dsl:
-
-```kotlin
-implementation("io.github.jan-tennert.discordkm:DiscordKM:VERSION")
-```
-
-Maven:
-
-```xml
-
-<dependency>
-    <groupId>io.github.jan-tennert.discordkm</groupId>
-    <artifactId>DiscordKM</artifactId>
-    <version>VERSION</version>
-</dependency>
-```
-If you want a specific target add it to the artifactId like: DiscordKM-jvm and DiscordKM-js
-
 # JVM-Only
 If you want to easily add event listeners without having to use the Kotlin DSL you can use the following:
 ```kotlin
@@ -103,7 +81,3 @@ fun MessageCreateEvent.play(@Inject("node") lavalinkNode: LavalinkNode) {
 }
 
 ```
-
-# Addons
-
-- [DiscordKM-Lavalink](https://github.com/jan-tennert/DiscordKM-Lavalink) - Lavalink client for DiscordKM
