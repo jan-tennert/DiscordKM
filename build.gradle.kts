@@ -10,7 +10,7 @@ subprojects {
     apply(plugin = "signing")
     apply(plugin = "maven-publish")
     apply(plugin = "org.jetbrains.dokka")
-    apply(plugin = "kotlin-multiplatform")
+    apply(plugin = "org.jetbrains.kotlin.plugin.serialization")
 }
 
 group = "io.github.jan-tennert.discordkm"
