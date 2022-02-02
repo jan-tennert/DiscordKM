@@ -82,7 +82,7 @@ allprojects {
         }
 
         publications {
-            create<MavenPublication>("DiscordKM") {
+            withType<MavenPublication> {
                 artifact(javadocJar)
                 pom {
                     name.set(this@allprojects.name)
