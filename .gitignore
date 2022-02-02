@@ -8,3 +8,5 @@ src/jvmMain/kotlin/test.kt
 buildSrc/build
 buildSrc/.gradle/
 ignoreDir
+Http-Interactions/build
+Lavalink/build
