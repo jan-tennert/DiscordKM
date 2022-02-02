@@ -12,6 +12,7 @@ package io.github.jan.discordkm.internal.websocket
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
@@ -199,7 +200,7 @@ class DiscordGateway(
                     authenticated = true
                 }
                 payload.eventName?.let { LOGGER.debug { "Received event $it on shard $shardId" } }
-                handleRawEvent(payload)
+                client.handleRawEvent(payload, LOGGER)
             }
             OpCode.HEARTBEAT -> {
                 sendHeartbeat()
@@ -302,90 +303,6 @@ class DiscordGateway(
         }
     }
 
-    private suspend fun handleRawEvent(payload: Payload) = coroutineScope {
-        client.handleEvent(RawEvent(client, payload))
-        val data = payload.eventData!!.jsonObject
-        launch {
-            val event = when (payload.eventName!!) {
-                "READY" -> ReadyEventHandler(client).handle(data)
-                "RESUMED" -> ResumeEvent(client)
-
-                //guild events
-                "GUILD_CREATE" -> GuildCreateEventHandler(client).handle(data)
-                "GUILD_UPDATE" -> GuildUpdateEventHandler(client).handle(data)
-                "GUILD_DELETE" -> GuildDeleteEventHandler(client, LOGGER).handle(data)
-                "GUILD_BAN_ADD" -> BanEventHandler(client).handle<GuildBanAddEvent>(data)
-                "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(data)
-                "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(data)
-                "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(data)
-                "GUILD_MEMBERS_CHUNK" -> GuildMembersChunkEventHandler(client).handle(data)
-
-                //stage instances
-                "STAGE_INSTANCE_CREATE" -> StageInstanceCreateEventHandler(client).handle(data)
-                "STAGE_INSTANCE_UPDATE" -> StageInstanceUpdateEventHandler(client).handle(data)
-                "STAGE_INSTANCE_DELETE" -> StageInstanceDeleteEventHandler(client).handle(data)
-
-                //misc
-                "WEBHOOKS_UPDATE" -> WebhooksUpdateEventHandler(client).handle(data)
-                "TYPING_START" -> TypingStartEventHandler(client).handle(data)
-                "USER_UPDATE" -> SelfUserUpdateEventHandler(client).handle(data)
-                "PRESENCE_UPDATE" -> PresenceUpdateEventHandler(client).handle(data)
-                "VOICE_SERVER_UPDATE" -> VoiceServerUpdate(client, data)
-
-                //roles
-                "GUILD_ROLE_CREATE" -> RoleCreateEventHandler(client).handle(data)
-                "GUILD_ROLE_UPDATE" -> RoleUpdateEventHandler(client).handle(data)
-                "GUILD_ROLE_DELETE" -> RoleDeleteEventHandler(client).handle(data)
-
-                //scheduled events
-                "GUILD_SCHEDULED_EVENT_CREATE" -> ScheduledEventCreateHandler(client).handle(data)
-                "GUILD_SCHEDULED_EVENT_UPDATE" -> ScheduledEventUpdateHandler(client).handle(data)
-                "GUILD_SCHEDULED_EVENT_DELETE" -> ScheduledEventDeleteHandler(client).handle(data)
-                "GUILD_SCHEDULED_EVENT_USER_ADD" -> ScheduledEventUserAddEventHandler(client).handle(data)
-                "GUILD_SCHEDULED_EVENT_USER_REMOVE" -> ScheduledEventUserRemoveEventHandler(client).handle(data)
-
-                //invites
-                "INVITE_CREATE" -> InviteCreateEventHandler(client).handle(data)
-                "INVITE_DELETE" -> InviteDeleteEventHandler(client).handle(data)
-
-                //interactions
-                "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(data)
-
-                //channels
-                "CHANNEL_CREATE" -> ChannelCreateEventHandler(client).handle(data)
-                "CHANNEL_UPDATE" -> ChannelUpdateEventHandler(client).handle(data)
-                "CHANNEL_DELETE" -> ChannelDeleteEventHandler(client).handle(data)
-                "CHANNEL_PINS_UPDATE" -> ChannelPinUpdateEventHandler(client).handle(data)
-
-                //members
-                "GUILD_MEMBER_ADD" -> GuildMemberAddEventHandler(client).handle(data)
-                "GUILD_MEMBER_UPDATE" -> GuildMemberUpdateEventHandler(client).handle(data)
-                "GUILD_MEMBER_REMOVE" -> GuildMemberRemoveEventHandler(client).handle(data)
-
-                //threads
-                "THREAD_CREATE" -> ThreadCreateEventHandler(client).handle(data)
-                "THREAD_UPDATE" -> ThreadUpdateEventHandler(client).handle(data)
-                "THREAD_DELETE" -> ThreadDeleteEventHandler(client).handle(data)
-                "THREAD_MEMBERS_UPDATE" -> ThreadMembersUpdateEventHandler(client).handle(data)
-
-                //message events
-                "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(data)
-                "MESSAGE_UPDATE" -> MessageUpdateEventHandler(client).handle(data)
-                "MESSAGE_DELETE" -> MessageDeleteEventHandler(client).handle(data)
-                "MESSAGE_DELETE_BULK" -> MessageBulkDeleteEventHandler(client).handle(data)
-                "MESSAGE_REACTION_ADD" -> MessageReactionAddEventHandler(client).handle(data)
-                "MESSAGE_REACTION_REMOVE" -> MessageReactionRemoveEventHandler(client).handle(data)
-                "MESSAGE_REACTION_REMOVE_ALL" -> MessageReactionRemoveAllEventHandler(client).handle(data)
-                "MESSAGE_REACTION_REMOVE_EMOJI" -> MessageReactionEmojiRemoveEventHandler(client).handle(data)
-
-                //voice states
-                "VOICE_STATE_UPDATE" -> VoiceStateUpdateEventHandler(client).handle(data)
-                else -> return@launch
-            }
-            client.handleEvent(event)
-        }
-    }
-
     enum class OpCode(val code: Int) {
         DISPATCH(0),
         HEARTBEAT(1),
@@ -401,4 +318,88 @@ class DiscordGateway(
         }
     }
 
+}
+
+suspend fun Client.handleRawEvent(payload: Payload, LOGGER: Logger) = coroutineScope {
+    handleEvent(RawEvent(client, payload))
+    val data = payload.eventData!!.jsonObject
+    launch {
+        val event = when (payload.eventName!!) {
+            "READY" -> ReadyEventHandler(client).handle(data)
+            "RESUMED" -> ResumeEvent(client)
+
+            //guild events
+            "GUILD_CREATE" -> GuildCreateEventHandler(client).handle(data)
+            "GUILD_UPDATE" -> GuildUpdateEventHandler(client).handle(data)
+            "GUILD_DELETE" -> GuildDeleteEventHandler(client, LOGGER).handle(data)
+            "GUILD_BAN_ADD" -> BanEventHandler(client).handle<GuildBanAddEvent>(data)
+            "GUILD_BAN_REMOVE" -> BanEventHandler(client).handle<GuildBanRemoveEvent>(data)
+            "GUILD_EMOJIS_UPDATE" -> GuildEmojisUpdateEventHandler(client).handle(data)
+            "GUILD_STICKERS_UPDATE" -> GuildStickersUpdateEventHandler(client).handle(data)
+            "GUILD_MEMBERS_CHUNK" -> GuildMembersChunkEventHandler(client).handle(data)
+
+            //stage instances
+            "STAGE_INSTANCE_CREATE" -> StageInstanceCreateEventHandler(client).handle(data)
+            "STAGE_INSTANCE_UPDATE" -> StageInstanceUpdateEventHandler(client).handle(data)
+            "STAGE_INSTANCE_DELETE" -> StageInstanceDeleteEventHandler(client).handle(data)
+
+            //misc
+            "WEBHOOKS_UPDATE" -> WebhooksUpdateEventHandler(client).handle(data)
+            "TYPING_START" -> TypingStartEventHandler(client).handle(data)
+            "USER_UPDATE" -> SelfUserUpdateEventHandler(client).handle(data)
+            "PRESENCE_UPDATE" -> PresenceUpdateEventHandler(client).handle(data)
+            "VOICE_SERVER_UPDATE" -> VoiceServerUpdate(client, data)
+
+            //roles
+            "GUILD_ROLE_CREATE" -> RoleCreateEventHandler(client).handle(data)
+            "GUILD_ROLE_UPDATE" -> RoleUpdateEventHandler(client).handle(data)
+            "GUILD_ROLE_DELETE" -> RoleDeleteEventHandler(client).handle(data)
+
+            //scheduled events
+            "GUILD_SCHEDULED_EVENT_CREATE" -> ScheduledEventCreateHandler(client).handle(data)
+            "GUILD_SCHEDULED_EVENT_UPDATE" -> ScheduledEventUpdateHandler(client).handle(data)
+            "GUILD_SCHEDULED_EVENT_DELETE" -> ScheduledEventDeleteHandler(client).handle(data)
+            "GUILD_SCHEDULED_EVENT_USER_ADD" -> ScheduledEventUserAddEventHandler(client).handle(data)
+            "GUILD_SCHEDULED_EVENT_USER_REMOVE" -> ScheduledEventUserRemoveEventHandler(client).handle(data)
+
+            //invites
+            "INVITE_CREATE" -> InviteCreateEventHandler(client).handle(data)
+            "INVITE_DELETE" -> InviteDeleteEventHandler(client).handle(data)
+
+            //interactions
+            "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(data)
+
+            //channels
+            "CHANNEL_CREATE" -> ChannelCreateEventHandler(client).handle(data)
+            "CHANNEL_UPDATE" -> ChannelUpdateEventHandler(client).handle(data)
+            "CHANNEL_DELETE" -> ChannelDeleteEventHandler(client).handle(data)
+            "CHANNEL_PINS_UPDATE" -> ChannelPinUpdateEventHandler(client).handle(data)
+
+            //members
+            "GUILD_MEMBER_ADD" -> GuildMemberAddEventHandler(client).handle(data)
+            "GUILD_MEMBER_UPDATE" -> GuildMemberUpdateEventHandler(client).handle(data)
+            "GUILD_MEMBER_REMOVE" -> GuildMemberRemoveEventHandler(client).handle(data)
+
+            //threads
+            "THREAD_CREATE" -> ThreadCreateEventHandler(client).handle(data)
+            "THREAD_UPDATE" -> ThreadUpdateEventHandler(client).handle(data)
+            "THREAD_DELETE" -> ThreadDeleteEventHandler(client).handle(data)
+            "THREAD_MEMBERS_UPDATE" -> ThreadMembersUpdateEventHandler(client).handle(data)
+
+            //message events
+            "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(data)
+            "MESSAGE_UPDATE" -> MessageUpdateEventHandler(client).handle(data)
+            "MESSAGE_DELETE" -> MessageDeleteEventHandler(client).handle(data)
+            "MESSAGE_DELETE_BULK" -> MessageBulkDeleteEventHandler(client).handle(data)
+            "MESSAGE_REACTION_ADD" -> MessageReactionAddEventHandler(client).handle(data)
+            "MESSAGE_REACTION_REMOVE" -> MessageReactionRemoveEventHandler(client).handle(data)
+            "MESSAGE_REACTION_REMOVE_ALL" -> MessageReactionRemoveAllEventHandler(client).handle(data)
+            "MESSAGE_REACTION_REMOVE_EMOJI" -> MessageReactionEmojiRemoveEventHandler(client).handle(data)
+
+            //voice states
+            "VOICE_STATE_UPDATE" -> VoiceStateUpdateEventHandler(client).handle(data)
+            else -> return@launch
+        }
+        client.handleEvent(event)
+    }
 }

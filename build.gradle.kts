@@ -10,10 +10,12 @@ subprojects {
     apply(plugin = "signing")
     apply(plugin = "maven-publish")
     apply(plugin = "org.jetbrains.dokka")
+    apply(plugin = "kotlin-multiplatform")
 }
 
 group = "io.github.jan-tennert.discordkm"
 version = Versions.DISCORDKM
+description = "A Kotlin Multiplatform Discord API Wrapper"
 
 allprojects {
     repositories {
@@ -84,7 +86,7 @@ allprojects {
                 artifact(javadocJar)
                 pom {
                     name.set(this@allprojects.name)
-                    description.set("A Kotlin Multiplatform Discord API Wrapper ")
+                    description.set(this@allprojects.description)
                     url.set("https://github.com/jan-tennert/DiscordKM")
                     licenses {
                         license {
@@ -140,7 +142,7 @@ kotlin {
                 api("com.soywiz.korlibs.korio:korio:${Versions.KORLIBS}")
                 api("io.arrow-kt:arrow-core:${Versions.ARROW}")
                 // https://mvnrepository.com/artifact/com.google.guava/guava
-                implementation("com.google.guava:guava:31.0.1-jre")
+                api("com.google.guava:guava:31.0.1-jre")
             }
         }
         val jvmMain by getting {

@@ -11,6 +11,7 @@ package io.github.jan.discordkm.internal.events
 
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.ReadyEvent
@@ -23,8 +24,9 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
-internal class ReadyEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ReadyEvent> {
+internal class ReadyEventHandler(val client: Client) : InternalEventHandler<ReadyEvent> {
     override suspend fun handle(data: JsonObject): ReadyEvent {
+        if(client !is DiscordWebSocketClient) throw IllegalStateException("Client is not a DiscordWebSocketClient")
         val shardId = data["shard"]?.jsonArray?.get(1)?.jsonPrimitive?.intOrNull
         val selfUser = User(data["user"]!!.jsonObject, client)
         if(shardId != null) {

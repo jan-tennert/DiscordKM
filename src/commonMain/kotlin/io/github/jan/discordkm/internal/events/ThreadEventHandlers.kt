@@ -13,7 +13,6 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.ThreadCreateEvent
 import io.github.jan.discordkm.api.events.ThreadDeleteEvent
@@ -25,7 +24,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-class ThreadCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadCreateEvent> {
+class ThreadCreateEventHandler(val client: Client) : InternalEventHandler<ThreadCreateEvent> {
 
     override suspend fun handle(data: JsonObject): ThreadCreateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -36,7 +35,7 @@ class ThreadCreateEventHandler(val client: DiscordWebSocketClient) : InternalEve
 
 }
 
-class ThreadUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadUpdateEvent> {
+class ThreadUpdateEventHandler(val client: Client) : InternalEventHandler<ThreadUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): ThreadUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -48,7 +47,7 @@ class ThreadUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEve
 
 }
 
-class ThreadDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<ThreadDeleteEvent> {
+class ThreadDeleteEventHandler(val client: Client) : InternalEventHandler<ThreadDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): ThreadDeleteEvent {
         val threadId = data["id"]!!.snowflake

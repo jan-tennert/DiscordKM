@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.GuildStickersUpdateEvent
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
@@ -17,7 +17,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 
-class GuildStickersUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildStickersUpdateEvent> {
+class GuildStickersUpdateEventHandler(val client: Client) : InternalEventHandler<GuildStickersUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildStickersUpdateEvent {
         val stickers = data["stickers"]!!.jsonArray.map { GuildSerializer.deserializeSticker(data, client) }

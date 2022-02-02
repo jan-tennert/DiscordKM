@@ -9,14 +9,14 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.PresenceUpdateEvent
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class PresenceUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<PresenceUpdateEvent> {
+class PresenceUpdateEventHandler(val client: Client) : InternalEventHandler<PresenceUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): PresenceUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

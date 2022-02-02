@@ -9,14 +9,14 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.events.StageInstanceCreateEvent
 import io.github.jan.discordkm.api.events.StageInstanceDeleteEvent
 import io.github.jan.discordkm.api.events.StageInstanceUpdateEvent
 import kotlinx.serialization.json.JsonObject
 
-class StageInstanceCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<StageInstanceCreateEvent> {
+class StageInstanceCreateEventHandler(val client: Client) : InternalEventHandler<StageInstanceCreateEvent> {
 
     override suspend fun handle(data: JsonObject): StageInstanceCreateEvent {
         val stageInstance = StageInstance(data, client)
@@ -26,7 +26,7 @@ class StageInstanceCreateEventHandler(val client: DiscordWebSocketClient) : Inte
 
 }
 
-class StageInstanceUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<StageInstanceUpdateEvent> {
+class StageInstanceUpdateEventHandler(val client: Client) : InternalEventHandler<StageInstanceUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): StageInstanceUpdateEvent {
         val stageInstance = StageInstance(data, client)
@@ -37,7 +37,7 @@ class StageInstanceUpdateEventHandler(val client: DiscordWebSocketClient) : Inte
 
 }
 
-class StageInstanceDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<StageInstanceDeleteEvent> {
+class StageInstanceDeleteEventHandler(val client: Client) : InternalEventHandler<StageInstanceDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): StageInstanceDeleteEvent {
         val stageInstance = StageInstance(data, client)

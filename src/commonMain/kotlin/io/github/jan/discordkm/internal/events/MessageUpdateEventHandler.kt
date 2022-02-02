@@ -10,13 +10,13 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.events.MessageUpdateEvent
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class MessageUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<MessageUpdateEvent> {
+class MessageUpdateEventHandler(val client: Client) : InternalEventHandler<MessageUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): MessageUpdateEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)

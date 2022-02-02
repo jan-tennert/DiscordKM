@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.events.RoleCreateEvent
@@ -21,7 +21,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
-class RoleCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleCreateEvent> {
+class RoleCreateEventHandler(val client: Client) : InternalEventHandler<RoleCreateEvent> {
 
     override suspend fun handle(data: JsonObject): RoleCreateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -32,7 +32,7 @@ class RoleCreateEventHandler(val client: DiscordWebSocketClient) : InternalEvent
 
 }
 
-class RoleUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleUpdateEvent> {
+class RoleUpdateEventHandler(val client: Client) : InternalEventHandler<RoleUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): RoleUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -44,7 +44,7 @@ class RoleUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEvent
 
 }
 
-class RoleDeleteEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<RoleDeleteEvent> {
+class RoleDeleteEventHandler(val client: Client) : InternalEventHandler<RoleDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): RoleDeleteEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

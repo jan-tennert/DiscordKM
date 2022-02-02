@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.GuildEmojisUpdateEvent
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
@@ -18,7 +18,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-class GuildEmojisUpdateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<GuildEmojisUpdateEvent> {
+class GuildEmojisUpdateEventHandler(val client: Client) : InternalEventHandler<GuildEmojisUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildEmojisUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

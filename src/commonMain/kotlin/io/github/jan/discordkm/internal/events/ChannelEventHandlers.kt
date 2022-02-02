@@ -15,7 +15,6 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.guild.GuildMessageChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.ChannelCreateEvent
 import io.github.jan.discordkm.api.events.ChannelDeleteEvent
@@ -26,7 +25,7 @@ import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class ChannelCreateEventHandler(val client: DiscordWebSocketClient) :
+class ChannelCreateEventHandler(val client: Client) :
     InternalEventHandler<ChannelCreateEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelCreateEvent {
@@ -38,7 +37,7 @@ class ChannelCreateEventHandler(val client: DiscordWebSocketClient) :
 
 }
 
-class ChannelDeleteEventHandler(val client: DiscordWebSocketClient) :
+class ChannelDeleteEventHandler(val client: Client) :
     InternalEventHandler<ChannelDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelDeleteEvent {
@@ -50,7 +49,7 @@ class ChannelDeleteEventHandler(val client: DiscordWebSocketClient) :
 
 }
 
-class ChannelUpdateEventHandler(val client: DiscordWebSocketClient) :
+class ChannelUpdateEventHandler(val client: Client) :
     InternalEventHandler<ChannelUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelUpdateEvent {

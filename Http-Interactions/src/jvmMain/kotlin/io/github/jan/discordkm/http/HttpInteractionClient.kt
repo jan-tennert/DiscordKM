@@ -1,8 +1,10 @@
 package io.github.jan.discordkm.http
 
+import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.utils.LoggerConfig
+import io.github.jan.discordkm.internal.websocket.handleRawEvent
 import io.ktor.application.call
 import io.ktor.client.HttpClientConfig
 import io.ktor.request.receive
@@ -13,9 +15,15 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 
 
-class HttpInteractionClient @DiscordKMInternal constructor(config: HttpConfig) : Client(config) {
+class HttpInteractionClient internal constructor(config: HttpConfig) : Client(config) {
 
     private lateinit var server: ApplicationEngine
+    private val LOGGER = Logger("Http-Server")
+
+    init {
+        LOGGER.level = config.logging.level
+        LOGGER.output = config.logging.output
+    }
 
     override suspend fun disconnect() {
         server.stop(1000, 1000)
@@ -26,7 +34,7 @@ class HttpInteractionClient @DiscordKMInternal constructor(config: HttpConfig) :
         server = embeddedServer(CIO, port = config.port, host = config.host) {
             routing {
                 post(config.route) {
-                    println(this.call.receive<String>())
+                    handleRawEvent(this.call.receive(), LOGGER)
                 }
             }
         }.start()
@@ -34,7 +42,7 @@ class HttpInteractionClient @DiscordKMInternal constructor(config: HttpConfig) :
 
 }
 
-class HttpInteractionClientBuilder(var token: String) {
+class HttpInteractionClientBuilder @DiscordKMInternal constructor(var token: String) {
 
     var logging = LoggerConfig()
     var port = 20000
@@ -43,7 +51,7 @@ class HttpInteractionClientBuilder(var token: String) {
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
     @OptIn(DiscordKMInternal::class)
-    fun build() = HttpInteractionClient(HttpConfig(token = token, logging = logging, httpClientConfig = httpClientConfig))
+    fun build() = HttpInteractionClient(HttpConfig(token = token, logging = logging, httpClientConfig = httpClientConfig, port = port, host = host, route = route))
 
     fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
 
@@ -52,4 +60,4 @@ class HttpInteractionClientBuilder(var token: String) {
 /**
  * The HttpInteractionClient is used when you want to receive interactions over a post request rather than connecting to a websocket
  */
-fun buildRestOnlyClient(token: String, builder: HttpInteractionClientBuilder.() -> Unit) =  HttpInteractionClientBuilder(token).apply(builder).build()
+inline fun buildHttpInteractionClient(token: String, builder: HttpInteractionClientBuilder.() -> Unit) =  HttpInteractionClientBuilder(token).apply(builder).build()

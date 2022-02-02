@@ -9,16 +9,14 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.channels.Channel
-import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.events.MessageCreateEvent
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class MessageCreateEventHandler(val client: DiscordWebSocketClient) : InternalEventHandler<MessageCreateEvent> {
+class MessageCreateEventHandler(val client: Client) : InternalEventHandler<MessageCreateEvent> {
 
     override suspend fun handle(data: JsonObject): MessageCreateEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)

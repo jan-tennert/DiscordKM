@@ -38,8 +38,6 @@ class DiscordWebSocketClient internal constructor(
     val shardConnections = mutableListOf<DiscordGateway>()
     val shardById: Map<Int, DiscordGateway> get() = shardConnections.associateBy { it.shardId }
 
-    val eventListeners = mutableListOf<EventListener>()
-
     init {
         if (config.shards.isEmpty()) shardConnections.add(DiscordGateway(config, this, 0)) else config.shards.forEach {
             shardConnections.add(DiscordGateway(config, this, it))
@@ -90,8 +88,6 @@ class DiscordWebSocketClient internal constructor(
         requester.http.close()
         shardConnections.forEach { it.close("client") }
     }
-
-    suspend fun handleEvent(event: Event) = coroutineScope { eventListeners.forEach { launch { it(event) } } }
 
 }
 

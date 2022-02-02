@@ -27,6 +27,8 @@ import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
+import io.github.jan.discordkm.api.events.Event
+import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheFlag
@@ -48,6 +50,8 @@ import io.github.jan.discordkm.internal.websocket.Encoding
 import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.buildJsonObject
@@ -62,6 +66,7 @@ abstract class Client(
     override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client: Client get() = this
     val cacheManager = ClientCacheManager(this)
+    val eventListeners = mutableListOf<EventListener>()
 
     val mutex = Mutex()
 
@@ -116,6 +121,8 @@ abstract class Client(
     }
 
     fun textFor(locale: DiscordLocale, key: String, vararg args: Any) = config.translationManager.get(locale, key, *args)
+
+    suspend fun handleEvent(event: Event) = coroutineScope { eventListeners.forEach { launch { it(event) } } }
 
     /**
      * Disconnects the bot from the rest api and the websocket

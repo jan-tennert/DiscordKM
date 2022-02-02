@@ -18,7 +18,7 @@ import io.ktor.client.HttpClientConfig
 /**
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
-class RestOnlyClient @DiscordKMInternal constructor (config: ClientConfig) : Client(config) {
+class RestOnlyClient internal constructor (config: ClientConfig) : Client(config) {
 
     override suspend fun disconnect() {
         requester.http.close()
@@ -29,7 +29,7 @@ class RestOnlyClient @DiscordKMInternal constructor (config: ClientConfig) : Cli
 
 }
 
-class RestOnlyClientBuilder(var token: String) {
+class RestOnlyClientBuilder @DiscordKMInternal constructor(var token: String) {
 
     var logging = LoggerConfig()
     var enabledCache = CacheFlag.values().toMutableSet()
@@ -46,4 +46,4 @@ class RestOnlyClientBuilder(var token: String) {
 /**
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
-fun buildRestOnlyClient(token: String, builder: RestOnlyClientBuilder.() -> Unit) =  RestOnlyClientBuilder(token).apply(builder).build()
+inline fun buildRestOnlyClient(token: String, builder: RestOnlyClientBuilder.() -> Unit) =  RestOnlyClientBuilder(token).apply(builder).build()
