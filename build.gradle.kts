@@ -52,7 +52,7 @@ allprojects {
             maven {
                 name = "Oss"
                 setUrl {
-                    "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${ext["stagingRepository"]}"
+                    "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${Publishing.REPOSITORY_ID}"
                 }
                 credentials {
                     username = Publishing.SONATYPE_USERNAME
