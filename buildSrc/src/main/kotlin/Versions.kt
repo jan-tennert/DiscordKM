@@ -18,13 +18,15 @@ object Versions {
     const val STATELY = "1.2.1"
     const val DISCORDKM = "0.7-alpha"
     const val ARROW = "1.0.1"
+    const val NEXUS_STAGING = "0.30.0"
 
 }
 
 object Publishing {
 
-    val REPOSITORY_ID = System.getenv("SONATYPE_REPOSITORY_ID")
+    val REPOSITORY_ID: String = System.getenv("SONATYPE_REPOSITORY_ID")
     val SONATYPE_USERNAME = System.getenv("OSSRH_USERNAME")
     val SONATYPE_PASSWORD = System.getenv("OSSRH_PASSWORD")
+    val AUTHENTIFICATION = System.getenv("OSSRH_AUTHENTIFICATION")
 
 }

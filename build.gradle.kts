@@ -4,6 +4,7 @@ plugins {
     id("maven-publish")
     signing
     id("org.jetbrains.dokka") version Versions.DOKKA
+    id("io.codearte.nexus-staging") version Versions.NEXUS_STAGING
 }
 
 subprojects {
@@ -16,6 +17,10 @@ subprojects {
 group = "io.github.jan-tennert.discordkm"
 version = Versions.DISCORDKM
 description = "A Kotlin Multiplatform Discord API Wrapper"
+
+nexusStaging {
+    stagingProfileId = Publishing.REPOSITORY_ID
+}
 
 allprojects {
     repositories {
@@ -42,13 +47,12 @@ allprojects {
             sign(extension.publications)
         }
     }
-
     publishing {
         repositories {
             maven {
                 name = "Oss"
                 setUrl {
-                    "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${Publishing.REPOSITORY_ID}"
+                    "https://s01.oss.sonatype.org/service/local/staging/deployByRepositoryId/${ext["stagingRepository"]}"
                 }
                 credentials {
                     username = Publishing.SONATYPE_USERNAME
@@ -86,7 +90,7 @@ allprojects {
                 artifact(javadocJar)
                 pom {
                     name.set(this@allprojects.name)
-                    description.set(this@allprojects.description)
+                    description.set(this@allprojects.description ?: "A Kotlin Multiplatform Discord API Wrapper")
                     url.set("https://github.com/jan-tennert/DiscordKM")
                     licenses {
                         license {
@@ -157,5 +161,3 @@ kotlin {
         }
     }
 }
-
-
