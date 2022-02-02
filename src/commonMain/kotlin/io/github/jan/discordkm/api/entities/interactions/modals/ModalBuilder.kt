@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Serializable
-data class ModalBuilder(@SerialName("custom_id") val customId: String = "", var title: String = "", @Transient private val client: DiscordWebSocketClient? = null) : RowLayoutBuilder<ModalLayout>() {
+data class ModalBuilder(@SerialName("custom_id") var customId: String = "", var title: String = "", @Transient private val client: DiscordWebSocketClient? = null) : RowLayoutBuilder<ModalLayout>() {
 
     fun onSubmit(callback: suspend ModalSubmitEvent.() -> Unit) {
         client?.on<ModalSubmitEvent>(predicate = { it.modalId == customId }, callback)
