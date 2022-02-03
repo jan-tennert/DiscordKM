@@ -35,8 +35,10 @@ open class ScheduledEventContainer(val guild: Guild) {
     /**
      * Retrieves a scheduled event by its id
      */
-    suspend fun retrieveScheduledEvent(id: Snowflake) = guild.client.buildRestAction<ScheduledEventCacheEntry> {
-        route = Route.ScheduledEvent.GET_EVENT(guild.id, id).get()
+    suspend fun retrieveScheduledEvent(id: Snowflake, withUserCount: Boolean = false) = guild.client.buildRestAction<ScheduledEventCacheEntry> {
+        route = Route.ScheduledEvent.GET_EVENT(guild.id, id).get {
+            put("with_user_count", withUserCount)
+        }
         transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), guild.client) }
     }
 

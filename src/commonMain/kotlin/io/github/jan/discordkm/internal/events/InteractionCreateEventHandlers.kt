@@ -81,12 +81,13 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         val focused = option.getOrNull<Boolean>("focused") ?: false
         val optionName = option.getOrThrow<String>("name")
         val optionValue = option.getOrNull<JsonPrimitive>("value")
-        return when(type) {
-            CommandOption.OptionType.STRING -> AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, optionValue?.contentOrNull, focused, subCommand, subCommandGroup)
-            CommandOption.OptionType.INTEGER -> AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, optionValue?.intOrNull, focused, subCommand, subCommandGroup)
-            CommandOption.OptionType.NUMBER -> AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, optionValue?.doubleOrNull, focused, subCommand, subCommandGroup)
+        val value = when(type) {
+            CommandOption.OptionType.STRING -> optionValue?.contentOrNull
+            CommandOption.OptionType.INTEGER -> optionValue?.intOrNull
+            CommandOption.OptionType.NUMBER -> optionValue?.doubleOrNull
             else -> throw IllegalStateException("Invalid autocomplete option type: $type")
         }
+        return AutoCompleteEvent(client, AutoCompleteInteraction(client, data), commandName, commandId, optionName, value, focused, subCommand, subCommandGroup)
     }
 
     private fun extractMessageComponent(data: JsonObject) : InteractionCreateEvent {
@@ -98,7 +99,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         }
     }
 
-    private fun extractApplicationCommand(data: JsonObject) = when(ApplicationCommandType.values().first { it.ordinal + 1 == data.getValue("data").jsonObject.getOrThrow<Int>("type") }) {
+    private fun extractApplicationCommand(data: JsonObject) = when(ApplicationCommandType[data.getValue("data").jsonObject.getOrThrow("type")]) {
         ApplicationCommandType.CHAT_INPUT -> extractChatInputCommand(data)
         ApplicationCommandType.USER -> extractUserCommand(data)
         ApplicationCommandType.MESSAGE -> extractMessageCommand(data)

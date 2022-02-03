@@ -15,6 +15,8 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
@@ -77,7 +79,7 @@ class ChatInputCommand(client: Client, data: JsonObject) : ApplicationCommand(cl
 
 }
 
-enum class ApplicationCommandType {
+enum class ApplicationCommandType : EnumWithValue<Int>{
     /**
      * These are the "slash commands"
      */
@@ -91,5 +93,10 @@ enum class ApplicationCommandType {
     /**
      * These pop out when you right-click a message
      */
-    MESSAGE
+    MESSAGE;
+
+    override val value: Int
+        get() = ordinal + 1
+
+    companion object : EnumWithValueGetter<ApplicationCommandType, Int>(values())
 }
