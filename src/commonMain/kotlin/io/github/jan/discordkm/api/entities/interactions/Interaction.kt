@@ -137,6 +137,8 @@ class InteractionOption(override val name: String, val type: CommandOption.Optio
     val attachment: MessageAttachment
         get() = value as MessageAttachment
 
+    inline fun <reified T> asEnum() where T : EnumWithValue<*>, T : Enum<T> = enumValues<T>().first { it.value == value }
+
 }
 
 enum class InteractionType : EnumWithValue<Int> {

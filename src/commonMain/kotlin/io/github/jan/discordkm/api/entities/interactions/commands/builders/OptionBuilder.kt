@@ -5,6 +5,7 @@ import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.commands.OptionChoice
 import io.github.jan.discordkm.internal.DiscordKMUnstable
+import io.github.jan.discordkm.internal.utils.EnumWithValue
 import kotlinx.serialization.json.JsonPrimitive
 
 open class OptionBuilder(open val options: MutableList<CommandOption> = mutableListOf()) {
@@ -51,6 +52,28 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
     @CommandBuilder
     fun role(name: String, description: String, required: Boolean = false) { options += CommandOption(CommandOption.OptionType.ROLE, name, description, required) }
 
+    /**
+     * Generates a [CommandOption] with choices. The enum name will be used as the choice name and the enum value as the choice value. Only works for [Int], [Double] and [String]
+     *
+     * **not an official type**
+     */
+    @CommandBuilder
+    inline fun <reified T> enum(name: String, description: String, required: Boolean = false) where T : EnumWithValue<*>, T : Enum<T> {
+        val values = enumValues<T>()
+        when(values[0].value) {
+            is Int -> int(name, description, required) {
+                values.forEach { enum -> choice(enum.name, enum.value as Int) }
+            }
+            is Double -> number(name, description, required) {
+                values.forEach { enum -> choice(enum.name, enum.value as Double) }
+            }
+            is String -> string(name, description, required) {
+                values.forEach { enum -> choice(enum.name, enum.value as String) }
+            }
+            else -> throw IllegalArgumentException("Enum values must be of type Int, Double or String")
+        }
+    }
+
     @CommandBuilder
     fun subCommand(name: String, description: String, builder: OptionBuilder.() -> Unit = {}) {
         val options = OptionBuilder()
@@ -88,7 +111,7 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
                 is Int -> JsonPrimitive(value)
                 is Double -> JsonPrimitive(value)
                 is String -> JsonPrimitive(value)
-                else -> throw IllegalStateException()
+                else -> throw IllegalArgumentException("Choices must be of type Int, Double or String")
             }
             choices += OptionChoice(name, primitiveValue)
         }
