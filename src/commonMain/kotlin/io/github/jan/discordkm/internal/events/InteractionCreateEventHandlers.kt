@@ -33,6 +33,8 @@ import io.github.jan.discordkm.api.events.SelectionMenuEvent
 import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.api.events.UserCommandEvent
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
+import io.github.jan.discordkm.internal.utils.boolean
+import io.github.jan.discordkm.internal.utils.double
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
@@ -156,23 +158,58 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         val guild = client.guilds[fullData.getOrThrow<Snowflake>(
             "guild_id"
         )]
+        val value = option["value"]!!
+
+        fun <T> JsonObject.getResolved(key: String, transform: (JsonObject) -> T) = transform(get(key)!!.jsonObject[value.string]!!.jsonObject)
+
         return when(type) {
-            CommandOption.OptionType.STRING -> InteractionOption(name, type, option.getOrThrow<String>("value"))
-            CommandOption.OptionType.INTEGER -> InteractionOption(name, type, option.getOrThrow<Int>("value"))
-            CommandOption.OptionType.BOOLEAN -> InteractionOption(name, type, option.getOrThrow<Boolean>("value"))
-            CommandOption.OptionType.USER -> InteractionOption(name, type, User(resolved!!.getValue("users").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, client))
-            CommandOption.OptionType.CHANNEL -> InteractionOption(name, type, ChannelSerializer.deserialize(resolved!!.getValue("channels").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, guild!!))
-            CommandOption.OptionType.ROLE -> InteractionOption(name, type, Role(resolved!!.getValue("roles").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, guild!!))
+            CommandOption.OptionType.STRING -> InteractionOption(name, type, value.string)
+            CommandOption.OptionType.INTEGER -> InteractionOption(name, type, value.int)
+            CommandOption.OptionType.BOOLEAN -> InteractionOption(name, type, value.boolean)
+            CommandOption.OptionType.NUMBER -> InteractionOption(name, type, value.double)
+            CommandOption.OptionType.USER -> InteractionOption(name, type, resolved!!.getResolved("users") {
+                User(
+                    it,
+                    client
+                )
+            })
+            CommandOption.OptionType.CHANNEL -> InteractionOption(name, type, resolved!!.getResolved("channels") {
+                ChannelSerializer.deserialize(
+                    it,
+                    guild!!
+                )
+            })
+            CommandOption.OptionType.ROLE -> InteractionOption(name, type, resolved!!.getResolved("roles") {
+                Role(
+                    it,
+                    guild!!
+                )
+            })
             CommandOption.OptionType.MENTIONABLE -> when {
-                resolved!!["users"] != null && resolved["users"]!!.jsonObject.contains(option.getOrThrow<Snowflake>("value").string) -> InteractionOption(name, type, User(resolved.getValue("users").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, client))
-                resolved["roles"] != null && resolved["roles"]!!.jsonObject.contains(option.getOrThrow<Snowflake>("value").string) -> InteractionOption(name, type, Role(resolved.getValue("roles").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject, guild!!))
+                resolved!!["users"] != null && resolved["users"]!!.jsonObject.contains(value.string) -> InteractionOption(name, type, resolved.getResolved("users") {
+                    User(
+                        it,
+                        client
+                    )
+                })
+                resolved["roles"] != null && resolved["roles"]!!.jsonObject.contains(value.string) -> InteractionOption(name, type, resolved.getResolved("roles") {
+                    Role(
+                        it,
+                        guild!!
+                    )
+                })
                 else -> throw IllegalStateException()
             }
-            CommandOption.OptionType.NUMBER -> InteractionOption(name, type, option.getOrThrow<Double>("value"))
-            CommandOption.OptionType.ATTACHMENT -> InteractionOption(name, type, Json.decodeFromJsonElement<MessageAttachment>(resolved!!.getValue("attachments").jsonObject.getValue(option.getOrThrow<Snowflake>("value").string).jsonObject))
+            CommandOption.OptionType.ATTACHMENT -> InteractionOption(name, type, resolved!!.getResolved("attachments") {
+                Json.decodeFromJsonElement<MessageAttachment>(
+                    it
+                )
+            })
             else -> throw IllegalStateException()
         }
     }
+
+
 
 
 }
