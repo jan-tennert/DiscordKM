@@ -34,10 +34,6 @@ sealed interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntit
             put("recipient_id", id.long)
         })
 
-        check {
-            if (id == client.selfUser.id) throw UnsupportedOperationException("You can't create a private channel with yourself")
-        }
-
         transform { PrivateChannel(it.toJsonObject()["id"]!!.snowflake, client) }
     }
 

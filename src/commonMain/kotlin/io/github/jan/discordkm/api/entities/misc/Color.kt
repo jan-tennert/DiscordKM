@@ -8,11 +8,20 @@
  */
 package io.github.jan.discordkm.api.entities.misc
 
+import com.soywiz.korio.lang.format
 import io.github.jan.discordkm.internal.utils.ColorSerializer
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
 @Serializable(with = ColorSerializer::class)
-data class Color(val rgb: Int) {
+@JvmInline
+value class Color(val rgb: Int) {
+
+    val hex: String
+        get() {
+            val (r, g, b) = extract()
+            return "#%02x%02x%02x".format(r, g, b)
+        }
 
     companion object {
 
@@ -24,6 +33,22 @@ data class Color(val rgb: Int) {
             return Color(value)
         }
 
+        fun fromHex(hex: String): Color {
+            val hexValue = hex.replace("#", "")
+            return when (hexValue.length) {
+                6 -> fromRGB(
+                hexValue.substring(0, 2).toInt(16),
+                hexValue.substring(2, 4).toInt(16),
+                hexValue.substring(4, 6).toInt(16)
+                )
+                8 -> fromRGB(
+                hexValue.substring(0, 2).toInt(16),
+                hexValue.substring(2, 4).toInt(16),
+                hexValue.substring(4, 6).toInt(16),
+                hexValue.substring(6, 8).toInt(16))
+                else -> throw IllegalArgumentException("Invalid hex string")
+            }
+        }
     }
 
     fun extract() = Triple(rgb shr 16 and 0xFF, rgb shr 8 and 0xFF, rgb shr 0 and 0xFF)

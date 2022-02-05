@@ -3,8 +3,6 @@ package io.github.jan.discordkm.api.entities.modifiers.guild
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.modifiers.BaseModifier
-import io.github.jan.discordkm.internal.Check
-import io.github.jan.discordkm.internal.checkRange
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
