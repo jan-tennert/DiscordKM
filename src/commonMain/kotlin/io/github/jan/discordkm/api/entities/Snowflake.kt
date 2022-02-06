@@ -56,7 +56,7 @@ interface SnowflakeEntity {
 
 }
 
-//just channel.send and messagelist for retrieve etc.
+//just channel.send and message list for retrieve etc.
 
 val Long.asSnowflake: Snowflake
     get() = Snowflake(this)

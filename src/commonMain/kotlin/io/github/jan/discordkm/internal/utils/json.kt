@@ -65,9 +65,16 @@ inline fun <reified T> JsonObject.getOrNull(key: String) = try {
 }
 
 fun <V>JsonObjectBuilder.putOptional(key: String, value: V?) { value?.let { put(key, value.toString()) }}
+fun JsonObjectBuilder.putOptional(key: String, value: Boolean?) { value?.let { put(key, value) } }
+fun JsonObjectBuilder.putOptional(key: String, value: String?) { value?.let { put(key, value) } }
+fun JsonObjectBuilder.putOptional(key: String, value: Int?) { value?.let { put(key, value) } }
+fun JsonObjectBuilder.putOptional(key: String, value: Long?) { value?.let { put(key, value) } }
+fun JsonObjectBuilder.putOptional(key: String, value: Double?) { value?.let { put(key, value) } }
+fun JsonObjectBuilder.putOptional(key: String, value: JsonElement?) { value?.let { put(key, value) } }
 
 fun JsonObjectBuilder.putJsonObject(json: JsonObject) = json.forEach { (key, value) -> put(key, value) }
 
+fun Iterable<JsonElement>.toJsonArray() = JsonArray(this.toList())
 
 val JsonElement.boolean : Boolean get() = jsonPrimitive.boolean
 val JsonElement.int : Int get() = jsonPrimitive.int

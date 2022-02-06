@@ -19,7 +19,8 @@ class GuildUpdateEventHandler(val client: Client) : InternalEventHandler<GuildUp
     override suspend fun handle(data: JsonObject): GuildUpdateEvent {
         val guild = GuildSerializer.deserialize(data, client)
         val oldGuild = client.guilds[guild.id]
-        oldGuild?.cacheManager?.fillCache(oldGuild.cacheManager)
+        oldGuild?.cacheManager?.fillCache(guild.cacheManager)
+        client.cacheManager.guildCache[guild.id] = guild
         return GuildUpdateEvent(client, guild, oldGuild)
     }
 

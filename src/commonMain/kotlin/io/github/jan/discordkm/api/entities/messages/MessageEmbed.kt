@@ -12,7 +12,7 @@ package io.github.jan.discordkm.api.entities.messages
 import com.soywiz.klock.DateTimeTz
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.utils.ColorSerializer
-import kotlinx.serialization.Contextual
+import io.github.jan.discordkm.internal.utils.ISO8601Serializer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -27,7 +27,8 @@ data class MessageEmbed(
     val type: EmbedType = EmbedType.UNKNOWN,
     val description: String? = null,
     val url: String? = null,
-    @Contextual val timestamp: DateTimeTz? = null,
+    @Serializable(with = ISO8601Serializer::class)
+    val timestamp: DateTimeTz? = null,
     @Serializable(with = ColorSerializer::class)
     val color: Color? = null,
     val footer: Footer? = null,

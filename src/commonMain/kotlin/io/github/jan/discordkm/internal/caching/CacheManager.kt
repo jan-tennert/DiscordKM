@@ -22,8 +22,8 @@ sealed class CacheManager <T : CacheManager<T>>{
     private val caches = mutableListOf<IsoMutableMap<*, *>>()
     abstract val client: Client
 
-    fun <K, V> createCache(flag: CacheFlag) : Cache<K, V> {
-        val cache = Cache<K, V>(flag, client)
+    fun <K, V> createCache(flag: CacheFlag) : Cache<V> {
+        val cache = Cache<V>(flag, client)
         caches.add(cache)
         return cache
     }
@@ -36,9 +36,7 @@ class ClientCacheManager internal constructor(override val client: Client) : Cac
 
     val guildCache = createCache<Snowflake, GuildCacheEntry>(CacheFlag.GUILDS)
 
-    override fun fillCache(cache: ClientCacheManager) = cache.let {
-        it.guildCache.putAll(guildCache)
-    }
+    override fun fillCache(cache: ClientCacheManager) = cache.guildCache.putAll(guildCache)
 }
 
 class GuildCacheManager internal constructor(override val client: Client) : CacheManager<GuildCacheManager>() {

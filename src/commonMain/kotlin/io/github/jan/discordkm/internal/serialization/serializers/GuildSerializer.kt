@@ -4,6 +4,8 @@ import com.soywiz.klock.seconds
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.activity.ClientStatus
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
+import io.github.jan.discordkm.api.entities.channels.Channel
+import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Emoji
@@ -14,6 +16,7 @@ import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.guild.StickerType
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
+import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreen
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import io.github.jan.discordkm.internal.utils.boolean
@@ -69,6 +72,7 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
                 ?: setOf(),
             ownerId = data["owner_id"]!!.snowflake,
             hasPremiumProgressBarEnabled = data["premium_progress_bar_enabled", true]?.boolean ?: false,
+            nsfwLevel = Guild.NSFWLevel[data["nsfw_level"]!!.int],
         ).apply {
             data["roles"]?.jsonArray?.map { Role(it.jsonObject, basicGuild) }?.let { data ->
                 cacheManager.roleCache.putAll(data.associateBy { it.id })
@@ -148,6 +152,25 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
         updatedAt = data["updated_at"]!!.isoTimestamp,
         sourceGuild = Guild(data["source_guild_id", true]!!.snowflake, client),
         isDirty = data["is_dirty", true]?.boolean ?: false,
+    )
+
+    fun deserializeWelcomeScreen(data: JsonObject, guild: Guild) = WelcomeScreen(
+        description = data["description", true]?.string,
+        channels = data["channels", true]?.jsonArray?.map {
+            WelcomeScreen.WelcomeScreenChannel(
+                channel = Channel(it.snowflake, ChannelType.UNKNOWN, guild.client, guild),
+                description = it.jsonObject["description"]!!.string,
+                emoji = it.let {
+                    if(it.jsonObject["emoji_id", true]?.snowflake != null) {
+                        Emoji.fromEmote(it.jsonObject["emoji_name"]!!.string, it.jsonObject["emoji_id", true]!!.snowflake)
+                    } else if(it.jsonObject["emoji_name", true]?.string != null) {
+                        Emoji.fromEmoji(it.jsonObject["emoji_name", true]!!.string)
+                    } else {
+                        null
+                    }
+                }
+            )
+        } ?: emptyList(),
     )
 
 }

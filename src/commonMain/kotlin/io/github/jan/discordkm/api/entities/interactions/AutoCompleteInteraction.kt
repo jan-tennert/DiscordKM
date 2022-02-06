@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.entities.interactions
 
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.interactions.commands.builders.OptionBuilder
+import io.github.jan.discordkm.api.entities.interactions.commands.builders.SlashCommandOptionBuilder
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
@@ -25,8 +25,8 @@ class AutoCompleteInteraction<T>(client: Client, data: JsonObject)  : Interactio
     /**
      * Replies to the [AutoCompleteInteraction] with the given choices.
      */
-    suspend fun replyChoices(choices: OptionBuilder.ChoicesBuilder<T>.() -> Unit) = client.buildRestAction<Unit> {
-        val formattedChoices = OptionBuilder.ChoicesBuilder<T>()
+    suspend fun replyChoices(choices: SlashCommandOptionBuilder.ChoicesBuilder<T>.() -> Unit) = client.buildRestAction<Unit> {
+        val formattedChoices = SlashCommandOptionBuilder.ChoicesBuilder<T>()
             .apply(choices).choices
             .map { buildJsonObject { put("name", it.name); put("value", it.string) } }
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {

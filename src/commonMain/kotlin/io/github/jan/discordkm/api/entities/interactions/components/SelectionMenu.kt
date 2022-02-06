@@ -59,13 +59,13 @@ class SelectionMenuBuilder(var customId: String, var minValues: Int, var maxValu
         }
     }
 
-    fun options(builder: OptionBuilder.() -> Unit) {
-        options.addAll(OptionBuilder().apply(builder).options)
+    fun options(builder: SelectionMenuOptionBuilder.() -> Unit) {
+        SelectionMenuOptionBuilder().apply(builder)
     }
 
     fun build() = SelectionMenu(minValues = minValues, maxValues = maxValues, isDisabled = isDisabled, options = options, customId = customId)
 
-    class OptionBuilder(internal val options: MutableList<SelectOption> = mutableListOf()) {
+    inner class SelectionMenuOptionBuilder {
 
         fun option(label: String = "", value: String = "", description: String? = null, emoji: Emoji? = null, default: Boolean = false) { options += SelectOption(label, value, description, emoji, default)}
         fun add(selectOption: SelectOption) { options += selectOption }

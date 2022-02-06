@@ -5,10 +5,10 @@ import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.commands.OptionChoice
 import io.github.jan.discordkm.internal.DiscordKMUnstable
-import io.github.jan.discordkm.internal.utils.EnumWithValue
 import kotlinx.serialization.json.JsonPrimitive
+import kotlin.jvm.JvmInline
 
-open class OptionBuilder(open val options: MutableList<CommandOption> = mutableListOf()) {
+open class SlashCommandOptionBuilder(open val options: MutableList<CommandOption> = mutableListOf()) {
 
     @CommandBuilder
     fun string(name: String, description: String, required: Boolean = false, autocomplete: Boolean? = null, choices: ChoicesBuilder<String>.() -> Unit = {}) {
@@ -52,31 +52,9 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
     @CommandBuilder
     fun role(name: String, description: String, required: Boolean = false) { options += CommandOption(CommandOption.OptionType.ROLE, name, description, required) }
 
-    /**
-     * Generates a [CommandOption] with choices. The enum name will be used as the choice name and the enum value as the choice value. Only works for [Int], [Double] and [String]
-     *
-     * **not an official type**
-     */
     @CommandBuilder
-    inline fun <reified T> enum(name: String, description: String, required: Boolean = false) where T : EnumWithValue<*>, T : Enum<T> {
-        val values = enumValues<T>()
-        when(values[0].value) {
-            is Int -> int(name, description, required) {
-                values.forEach { enum -> choice(enum.name, enum.value as Int) }
-            }
-            is Double -> number(name, description, required) {
-                values.forEach { enum -> choice(enum.name, enum.value as Double) }
-            }
-            is String -> string(name, description, required) {
-                values.forEach { enum -> choice(enum.name, enum.value as String) }
-            }
-            else -> throw IllegalArgumentException("Enum values must be of type Int, Double or String")
-        }
-    }
-
-    @CommandBuilder
-    fun subCommand(name: String, description: String, builder: OptionBuilder.() -> Unit = {}) {
-        val options = OptionBuilder()
+    fun subCommand(name: String, description: String, builder: SlashCommandOptionBuilder.() -> Unit = {}) {
+        val options = SlashCommandOptionBuilder()
         options.builder()
         this.options += CommandOption(CommandOption.OptionType.SUB_COMMAND, name, description, false, options = options.options)
     }
@@ -95,16 +73,17 @@ open class OptionBuilder(open val options: MutableList<CommandOption> = mutableL
             name: String,
             description: String,
             required: Boolean = false,
-            builder: OptionBuilder.() -> Unit = {}
+            builder: SlashCommandOptionBuilder.() -> Unit = {}
         ) {
-            val options = OptionBuilder()
+            val options = SlashCommandOptionBuilder()
             options.builder()
             subCommands += CommandOption(CommandOption.OptionType.SUB_COMMAND, name, description, required, options = options.options)
         }
 
     }
 
-    class ChoicesBuilder<T>(val choices: MutableList<OptionChoice> = mutableListOf()) {
+    @JvmInline
+    value class ChoicesBuilder<T>(val choices: MutableList<OptionChoice> = mutableListOf()) {
 
         fun choice(name: String, value: T) {
             val primitiveValue = when(value) {

@@ -37,12 +37,13 @@ import io.github.jan.discordkm.api.entities.containers.GuildMemberContainer
 import io.github.jan.discordkm.api.entities.containers.GuildRoleContainer
 import io.github.jan.discordkm.api.entities.containers.GuildThreadContainer
 import io.github.jan.discordkm.api.entities.containers.ScheduledEventContainer
-import io.github.jan.discordkm.api.entities.guild.Guild.WelcomeScreen.Channel
 import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLog
 import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLogAction
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.entities.guild.invites.InviteBuilder
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
+import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreen
+import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreenModifier
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildModifier
@@ -71,7 +72,6 @@ import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
@@ -219,6 +219,22 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
             put("nick", nickname)
         })
         this.reason = reason
+    }
+
+    /**
+     * Retrieves the welcome screen for this guild
+     */
+    suspend fun retrieveWelcomeScreen() = client.buildRestAction<WelcomeScreen> {
+        route = Route.Guild.GET_WELCOME_SCREEN(id).get()
+        transform { GuildSerializer.deserializeWelcomeScreen(it.toJsonObject(), this@Guild) }
+    }
+
+    /**
+     * Modifies the welcome screen for this guild
+     */
+    suspend fun modifyWelcomeScreen(builder: WelcomeScreenModifier.() -> Unit) = client.buildRestAction<WelcomeScreen> {
+        route = Route.Guild.MODIFY_WELCOME_SCREEN(id).patch(WelcomeScreenModifier(this@Guild).apply(builder).data)
+        transform { GuildSerializer.deserializeWelcomeScreen(it.toJsonObject(), this@Guild) }
     }
 
     /**
@@ -403,42 +419,6 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
 
     }
 
-    /**
-     * The welcome screen which is shown, when a new user joins the guild
-     * @param description The description of the welcome screen
-     * @param channels The channels shown in the welcome screen
-     * @see Channel
-     */
-    @Serializable
-    class WelcomeScreen(
-        val description: String? = null,
-        val channels: List<Channel> = emptyList()
-    ) {
-
-        /**
-         * This is a welcome screen channels which is shown in the welcome screen to explain what this channel does
-         * @param channelId The id of the channel
-         * @param description The description shown on the welcome screen
-         * @param emojiId The id of the emoji shown in the welcome screen
-         * @param emojiName The name of the emoji shown in the welcome screen
-         */
-        @Serializable
-        class Channel(
-            val channelId: Snowflake,
-            val description: String,
-            val emojiId: Snowflake? = null,
-            val emojiName: String? = null
-        ) {
-
-            /**
-             * The emoji shown in the welcome screen
-             */
-            val emoji = emojiName?.let { Emoji(id = emojiId, name = it) }
-
-        }
-
-    }
-
     companion object {
         operator fun invoke(id: Snowflake, client: Client): Guild = IndependentGuild(id, client)
     }
@@ -462,7 +442,6 @@ data class IndependentGuild(override val id: Snowflake, override val client: Cli
  * @param verificationLevel The verification level of the guild
  * @param defaultMessageNotifications The default message notifications of the guild
  * @param explicitContentFilter The explicit content filter of the guild
- * @param emotes The custom emojis of the guild
  * @param features The features of the guild
  * @param mfaLevel The mfa level of the guild
  * @param applicationId The id of the application
@@ -474,8 +453,6 @@ data class IndependentGuild(override val id: Snowflake, override val client: Cli
  * @param isLarge Whether the guild is large or not
  * @param isUnavailable Whether the guild is unavailable or not
  * @param memberCount The member count of the guild
- * @param voiceStates The voice states of the guild
- * @param presences The presences of the guild
  * @param vanityUrlCode The vanity url of the guild
  * @param description The description of the guild
  * @param bannerHash The banner hash of the guild
@@ -529,9 +506,10 @@ class GuildCacheEntry(
     val preferredLocale: DiscordLocale,
     val publicUpdatesChannelId: Snowflake?,
     val ownerId: Snowflake,
-    val welcomeScreen: Guild.WelcomeScreen?,
+    val welcomeScreen: WelcomeScreen?,
     val discoveryHash: String?,
     val hasPremiumProgressBarEnabled: Boolean,
+    val nsfwLevel: Guild.NSFWLevel
 ) : Guild, Nameable, CacheEntry {
 
     //cache

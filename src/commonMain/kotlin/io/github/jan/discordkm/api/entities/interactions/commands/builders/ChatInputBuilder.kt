@@ -39,8 +39,8 @@ class ChatInputCommandBuilder(name: String, description: String, private val opt
     }
 
     @CommandBuilder
-    fun options(optionBuilder: OptionBuilder.() -> Unit) {
-        val builder = OptionBuilder()
+    fun options(optionBuilder: SlashCommandOptionBuilder.() -> Unit) {
+        val builder = SlashCommandOptionBuilder()
         builder.optionBuilder()
         options.addAll(builder.options)
     }
