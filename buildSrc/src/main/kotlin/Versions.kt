@@ -16,7 +16,7 @@ object Versions {
     const val KORLIBS = "2.4.10"
     const val COROUTINES = "1.6.0"
     const val STATELY = "1.2.1"
-    const val DISCORDKM = "0.7-alpha-2"
+    const val DISCORDKM = "0.7-alpha-3"
     const val ARROW = "1.0.1"
     const val NEXUS_STAGING = "0.30.0"
 
@@ -25,6 +25,7 @@ object Versions {
 object Publishing {
 
     val REPOSITORY_ID = System.getenv("SONATYPE_REPOSITORY_ID")
+    val PROFILE_ID = System.getenv("SONATYPE_PROFILE_ID")
     val SONATYPE_USERNAME = System.getenv("OSSRH_USERNAME")
     val SONATYPE_PASSWORD = System.getenv("OSSRH_PASSWORD")
 

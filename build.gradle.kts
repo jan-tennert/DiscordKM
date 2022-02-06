@@ -19,7 +19,10 @@ version = Versions.DISCORDKM
 description = "A Kotlin Multiplatform Discord API Wrapper"
 
 nexusStaging {
-    stagingProfileId = Publishing.REPOSITORY_ID
+    stagingProfileId = Publishing.PROFILE_ID
+    stagingRepositoryId.set(Publishing.REPOSITORY_ID)
+    username = Publishing.SONATYPE_USERNAME
+    password = Publishing.SONATYPE_PASSWORD
 }
 
 allprojects {
