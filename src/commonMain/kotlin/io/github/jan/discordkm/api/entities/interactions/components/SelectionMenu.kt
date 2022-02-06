@@ -31,15 +31,6 @@ data class SelectionMenu(
     val options: MutableList<SelectOption>
 ) : Component
 
-class SelectionMenuOptionBuilder(val options: MutableList<SelectOption> = mutableListOf()) {
-
-    fun option(label: String = "", value: String = "", description: String? = null, emoji: Emoji? = null, default: Boolean = false) { options += SelectOption(label, value, description, emoji, default)}
-    fun add(selectOption: SelectOption) { options += selectOption }
-    fun addAll(selectOptions: Iterable<SelectOption>) { options += selectOptions }
-    fun addAll(selectOptions: Array<SelectOption>) { options += selectOptions }
-
-}
-
 /**
  * A selection menu
  * @param customId The id of the selection menu. Used for the [SelectionMenuEvent]
@@ -48,12 +39,15 @@ class SelectionMenuOptionBuilder(val options: MutableList<SelectOption> = mutabl
  * @param isDisabled Whether the user can interact with this selection menu
  * @param options The options of the selection menu
 */
-inline fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisabled: Boolean = false, range: Pair<Int, Int>, options: SelectionMenuOptionBuilder.() -> Unit, crossinline onSelection: suspend SelectionMenuEvent.() -> Unit) {
-    components += SelectionMenu(minValues = range.first, maxValues = range.second, options = SelectionMenuOptionBuilder().apply(options).options, isDisabled = isDisabled, customId = customId)
+inline fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisabled: Boolean = false, range: Pair<Int, Int>, options: MutableList<SelectOption>.() -> Unit, crossinline onSelection: suspend SelectionMenuEvent.() -> Unit) {
+    components += SelectionMenu(minValues = range.first, maxValues = range.second, options = mutableListOf<SelectOption>().apply(options), isDisabled = isDisabled, customId = customId)
     if(client is DiscordWebSocketClient) {
         client.on(predicate = { it.componentId == customId }, onSelection)
     }
 }
+
+fun MutableList<SelectOption>.option(label: String = "", value: String = "", description: String? = null, emoji: Emoji? = null, default: Boolean = false) { this += SelectOption(label, value, description, emoji, default)}
+
 
 /**
  * @param label The label of the selection menu option

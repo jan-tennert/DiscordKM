@@ -6,7 +6,6 @@ import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.commands.OptionChoice
 import io.github.jan.discordkm.internal.DiscordKMUnstable
 import kotlinx.serialization.json.JsonPrimitive
-import kotlin.jvm.JvmInline
 
 open class SlashCommandOptionBuilder(open val options: MutableList<CommandOption> = mutableListOf()) {
 
@@ -14,21 +13,21 @@ open class SlashCommandOptionBuilder(open val options: MutableList<CommandOption
     fun string(name: String, description: String, required: Boolean = false, autocomplete: Boolean? = null, choices: ChoicesBuilder<String>.() -> Unit = {}) {
         val choiceBuilder = ChoicesBuilder<String>()
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.STRING, name, description, required, choices = choiceBuilder.choices, autocomplete = autocomplete)
+        options += CommandOption(CommandOption.OptionType.STRING, name, description, required, choices = choiceBuilder, autocomplete = autocomplete)
     }
 
     @CommandBuilder
     fun int(name: String, description: String, required: Boolean = false, max: Int? = null, min: Int? = null, autocomplete: Boolean? = null,  choices: ChoicesBuilder<Int>.() -> Unit = {}) {
         val choiceBuilder = ChoicesBuilder<Int>()
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.INTEGER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder.choices, autocomplete = autocomplete)
+        options += CommandOption(CommandOption.OptionType.INTEGER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder, autocomplete = autocomplete)
     }
 
     @CommandBuilder
     fun number(name: String, description: String, required: Boolean = false, max: Double? = null, min: Double? = null, autocomplete: Boolean? = null,  choices: ChoicesBuilder<Double>.() -> Unit = {}) {
         val choiceBuilder = ChoicesBuilder<Double>()
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.NUMBER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder.choices, autocomplete = autocomplete)
+        options += CommandOption(CommandOption.OptionType.NUMBER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder, autocomplete = autocomplete)
     }
 
     @CommandBuilder
@@ -82,8 +81,7 @@ open class SlashCommandOptionBuilder(open val options: MutableList<CommandOption
 
     }
 
-    @JvmInline
-    value class ChoicesBuilder<T>(val choices: MutableList<OptionChoice> = mutableListOf()) {
+    class ChoicesBuilder<T>(choices: MutableList<OptionChoice> = mutableListOf()) : MutableList<OptionChoice> by choices {
 
         fun choice(name: String, value: T) {
             val primitiveValue = when(value) {
@@ -92,7 +90,7 @@ open class SlashCommandOptionBuilder(open val options: MutableList<CommandOption
                 is String -> JsonPrimitive(value)
                 else -> throw IllegalArgumentException("Choices must be of type Int, Double or String")
             }
-            choices += OptionChoice(name, primitiveValue)
+            this += OptionChoice(name, primitiveValue)
         }
 
         fun choice(choice: Pair<String, T>) = choice(choice.first, choice.second)
