@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.internal.events
 
+import io.github.jan.discordkm.api.entities.ApplicationCommandInteraction
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
@@ -22,7 +23,6 @@ import io.github.jan.discordkm.api.entities.interactions.StandardInteraction
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
-import io.github.jan.discordkm.api.entities.interactions.components.SelectOption
 import io.github.jan.discordkm.api.entities.interactions.modals.components.ModalRow
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageAttachment
@@ -51,7 +51,6 @@ import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<InteractionCreateEvent> {
 
@@ -70,7 +69,8 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         val components = modalData["components"]!!.jsonArray.map {
             Json.decodeFromJsonElement<ModalRow>(it)
         }
-        return ModalSubmitEvent(client, customId, components)
+        val interaction = StandardInteraction(client, data)
+        return ModalSubmitEvent(client, customId, components, interaction)
     }
 
     private fun extractCommandAutoComplete(data: JsonObject) : InteractionCreateEvent {
@@ -107,7 +107,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         val interactionData = data.getValue("data").jsonObject
         return when(ComponentType[interactionData["component_type"]!!.int]) {
             ComponentType.BUTTON -> ButtonClickEvent(client, ComponentInteraction(client, data), interactionData.getOrThrow("custom_id"))
-            ComponentType.SELECTION_MENU -> SelectionMenuEvent(client, ComponentInteraction(client, data), interactionData.getValue("values").jsonArray.map { SelectOption(value = it.jsonPrimitive.content) }, interactionData.getOrThrow("custom_id"))
+            ComponentType.SELECTION_MENU -> SelectionMenuEvent(client, ComponentInteraction(client, data), interactionData.getValue("values").jsonArray.map { it.string }, interactionData.getOrThrow("custom_id"))
             else -> throw IllegalStateException("Component type not supported")
         }
     }
@@ -120,7 +120,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
 
     private fun extractMessageCommand(data: JsonObject) : MessageCommandEvent {
         val target = data.getValue("data").jsonObject.getOrThrow<String>("target_id")
-        val interaction = StandardInteraction(client, data)
+        val interaction = ApplicationCommandInteraction(client, data)
         val name = data.getValue("data").jsonObject.getOrThrow<String>("name")
         val messageObject = data.getValue("data").jsonObject.getValue("resolved").jsonObject.getValue("messages").jsonObject.getValue(target).jsonObject
         val message = Message(messageObject, client)
@@ -129,7 +129,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
 
     private fun extractUserCommand(data: JsonObject) : UserCommandEvent {
         val target = data.getValue("data").jsonObject.getOrThrow<String>("target_id")
-        val interaction = StandardInteraction(client, data)
+        val interaction = ApplicationCommandInteraction(client, data)
         val name = data.getValue("data").jsonObject.getOrThrow<String>("name")
         val userObject = data.getValue("data").jsonObject.getValue("resolved").jsonObject.jsonObject.getValue("users").jsonObject.getValue(target).jsonObject
         val user = User(userObject, client)
@@ -163,7 +163,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
                 }
             }
         }
-        return SlashCommandEvent(client, StandardInteraction(client, data), name, OptionContainer(options), subCommand, subCommandGroup)
+        return SlashCommandEvent(client, ApplicationCommandInteraction(client, data), name, OptionContainer(options), subCommand, subCommandGroup)
     }
 
     private fun extractOption(resolved: JsonObject?, option: JsonObject, fullData: JsonObject) : InteractionOption {

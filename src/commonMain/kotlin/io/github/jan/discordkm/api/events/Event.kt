@@ -26,9 +26,7 @@ sealed interface MessageEvent : Event {
 
 }
 
-sealed interface InteractionCreateEvent : Event
-
-sealed interface StandardInteractionEvent : InteractionCreateEvent {
+sealed interface InteractionCreateEvent : Event {
 
     val interaction: Interaction
 

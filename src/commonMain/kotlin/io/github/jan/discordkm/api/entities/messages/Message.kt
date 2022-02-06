@@ -96,11 +96,11 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
     /**
      * Edits this message
      */
-    suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(message))
+    suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(client, message))
     /**
      * Edits this message
      */
-    suspend fun edit(content: String) = edit(buildMessage { this.content = content })
+    suspend fun edit(content: String) = edit(buildMessage(client) { this.content = content })
 
     /**
      * Replies to this message
@@ -113,7 +113,7 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
     /**
      * Replies to this message
      */
-    suspend fun reply(builder: MessageBuilder.() -> Unit) = reply(buildMessage(builder))
+    suspend fun reply(builder: MessageBuilder.() -> Unit) = reply(buildMessage(client, builder))
 
     /**
      * Replies to this message
@@ -280,5 +280,3 @@ enum class MessageType(override val value: Int) : EnumWithValue<Int> {
 
     companion object : EnumWithValueGetter<MessageType, Int>(values())
 }
-
-fun buildMessage(builder: MessageBuilder.() -> Unit) = MessageBuilder().apply(builder).build()

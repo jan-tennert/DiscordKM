@@ -9,9 +9,11 @@
  */
 package io.github.jan.discordkm.api.entities.messages
 
+import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
@@ -23,6 +25,7 @@ import io.github.jan.discordkm.api.entities.interactions.components.RowLayoutBui
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
 import io.github.jan.discordkm.api.entities.interactions.modals.TextInput
 import io.github.jan.discordkm.api.media.Attachment
+import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.ktor.client.request.forms.FormBuilder
@@ -51,7 +54,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-class MessageBuilder {
+class MessageBuilder internal constructor(private val client: Client? = null) {
 
     var content = ""
     var embeds = mutableListOf<MessageEmbed>()
@@ -79,9 +82,9 @@ class MessageBuilder {
 
    // fun import(message: Message) = import(message.copy())
 
-    fun actionRow(builder: RowBuilder<MessageLayout>.() -> Unit) { actionRows += RowBuilder<MessageLayout>().apply(builder).build() }
+    fun actionRow(builder: RowBuilder<MessageLayout>.() -> Unit) { actionRows += RowBuilder<MessageLayout>(client).apply(builder).build() }
 
-    fun actionRows(builder: RowLayoutBuilder<MessageLayout>.() -> Unit) { actionRows += RowLayoutBuilder<MessageLayout>().apply(builder).rows }
+    fun actionRows(builder: RowLayoutBuilder<MessageLayout>.() -> Unit) { actionRows += RowLayoutBuilder<MessageLayout>(client).apply(builder).rows }
 
     fun sticker(id: Snowflake) { stickerIds += id }
 
@@ -91,7 +94,7 @@ class MessageBuilder {
 
     fun embed(builder: EmbedBuilder.() -> Unit) { embeds += buildEmbed(builder) }
 
-    @Suppress("DEPRECATION")
+    @OptIn(DiscordKMInternal::class)
     fun build() = DataMessage(content, tts, embeds, allowedMentions, attachments, actionRows, reference)
 
 }
@@ -142,7 +145,7 @@ val componentJson = Json {
     }
 }
 
-class DataMessage @Deprecated("Use buildMessage method") constructor(
+class DataMessage @DiscordKMInternal constructor(
     val content: String = "",
     val tts: Boolean = false,
     val embeds: List<MessageEmbed> = emptyList(),
@@ -225,12 +228,5 @@ class DataMessage @Deprecated("Use buildMessage method") constructor(
 
 }
 
-
-
-/*
-Missing:
-file
-components
-payload_json
-
- */
+fun buildMessage(client: Client? = null, builder: MessageBuilder.() -> Unit) = MessageBuilder(client).apply(builder).build()
+fun BaseEntity.buildMessage(builder: MessageBuilder.() -> Unit) = buildMessage(client, builder)

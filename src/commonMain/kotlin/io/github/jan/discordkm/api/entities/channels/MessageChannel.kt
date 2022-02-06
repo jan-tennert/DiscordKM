@@ -38,11 +38,11 @@ interface MessageChannel : Channel {
         transform { Message(it.toJsonObject(), client) }
     }
 
-    suspend fun send(builder: MessageBuilder.() -> Unit) = send(buildMessage(builder))
+    suspend fun send(builder: MessageBuilder.() -> Unit) = send(buildMessage(client, builder))
 
-    suspend fun send(content: String) = send(buildMessage { this.content = content })
+    suspend fun send(content: String) = send(buildMessage(client) { this.content = content })
 
-    suspend fun sendEmbed(embed: EmbedBuilder.() -> Unit) = send(buildMessage { embeds += buildEmbed(embed) })
+    suspend fun sendEmbed(embed: EmbedBuilder.() -> Unit) = send(buildMessage(client) { embeds += buildEmbed(embed) })
 
     suspend fun sendEmbeds(embeds: Iterable<MessageEmbed>) = send { this.embeds.addAll(embeds) }
 

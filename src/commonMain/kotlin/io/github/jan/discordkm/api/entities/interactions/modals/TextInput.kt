@@ -3,6 +3,8 @@ package io.github.jan.discordkm.api.entities.interactions.modals
 import io.github.jan.discordkm.api.entities.interactions.components.Component
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.components.RowBuilder
+import io.github.jan.discordkm.api.events.ButtonClickEvent
+import io.github.jan.discordkm.api.events.ModalSubmitEvent
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.Required
@@ -29,7 +31,7 @@ data class TextInput(
     @Serializable(with = TextInputStyle.Companion::class)
     enum class TextInputStyle : EnumWithValue<Int> {
         SHORT,
-        PARTICULAR;
+        PARAGRAPH;
 
         override val value: Int
             get() = ordinal + 1
@@ -39,6 +41,15 @@ data class TextInput(
 
 }
 
+/**
+ * @param customId The id used for identifying the text input value in the [ModalSubmitEvent]
+ * @param label The label of the text input
+ * @param placeholder The placeholder of the text input
+ * @param value The pre-filled value of the text input
+ * @param minLength The minimum length of the text input
+ * @param maxLength The maximum length of the text input
+ * @param style The style of the text input
+ */
 fun RowBuilder<ModalLayout>.textInput(
     customId: String = "",
     label: String = "",
@@ -47,7 +58,6 @@ fun RowBuilder<ModalLayout>.textInput(
     minLength: Int? = null,
     maxLength: Int? = null,
     style: TextInput.TextInputStyle = TextInput.TextInputStyle.SHORT,
-    init: TextInput.() -> Unit = {}
 ) {
     components += TextInput(
         style = style,
@@ -56,8 +66,66 @@ fun RowBuilder<ModalLayout>.textInput(
         placeholder = placeholder,
         value = value,
         minLength = minLength,
+        maxLength = maxLength,
+    )
+}
+
+/**
+ * A single line text input component
+ *
+ * @param customId The id used for identifying the text input value in the [ModalSubmitEvent]
+ * @param label The label of the text input
+ * @param placeholder The placeholder of the text input
+ * @param value The pre-filled value of the text input
+ * @param minLength The minimum length of the text input
+ * @param maxLength The maximum length of the text input
+ */
+fun RowBuilder<ModalLayout>.shortTextInput(
+    customId: String = "",
+    label: String = "",
+    placeholder: String? = null,
+    value: String? = null,
+    minLength: Int? = null,
+    maxLength: Int? = null,
+) {
+    components += TextInput(
+        style = TextInput.TextInputStyle.SHORT,
+        customId = customId,
+        label = label,
+        placeholder = placeholder,
+        value = value,
+        minLength = minLength,
         maxLength = maxLength
-    ).apply(init)
+    )
+}
+
+/**
+ * A multi-line text input component
+ *
+ * @param customId The id used for identifying the text input value in the [ModalSubmitEvent]
+ * @param label The label of the text input
+ * @param placeholder The placeholder of the text input
+ * @param value The pre-filled value of the text input
+ * @param minLength The minimum length of the text input
+ * @param maxLength The maximum length of the text input
+ */
+fun RowBuilder<ModalLayout>.multilineTextInput(
+    customId: String = "",
+    label: String = "",
+    placeholder: String? = null,
+    value: String? = null,
+    minLength: Int? = null,
+    maxLength: Int? = null,
+) {
+    components += TextInput(
+        style = TextInput.TextInputStyle.PARAGRAPH,
+        customId = customId,
+        label = label,
+        placeholder = placeholder,
+        value = value,
+        minLength = minLength,
+        maxLength = maxLength
+    )
 }
 
 

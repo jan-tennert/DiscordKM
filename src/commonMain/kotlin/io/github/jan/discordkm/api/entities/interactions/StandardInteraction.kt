@@ -28,7 +28,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-open class StandardInteraction(override val client: Client, override val data: JsonObject) : Interaction, ModalInteraction {
+open class StandardInteraction(override val client: Client, override val data: JsonObject) : Interaction {
 
     /**
      * Replies to this interaction without a message
@@ -55,13 +55,13 @@ open class StandardInteraction(override val client: Client, override val data: J
      * Replies to this interaction with a message
      */
     suspend fun reply(ephemeral: Boolean = false, message: MessageBuilder.() -> Unit) =
-        reply(buildMessage(message), ephemeral)
+        reply(buildMessage(client, message), ephemeral)
 
     /**
      * Replies to this interaction with a message
      */
     suspend fun reply(message: String, ephemeral: Boolean = false) =
-        reply(buildMessage { content = message }, ephemeral)
+        reply(buildMessage(client) { content = message }, ephemeral)
 
     /**
      * Edits the original reply message
@@ -75,7 +75,7 @@ open class StandardInteraction(override val client: Client, override val data: J
      * Edits the original reply message
      */
     suspend fun editOriginalMessage(builder: MessageBuilder.() -> Unit) =
-        editOriginalMessage(MessageBuilder().apply(builder).build())
+        editOriginalMessage(buildMessage(client, builder))
 
     /**
      * Deletes the original reply message
@@ -97,7 +97,7 @@ open class StandardInteraction(override val client: Client, override val data: J
      * Sends a follow-up message
      */
     suspend fun sendFollowUpMessage(ephemeral: Boolean = false, message: MessageBuilder.() -> Unit) =
-        sendFollowUpMessage(buildMessage(message), ephemeral)
+        sendFollowUpMessage(buildMessage(client, message), ephemeral)
 
     /**
      * Sends a follow-up message
@@ -126,7 +126,6 @@ open class StandardInteraction(override val client: Client, override val data: J
      */
     suspend fun deleteFollowUpMessage(id: Snowflake) = client.buildRestAction<Unit> {
         route = Route.Interaction.DELETE_FOLLOW_UP(applicationId, token, id).delete()
-
     }
 
 }

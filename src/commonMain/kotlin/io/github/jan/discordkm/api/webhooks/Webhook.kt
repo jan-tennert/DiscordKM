@@ -141,7 +141,7 @@ interface WebhookExecutor : SnowflakeEntity {
         route = Route.Webhook.EXECUTE_WEBHOOK(id, token).post(message.build())
     }
 
-    suspend fun send(message: MessageBuilder.() -> Unit) = send(buildMessage(message))
+    suspend fun send(message: MessageBuilder.() -> Unit) = send(buildMessage(builder = message))
 
     suspend fun send(message: String) = send { content = message }
 }
