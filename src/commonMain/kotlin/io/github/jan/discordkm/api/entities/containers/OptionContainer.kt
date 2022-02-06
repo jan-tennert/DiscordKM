@@ -7,7 +7,15 @@ class OptionContainer(private val raw: List<InteractionOption>) : Iterable<Inter
 
     operator fun get(name: String) = getOrNull(name) ?: throw IllegalArgumentException("Option with name $name does not exist")
 
+    inline operator fun <reified T> get(name: String) : T = get(name) as T
+
+    inline operator fun <reified T> get(name: String, default: T) : T = (getOrNull(name)?.value as? T) ?: default
+
     operator fun get(position: Int) = getOrNull(position) ?: throw IllegalArgumentException("Option on position $position does not exist")
+
+    inline operator fun <reified T> get(position: Int) : T = get(position) as T
+
+    inline operator fun <reified T> get(position: Int, default: T) : T = (getOrNull(position)?.value as? T) ?: default
 
     fun getOrNull(name: String) = raw.firstOrNull { it.name == name }
 
