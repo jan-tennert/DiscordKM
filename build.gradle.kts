@@ -23,6 +23,7 @@ nexusStaging {
     stagingRepositoryId.set(Publishing.REPOSITORY_ID)
     username = Publishing.SONATYPE_USERNAME
     password = Publishing.SONATYPE_PASSWORD
+    serverUrl = "https://s01.oss.sonatype.org/service/local/"
 }
 
 allprojects {

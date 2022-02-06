@@ -3,7 +3,6 @@ package io.github.jan.discordkm.api.entities.interactions.modals
 import io.github.jan.discordkm.api.entities.interactions.components.Component
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.components.RowBuilder
-import io.github.jan.discordkm.api.events.ButtonClickEvent
 import io.github.jan.discordkm.api.events.ModalSubmitEvent
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
@@ -50,7 +49,7 @@ data class TextInput(
  * @param maxLength The maximum length of the text input
  * @param style The style of the text input
  */
-fun RowBuilder<ModalLayout>.textInput(
+inline fun RowBuilder<ModalLayout>.textInput(
     customId: String = "",
     label: String = "",
     placeholder: String? = null,
@@ -80,7 +79,7 @@ fun RowBuilder<ModalLayout>.textInput(
  * @param minLength The minimum length of the text input
  * @param maxLength The maximum length of the text input
  */
-fun RowBuilder<ModalLayout>.shortTextInput(
+inline fun RowBuilder<ModalLayout>.shortTextInput(
     customId: String = "",
     label: String = "",
     placeholder: String? = null,
@@ -109,7 +108,7 @@ fun RowBuilder<ModalLayout>.shortTextInput(
  * @param minLength The minimum length of the text input
  * @param maxLength The maximum length of the text input
  */
-fun RowBuilder<ModalLayout>.multilineTextInput(
+inline fun RowBuilder<ModalLayout>.multilineTextInput(
     customId: String = "",
     label: String = "",
     placeholder: String? = null,

@@ -39,6 +39,7 @@ class SelectionMenuOptionBuilder(val options: MutableList<SelectOption> = mutabl
     fun addAll(selectOptions: Array<SelectOption>) { options += selectOptions }
 
 }
+
 /**
  * A selection menu
  * @param customId The id of the selection menu. Used for the [SelectionMenuEvent]
@@ -47,7 +48,7 @@ class SelectionMenuOptionBuilder(val options: MutableList<SelectOption> = mutabl
  * @param isDisabled Whether the user can interact with this selection menu
  * @param options The options of the selection menu
 */
-fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisabled: Boolean = false, range: Pair<Int, Int>, options: SelectionMenuOptionBuilder.() -> Unit, onSelection: suspend SelectionMenuEvent.() -> Unit) {
+inline fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisabled: Boolean = false, range: Pair<Int, Int>, options: SelectionMenuOptionBuilder.() -> Unit, crossinline onSelection: suspend SelectionMenuEvent.() -> Unit) {
     components += SelectionMenu(minValues = range.first, maxValues = range.second, options = SelectionMenuOptionBuilder().apply(options).options, isDisabled = isDisabled, customId = customId)
     if(client is DiscordWebSocketClient) {
         client.on(predicate = { it.componentId == customId }, onSelection)
