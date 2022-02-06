@@ -20,7 +20,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
-class AutoCompleteInteraction<T>(client: Client, data: JsonObject)  : Interaction(client, data) {
+class AutoCompleteInteraction<T>(override val client: Client, override val data: JsonObject)  : Interaction {
 
     /**
      * Replies to the [AutoCompleteInteraction] with the given choices.
@@ -37,8 +37,6 @@ class AutoCompleteInteraction<T>(client: Client, data: JsonObject)  : Interactio
                 }
             })
         })
-        
-        onFinish { isAcknowledged = true }
     }
 
     /**

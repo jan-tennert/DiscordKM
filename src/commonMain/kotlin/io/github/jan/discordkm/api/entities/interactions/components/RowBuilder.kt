@@ -9,15 +9,22 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.components
 
-class RowBuilder(val components: MutableList<Component> = mutableListOf()) {
+import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.interactions.RowLayout
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+
+class RowBuilder<T : RowLayout>(val client: Client? = null, val components: MutableList<Component> = mutableListOf()) {
 
     fun build() = ActionRow(components)
 
 }
 
-class ActionRowBuilder(val rows: MutableList<ActionRow> = mutableListOf()) {
+@Serializable
+open class RowLayoutBuilder<T : RowLayout>(@Transient internal open val client: Client? = null, @SerialName("components") val rows: MutableList<ActionRow> = mutableListOf()) {
 
-    fun row(builder: RowBuilder.() -> Unit) { rows += RowBuilder().apply(builder).build() }
+    fun row(builder: RowBuilder<T>.() -> Unit) { rows += RowBuilder<T>(client).apply(builder).build() }
 
     fun add(row: ActionRow) { rows += row }
 

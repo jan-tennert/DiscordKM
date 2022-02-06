@@ -9,14 +9,12 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.components
 
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.events.SelectionMenuEvent
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 @Serializable
 data class SelectionMenu(
@@ -33,49 +31,14 @@ data class SelectionMenu(
     val options: MutableList<SelectOption>
 ) : Component
 
-/**
- * @param customId The id of the selection menu. Used for the [SelectionMenuEvent]
- * @param minValues The minimum amount of values the user has to select
- * @param maxValues The maximum amount of values the user can select
- * @param isDisabled Whether the user can interact with this selection menu
- * @param options The options of the selection menu
- */
-class SelectionMenuBuilder(var customId: String, var minValues: Int, var maxValues: Int, var isDisabled: Boolean, val options: MutableList<SelectOption>) {
+class SelectionMenuOptionBuilder(val options: MutableList<SelectOption> = mutableListOf()) {
 
-    @Transient
-    var range: Pair<Int, Int> = minValues to maxValues
-        set(value) {
-            field = value
-            minValues = value.first
-            maxValues = value.second
-        }
-
-    /**
-     * This will be called, if this specific selection menu with this [customId] selected
-     */
-    fun onSelected(client: Client, action: OnSelected) {
-        if(client is DiscordWebSocketClient) {
-            client.on<SelectionMenuEvent>(predicate = { it.componentId == customId }) { action(this) }
-        }
-    }
-
-    fun options(builder: SelectionMenuOptionBuilder.() -> Unit) {
-        SelectionMenuOptionBuilder().apply(builder)
-    }
-
-    fun build() = SelectionMenu(minValues = minValues, maxValues = maxValues, isDisabled = isDisabled, options = options, customId = customId)
-
-    inner class SelectionMenuOptionBuilder {
-
-        fun option(label: String = "", value: String = "", description: String? = null, emoji: Emoji? = null, default: Boolean = false) { options += SelectOption(label, value, description, emoji, default)}
-        fun add(selectOption: SelectOption) { options += selectOption }
-
-    }
+    fun option(label: String = "", value: String = "", description: String? = null, emoji: Emoji? = null, default: Boolean = false) { options += SelectOption(label, value, description, emoji, default)}
+    fun add(selectOption: SelectOption) { options += selectOption }
+    fun addAll(selectOptions: Iterable<SelectOption>) { options += selectOptions }
+    fun addAll(selectOptions: Array<SelectOption>) { options += selectOptions }
 
 }
-
-typealias OnSelected = suspend SelectionMenuEvent.() -> Unit
-
 /**
  * A selection menu
  * @param customId The id of the selection menu. Used for the [SelectionMenuEvent]
@@ -84,7 +47,12 @@ typealias OnSelected = suspend SelectionMenuEvent.() -> Unit
  * @param isDisabled Whether the user can interact with this selection menu
  * @param options The options of the selection menu
 */
-fun RowBuilder.selectionMenu(customId: String = "", isDisabled: Boolean = false, minValues: Int = 1, maxValues: Int = 1, options: List<SelectOption> = emptyList(), builder: SelectionMenuBuilder.() -> Unit) { components += SelectionMenuBuilder(minValues = minValues, maxValues = maxValues, options = options.toMutableList(), isDisabled = isDisabled, customId = customId).apply(builder).build()}
+fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisabled: Boolean = false, range: Pair<Int, Int>, options: SelectionMenuOptionBuilder.() -> Unit, onSelection: suspend SelectionMenuEvent.() -> Unit) {
+    components += SelectionMenu(minValues = range.first, maxValues = range.second, options = SelectionMenuOptionBuilder().apply(options).options, isDisabled = isDisabled, customId = customId)
+    if(client is DiscordWebSocketClient) {
+        client.on(predicate = { it.componentId == customId }, onSelection)
+    }
+}
 
 /**
  * @param label The label of the selection menu option

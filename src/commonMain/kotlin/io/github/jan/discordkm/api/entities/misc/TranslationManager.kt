@@ -11,7 +11,6 @@ import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.lang.format
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.DiscordLocale
-import io.github.jan.discordkm.api.events.InteractionCreateEvent
 import io.github.jan.discordkm.internal.utils.string
 import io.github.jan.discordkm.internal.utils.toJsonObject
 
@@ -47,4 +46,4 @@ class TranslationManager private constructor(private val rawTranslations: List<T
 data class TranslationFile(val language: DiscordLocale, val translations: Map<String, String>)
 
 fun BaseEntity.text(locale: DiscordLocale, key: String, vararg args: Any) = client.config.translationManager.get(locale, key, *args)
-fun InteractionCreateEvent.text(key: String, guildLocale: Boolean = false, vararg args: Any) = client.config.translationManager.get(interaction.locale ?: if(guildLocale) interaction.guildLocale ?: client.config.translationManager.defaultLanguage else client.config.translationManager.defaultLanguage, key, *args)
+//fun InteractionCreateEvent.text(key: String, guildLocale: Boolean = false, vararg args: Any) = client.config.translationManager.get(interaction.locale ?: if(guildLocale) interaction.guildLocale ?: client.config.translationManager.defaultLanguage else client.config.translationManager.defaultLanguage, key, *args)

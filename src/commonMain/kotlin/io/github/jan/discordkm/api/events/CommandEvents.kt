@@ -9,31 +9,31 @@
  */
 package io.github.jan.discordkm.api.events
 
+import io.github.jan.discordkm.api.entities.ApplicationCommandInteraction
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.containers.OptionContainer
-import io.github.jan.discordkm.api.entities.interactions.StandardInteraction
 import io.github.jan.discordkm.api.entities.messages.Message
 
 interface CommandEvent : InteractionCreateEvent {
     val commandName: String
-    override val interaction: StandardInteraction
+    override val interaction: ApplicationCommandInteraction
 }
 
 /**
  * Sent when someone enters the slash command
  */
-class SlashCommandEvent(override val client: Client, override val interaction: StandardInteraction, override val commandName: String, val options: OptionContainer, val subCommand: String? = null, val subCommandGroup: String? = null) :
+class SlashCommandEvent(override val client: Client, override val interaction: ApplicationCommandInteraction, override val commandName: String, val options: OptionContainer, val subCommand: String? = null, val subCommandGroup: String? = null) :
     CommandEvent
 
 /**
  * Sent when someone clicks on a message context menu command
  */
-class MessageCommandEvent(override val client: Client, override val interaction: StandardInteraction, override val commandName: String, val targetMessage: Message) :
+class MessageCommandEvent(override val client: Client, override val interaction: ApplicationCommandInteraction, override val commandName: String, val targetMessage: Message) :
     CommandEvent
 
 /**
  * Sent when someone clicks on a user context menu command
  */
-class UserCommandEvent(override val client: Client, override val interaction: StandardInteraction, override val commandName: String, val targetUser: UserCacheEntry) :
+class UserCommandEvent(override val client: Client, override val interaction: ApplicationCommandInteraction, override val commandName: String, val targetUser: UserCacheEntry) :
     CommandEvent

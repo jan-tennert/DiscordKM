@@ -13,6 +13,7 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
+import io.github.jan.discordkm.api.entities.messages.buildMessage
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
@@ -23,7 +24,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 
-class ComponentInteraction(client: Client, data: JsonObject) : StandardInteraction(client, data) {
+class ComponentInteraction(client: Client, data: JsonObject) : StandardInteraction(client, data), ModalInteraction {
 
     /**
      * The message which contains this component
@@ -37,8 +38,6 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
             put("type", 6) //defer edit
         })
-        
-        onFinish { isAcknowledged = true }
     }
 
     /**
@@ -49,13 +48,11 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
             put("type", 7) //edit
             put("data", message.build().toString().toJsonObject())
         })
-        
-        onFinish { isAcknowledged = true }
     }
 
     /**
      * Edits the original message as callback
      */
-    suspend fun edit(message: MessageBuilder.() -> Unit) = edit(MessageBuilder().apply(message).build())
+    suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(client, message))
 
 }

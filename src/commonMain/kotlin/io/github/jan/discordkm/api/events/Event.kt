@@ -10,7 +10,6 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.BaseEntity
-import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
@@ -22,7 +21,6 @@ interface Event : BaseEntity
 sealed interface MessageEvent : Event {
 
     val message: Message
-
 
     val channel: MessageChannel
 

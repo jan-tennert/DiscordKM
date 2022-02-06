@@ -24,8 +24,6 @@ import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
 import io.github.jan.discordkm.internal.websocket.Encoding
 import io.ktor.client.HttpClientConfig
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
@@ -86,7 +84,7 @@ class DiscordWebSocketClient internal constructor(
 
     override suspend fun disconnect() {
         requester.http.close()
-        shardConnections.forEach { it.close("client") }
+        shardConnections.forEach { it.close() }
     }
 
 }
