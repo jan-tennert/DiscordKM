@@ -27,7 +27,7 @@ class AutoCompleteInteraction<T>(override val client: Client, override val data:
      */
     suspend fun replyChoices(choices: SlashCommandOptionBuilder.ChoicesBuilder<T>.() -> Unit) = client.buildRestAction<Unit> {
         val formattedChoices = SlashCommandOptionBuilder.ChoicesBuilder<T>()
-            .apply(choices).choices
+            .apply(choices)
             .map { buildJsonObject { put("name", it.name); put("value", it.string) } }
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
             put("type", 8) //reply choices

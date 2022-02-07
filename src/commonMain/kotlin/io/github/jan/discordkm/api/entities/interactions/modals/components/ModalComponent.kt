@@ -1,11 +1,5 @@
 package io.github.jan.discordkm.api.entities.interactions.modals.components
 
-import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
-import kotlinx.serialization.Required
+import io.github.jan.discordkm.api.entities.interactions.components.ComponentWithId
 
-sealed interface ModalComponent {
-
-    @Required
-    val type: ComponentType
-
-}
+sealed interface ModalComponent : ComponentWithId

@@ -13,6 +13,7 @@ import io.github.jan.discordkm.api.entities.ApplicationCommandInteraction
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.containers.ComponentContainer
 import io.github.jan.discordkm.api.entities.containers.OptionContainer
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.interactions.AutoCompleteInteraction
@@ -22,8 +23,9 @@ import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.StandardInteraction
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
+import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
-import io.github.jan.discordkm.api.entities.interactions.modals.components.ModalRow
+import io.github.jan.discordkm.api.entities.interactions.modals.components.TextInput
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageAttachment
 import io.github.jan.discordkm.api.events.AutoCompleteEvent
@@ -66,11 +68,17 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
     private fun extractModalSubmit(data: JsonObject) : InteractionCreateEvent {
         val modalData = data["data"]!!.jsonObject
         val customId = modalData["custom_id"]!!.string
-        val components = modalData["components"]!!.jsonArray.map {
-            Json.decodeFromJsonElement<ModalRow>(it)
+        val rows = modalData["components"]!!.jsonArray.map {
+            val components = it.jsonArray.map { c ->
+                when(ComponentType[c.jsonObject["type"]!!.int]) {
+                    ComponentType.TEXT_INPUT -> Json.decodeFromJsonElement(TextInput.serializer(), c.jsonObject)
+                    else -> throw IllegalStateException("Unknown component type: ${c.jsonObject["type"]}")
+                }
+            }
+            ActionRow(components)
         }
         val interaction = StandardInteraction(client, data)
-        return ModalSubmitEvent(client, customId, components, interaction)
+        return ModalSubmitEvent(client, customId, ComponentContainer(rows), interaction)
     }
 
     private fun extractCommandAutoComplete(data: JsonObject) : InteractionCreateEvent {

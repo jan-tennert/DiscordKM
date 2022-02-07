@@ -27,14 +27,14 @@ data class Button(
     @Required
     override val type: ComponentType = ComponentType.BUTTON,
     @SerialName("custom_id")
-    var customId: String? = null,
+    override val customId: String = "",
     @SerialName("disabled")
-    var isDisabled: Boolean = false,
+    val isDisabled: Boolean = false,
     val style: ButtonStyle,
-    var label: String? = null,
-    var emoji: Emoji? = null,
-    var url: String? = null
-)  : Component
+    val label: String? = null,
+    val emoji: Emoji? = null,
+    val url: String? = null
+)  : MessageComponent, ComponentWithId
 
 @Serializable(with = ButtonStyleSerializer::class)
 enum class ButtonStyle {

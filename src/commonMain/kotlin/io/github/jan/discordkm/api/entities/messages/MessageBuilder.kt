@@ -23,7 +23,7 @@ import io.github.jan.discordkm.api.entities.interactions.components.MessageLayou
 import io.github.jan.discordkm.api.entities.interactions.components.RowBuilder
 import io.github.jan.discordkm.api.entities.interactions.components.RowLayoutBuilder
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
-import io.github.jan.discordkm.api.entities.interactions.modals.TextInput
+import io.github.jan.discordkm.api.entities.interactions.modals.TextInputBuilder
 import io.github.jan.discordkm.api.media.Attachment
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.utils.putJsonObject
@@ -140,7 +140,7 @@ val componentJson = Json {
             subclass(SelectionMenu::class)
             subclass(Button::class)
             subclass(ActionRow::class)
-            subclass(TextInput::class)
+            subclass(TextInputBuilder::class)
         }
     }
 }

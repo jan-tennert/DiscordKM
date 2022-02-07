@@ -11,7 +11,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TextInput(
+data class TextInputBuilder(
     var style: TextInputStyle,
     @SerialName("custom_id")
     var customId: String = "",
@@ -56,9 +56,9 @@ inline fun RowBuilder<ModalLayout>.textInput(
     value: String? = null,
     minLength: Int? = null,
     maxLength: Int? = null,
-    style: TextInput.TextInputStyle = TextInput.TextInputStyle.SHORT,
+    style: TextInputBuilder.TextInputStyle = TextInputBuilder.TextInputStyle.SHORT,
 ) {
-    components += TextInput(
+    components += TextInputBuilder(
         style = style,
         customId = customId,
         label = label,
@@ -87,8 +87,8 @@ inline fun RowBuilder<ModalLayout>.shortTextInput(
     minLength: Int? = null,
     maxLength: Int? = null,
 ) {
-    components += TextInput(
-        style = TextInput.TextInputStyle.SHORT,
+    components += TextInputBuilder(
+        style = TextInputBuilder.TextInputStyle.SHORT,
         customId = customId,
         label = label,
         placeholder = placeholder,
@@ -116,8 +116,8 @@ inline fun RowBuilder<ModalLayout>.multilineTextInput(
     minLength: Int? = null,
     maxLength: Int? = null,
 ) {
-    components += TextInput(
-        style = TextInput.TextInputStyle.PARAGRAPH,
+    components += TextInputBuilder(
+        style = TextInputBuilder.TextInputStyle.PARAGRAPH,
         customId = customId,
         label = label,
         placeholder = placeholder,

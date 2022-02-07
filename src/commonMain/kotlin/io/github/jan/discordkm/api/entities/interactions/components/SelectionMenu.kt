@@ -21,7 +21,7 @@ data class SelectionMenu(
     @Required
     override val type: ComponentType = ComponentType.SELECTION_MENU,
     @SerialName("custom_id")
-    val customId: String,
+    override val customId: String,
     @SerialName("min_values")
     val minValues: Int = 1,
     @SerialName("max_values")
@@ -29,7 +29,7 @@ data class SelectionMenu(
     @SerialName("disabled")
     val isDisabled: Boolean = false,
     val options: MutableList<SelectOption>
-) : Component
+) : MessageComponent, ComponentWithId
 
 /**
  * A selection menu
@@ -39,7 +39,7 @@ data class SelectionMenu(
  * @param isDisabled Whether the user can interact with this selection menu
  * @param options The options of the selection menu
 */
-inline fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisabled: Boolean = false, range: Pair<Int, Int>, options: MutableList<SelectOption>.() -> Unit, crossinline onSelection: suspend SelectionMenuEvent.() -> Unit) {
+inline fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisabled: Boolean = false, range: Pair<Int, Int> = 1 to 1, options: MutableList<SelectOption>.() -> Unit, crossinline onSelection: suspend SelectionMenuEvent.() -> Unit) {
     components += SelectionMenu(minValues = range.first, maxValues = range.second, options = mutableListOf<SelectOption>().apply(options), isDisabled = isDisabled, customId = customId)
     if(client is DiscordWebSocketClient) {
         client.on(predicate = { it.componentId == customId }, onSelection)

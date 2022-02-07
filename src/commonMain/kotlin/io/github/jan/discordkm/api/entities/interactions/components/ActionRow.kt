@@ -13,4 +13,4 @@ import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 
 @Serializable
-class ActionRow(val components: List<Component> = listOf(), @Required override val type: ComponentType = ComponentType.ACTION_ROW) : Component
+open class ActionRow(open val components: List<Component> = listOf(), @Required override val type: ComponentType = ComponentType.ACTION_ROW) : Component

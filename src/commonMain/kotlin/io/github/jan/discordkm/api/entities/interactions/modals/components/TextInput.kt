@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-class ModalTextInput(val value: String, @SerialName("custom_id") val customId: String) : ModalComponent {
+class TextInput(val value: String, @SerialName("custom_id") override val customId: String) : ModalComponent {
 
     override val type: ComponentType = ComponentType.TEXT_INPUT
 

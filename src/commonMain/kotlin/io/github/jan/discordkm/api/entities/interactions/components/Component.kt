@@ -9,16 +9,9 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.components
 
-import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
-import io.github.jan.discordkm.internal.utils.valueOfIndex
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 
 interface Component {
 
@@ -26,6 +19,12 @@ interface Component {
      * The type of the component
      */
     val type: ComponentType
+
+}
+
+interface ComponentWithId : Component {
+
+    val customId: String
 
 }
 
