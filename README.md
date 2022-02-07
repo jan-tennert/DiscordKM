@@ -8,7 +8,7 @@ Packages:
 - DiscordKM-Lavalink [![Maven Central](https://img.shields.io/maven-central/v/io.github.jan-tennert.discordkm/DiscordKM)](https://search.maven.org/artifact/io.github.jan-tennert.discordkm/DiscordKM-Lavalink) ![JVM](https://img.shields.io/badge/-jvm-brightgreen) ![JS](https://img.shields.io/badge/-js-ffd900)
 - DiscordKM-Http-Interactions [![Maven Central](https://img.shields.io/maven-central/v/io.github.jan-tennert.discordkm/DiscordKM)](https://search.maven.org/artifact/io.github.jan-tennert.discordkm/DiscordKM-Http-Interactions) ![JVM](https://img.shields.io/badge/-jvm-brightgreen)
 
-Discord: [Click here](https://discord.gg/mxRqJa4pHe)
+Discord: [Click here](https://discord.gg/mxRqJa4pHe) \
 Wiki: [Click here](https://github.com/jan-tennert/DiscordKM/wiki)
 
 #### Warning: This project is in Alpha and can change without notice
