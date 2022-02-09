@@ -48,7 +48,7 @@ enum class ButtonStyle {
 inline fun RowBuilder<MessageLayout>.actionButton(style: ButtonStyle, customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, crossinline onClick: suspend ButtonClickEvent.() -> Unit = {}) {
     components += Button(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = style)
     if(client is DiscordWebSocketClient) {
-        client.on<ButtonClickEvent>(predicate = { it.componentId == customId }, onClick)
+        client.on(predicate = { it.componentId == customId }, onClick)
     }
 }
 

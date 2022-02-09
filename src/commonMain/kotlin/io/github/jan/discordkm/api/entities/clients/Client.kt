@@ -122,7 +122,9 @@ abstract class Client(
 
     fun textFor(locale: DiscordLocale, key: String, vararg args: Any) = config.translationManager.get(locale, key, *args)
 
-    suspend fun handleEvent(event: Event) = coroutineScope { eventListeners.forEach { launch { it(event) } } }
+    suspend fun handleEvent(event: Event) = coroutineScope {
+        eventListeners.toList().forEach { launch { it(event) } }
+    }
 
     /**
      * Disconnects the bot from the rest api and the websocket
