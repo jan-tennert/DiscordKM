@@ -9,13 +9,13 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.ApplicationCommandInteraction
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.containers.ComponentContainer
 import io.github.jan.discordkm.api.entities.containers.OptionContainer
 import io.github.jan.discordkm.api.entities.guild.Role
+import io.github.jan.discordkm.api.entities.interactions.ApplicationCommandInteraction
 import io.github.jan.discordkm.api.entities.interactions.AutoCompleteInteraction
 import io.github.jan.discordkm.api.entities.interactions.ComponentInteraction
 import io.github.jan.discordkm.api.entities.interactions.InteractionOption

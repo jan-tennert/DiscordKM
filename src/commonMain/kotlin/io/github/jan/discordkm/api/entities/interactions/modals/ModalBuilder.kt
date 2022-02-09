@@ -15,10 +15,7 @@ data class ModalBuilder(@Transient override val client: Client? = null, @SerialN
     @ComponentDsl
     fun onSubmit(callback: suspend ModalSubmitEvent.() -> Unit) {
         if(client is DiscordWebSocketClient) {
-            client.on(predicate = { (it.modalId == customId).also { _ ->
-                println(it.modalId)
-                println(customId)
-            } }, callback)
+            client.on(predicate = { (it.modalId == customId) }, callback)
         }
     }
 

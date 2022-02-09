@@ -9,10 +9,10 @@
  */
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.ApplicationCommandInteraction
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.containers.OptionContainer
+import io.github.jan.discordkm.api.entities.interactions.ApplicationCommandInteraction
 import io.github.jan.discordkm.api.entities.messages.Message
 
 interface CommandEvent : InteractionCreateEvent {

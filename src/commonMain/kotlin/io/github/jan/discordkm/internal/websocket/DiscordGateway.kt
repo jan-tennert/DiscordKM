@@ -231,8 +231,6 @@ class DiscordGateway(
                             val tryMessage =
                                 if (resumeTries == 0) "First try" else if (resumeTries == 1) "Second try" else if (resumeTries == 2) "Third try" else "${resumeTries - 1}th try"
                             mutex.withLock { resumeTries++ }
-                            print(sessionId)
-                            println(lastSequenceNumber)
                             LOGGER.info { "Trying to resume... ($tryMessage)" }
                             send(Payload(6, buildJsonObject {
                                 put("token", config.token)
