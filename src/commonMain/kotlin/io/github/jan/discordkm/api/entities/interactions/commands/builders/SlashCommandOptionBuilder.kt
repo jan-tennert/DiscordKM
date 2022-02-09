@@ -31,7 +31,6 @@ open class SlashCommandOptionBuilder(open val options: MutableList<CommandOption
     }
 
     @CommandBuilder
-    @DiscordKMUnstable
     fun attachment(name: String, description: String, required: Boolean = false) { options += CommandOption(CommandOption.OptionType.ATTACHMENT, name, description, required) }
 
     @CommandBuilder

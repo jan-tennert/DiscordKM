@@ -124,7 +124,6 @@ class InteractionOption(override val name: String, val type: CommandOption.Optio
     val boolean: Boolean
         get() = value as Boolean
 
-    @DiscordKMUnstable
     val attachment: MessageAttachment
         get() = value as MessageAttachment
 
@@ -135,7 +134,7 @@ enum class InteractionType : EnumWithValue<Int> {
     APPLICATION_COMMAND,
     MESSAGE_COMPONENT,
     APPLICATION_COMMAND_AUTOCOMPLETE,
-    @DiscordKMUnstable MODAL_SUBMIT;
+    MODAL_SUBMIT;
 
     override val value: Int
         get() = ordinal + 1

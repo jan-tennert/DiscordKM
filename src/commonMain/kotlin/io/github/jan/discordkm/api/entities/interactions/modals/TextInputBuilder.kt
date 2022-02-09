@@ -12,16 +12,17 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TextInputBuilder(
-    var style: TextInputStyle,
+    val style: TextInputStyle,
     @SerialName("custom_id")
-    var customId: String = "",
-    var label: String = "",
-    var placeholder: String? = null,
-    var value: String? = null,
+    val customId: String = "",
+    val label: String = "",
+    val placeholder: String? = null,
+    val value: String? = null,
     @SerialName("min_length")
-    var minLength: Int? = null,
+    val minLength: Int? = null,
     @SerialName("max_length")
-    var maxLength: Int? = null,
+    val maxLength: Int? = null,
+    val required: Boolean = true,
 ) : Component {
 
     @Required
@@ -56,6 +57,7 @@ inline fun RowBuilder<ModalLayout>.textInput(
     value: String? = null,
     minLength: Int? = null,
     maxLength: Int? = null,
+    required: Boolean = true,
     style: TextInputBuilder.TextInputStyle = TextInputBuilder.TextInputStyle.SHORT,
 ) {
     components += TextInputBuilder(
@@ -66,6 +68,7 @@ inline fun RowBuilder<ModalLayout>.textInput(
         value = value,
         minLength = minLength,
         maxLength = maxLength,
+        required = required,
     )
 }
 
@@ -86,6 +89,7 @@ inline fun RowBuilder<ModalLayout>.shortTextInput(
     value: String? = null,
     minLength: Int? = null,
     maxLength: Int? = null,
+    required: Boolean = true,
 ) {
     components += TextInputBuilder(
         style = TextInputBuilder.TextInputStyle.SHORT,
@@ -94,7 +98,8 @@ inline fun RowBuilder<ModalLayout>.shortTextInput(
         placeholder = placeholder,
         value = value,
         minLength = minLength,
-        maxLength = maxLength
+        maxLength = maxLength,
+        required = required,
     )
 }
 
@@ -115,6 +120,7 @@ inline fun RowBuilder<ModalLayout>.multilineTextInput(
     value: String? = null,
     minLength: Int? = null,
     maxLength: Int? = null,
+    required: Boolean = true,
 ) {
     components += TextInputBuilder(
         style = TextInputBuilder.TextInputStyle.PARAGRAPH,
@@ -123,7 +129,8 @@ inline fun RowBuilder<ModalLayout>.multilineTextInput(
         placeholder = placeholder,
         value = value,
         minLength = minLength,
-        maxLength = maxLength
+        maxLength = maxLength,
+        required = required,
     )
 }
 

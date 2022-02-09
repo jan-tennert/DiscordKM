@@ -56,7 +56,6 @@ import kotlinx.serialization.json.jsonObject
 
 class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<InteractionCreateEvent> {
 
-    @OptIn(DiscordKMUnstable::class)
     override suspend fun handle(data: JsonObject) = when(InteractionType[data["type"]!!.int]) {
         InteractionType.PING -> TODO()
         InteractionType.APPLICATION_COMMAND -> extractApplicationCommand(data)
@@ -69,7 +68,7 @@ class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<I
         val modalData = data["data"]!!.jsonObject
         val customId = modalData["custom_id"]!!.string
         val rows = modalData["components"]!!.jsonArray.map {
-            val components = it.jsonArray.map { c ->
+            val components = it.jsonObject["components"]!!.jsonArray.map { c ->
                 when(ComponentType[c.jsonObject["type"]!!.int]) {
                     ComponentType.TEXT_INPUT -> Json.decodeFromJsonElement(TextInput.serializer(), c.jsonObject)
                     else -> throw IllegalStateException("Unknown component type: ${c.jsonObject["type"]}")

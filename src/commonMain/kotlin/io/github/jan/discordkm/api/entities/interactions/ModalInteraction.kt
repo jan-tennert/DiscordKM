@@ -16,7 +16,6 @@ interface ModalInteraction : Interaction {
     /**
      * Replies to this interaction with a modal (form)
      */
-    @DiscordKMUnstable
     suspend fun replyModal(builder: ModalBuilder.() -> Unit) = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
             put("type", 9) //reply with modal
