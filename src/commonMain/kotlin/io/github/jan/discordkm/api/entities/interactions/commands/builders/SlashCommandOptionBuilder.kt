@@ -4,7 +4,6 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.commands.OptionChoice
-import io.github.jan.discordkm.internal.DiscordKMUnstable
 import kotlinx.serialization.json.JsonPrimitive
 
 open class SlashCommandOptionBuilder(open val options: MutableList<CommandOption> = mutableListOf()) {

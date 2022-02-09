@@ -36,7 +36,6 @@ import io.github.jan.discordkm.api.events.ModalSubmitEvent
 import io.github.jan.discordkm.api.events.SelectionMenuEvent
 import io.github.jan.discordkm.api.events.SlashCommandEvent
 import io.github.jan.discordkm.api.events.UserCommandEvent
-import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.double

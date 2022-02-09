@@ -16,7 +16,7 @@ object Versions {
     const val KORLIBS = "2.4.10"
     const val COROUTINES = "1.6.0"
     const val STATELY = "1.2.1"
-    const val DISCORDKM = "0.7"
+    const val DISCORDKM = "0.7.1"
     const val ARROW = "1.0.1"
     const val NEXUS_STAGING = "0.30.0"
 

@@ -2,7 +2,6 @@ package io.github.jan.discordkm.api.entities.interactions
 
 import io.github.jan.discordkm.api.entities.interactions.modals.ModalBuilder
 import io.github.jan.discordkm.api.entities.messages.componentJson
-import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
@@ -19,7 +18,7 @@ interface ModalInteraction : Interaction {
     suspend fun replyModal(builder: ModalBuilder.() -> Unit) = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
             put("type", 9) //reply with modal
-            put("data", componentJson.encodeToJsonElement(ModalBuilder().apply(builder)))
+            put("data", componentJson.encodeToJsonElement(ModalBuilder(client).apply(builder)))
         })
     }
 

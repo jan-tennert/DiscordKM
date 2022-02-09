@@ -24,7 +24,6 @@ import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.messages.MessageAttachment
-import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.get
@@ -141,3 +140,6 @@ enum class InteractionType : EnumWithValue<Int> {
 
     companion object : EnumWithValueGetter<InteractionType, Int>(values())
 }
+
+@DslMarker
+annotation class ComponentDsl
