@@ -161,6 +161,7 @@ enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
     DIRECT_MESSAGES(12),
     DIRECT_MESSAGE_REACTIONS(13),
     DIRECT_MESSAGE_TYPING(14),
+    MESSAGE_CONTENT(15),
     GUILD_SCHEDULED_EVENTS(16);
 
     companion object : FlagSerializer<Intent>(values())

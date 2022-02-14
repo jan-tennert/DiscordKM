@@ -136,7 +136,6 @@ object Route {
         const val LEAVE_THREAD = "/channels/%s/thread-members/@me"
         const val REMOVE_THREAD_MEMBER = "/channels/%s/thread-members/%s"
         const val GET_THREAD_MEMBERS = "/channels/%s/thread-members"
-        const val GET_ACTIVE_CHANNEL_THREADS = "/channels/%s/threads/active"
         const val GET_PUBLIC_ARCHIVED_THREADS = "/channels/{channel.id}/threads/archived/public"
         const val GET_PRIVATE_ARCHIVED_THREADS = "/channels/%s/threads/archived/private"
         const val GET_JOINED_PRIVATE_ARCHIVED_THREADS = "/channels/%s/users/@me/threads/archived/private"

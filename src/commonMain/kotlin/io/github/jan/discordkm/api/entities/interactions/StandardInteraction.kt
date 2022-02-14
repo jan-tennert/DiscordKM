@@ -67,7 +67,7 @@ open class StandardInteraction(override val client: Client, override val data: J
      * Edits the original reply message
      */
     suspend fun editOriginalMessage(message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
-        route = Route.Interaction.EDIT_ORIGINAL(applicationId, token).patch(message.build())
+        route = Route.Interaction.EDIT_ORIGINAL(applicationId, token).patch(message.build(enableStickers = false))
         transform { Message(it.toJsonObject(), client) }
     }
 

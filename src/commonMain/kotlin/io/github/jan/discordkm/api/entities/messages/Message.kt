@@ -29,6 +29,7 @@ import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
+import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -48,8 +49,6 @@ import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -88,19 +87,21 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
     /**
      * Edits this message
      */
-    suspend fun edit(message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
-        route = Route.Message.EDIT_MESSAGE(channel.id, id).patch(Json.encodeToString(message))
+    suspend fun edit(overwrite: Boolean = false, message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
+        route = Route.Message.EDIT_MESSAGE(channel.id, id).patch(buildMessage {
+            if(!overwrite) this@Message.cache?.let { import(it) }
+        }.build(enableStickers = false))
         transform { invoke(it.toJsonObject(), client) }
     }
 
     /**
      * Edits this message
      */
-    suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(client, message))
+    suspend fun edit(overwrite: Boolean = false, message: MessageBuilder.() -> Unit) = edit(overwrite, buildMessage(client, message))
     /**
      * Edits this message
      */
-    suspend fun edit(content: String) = edit(buildMessage(client) { this.content = content })
+    suspend fun edit(overwrite: Boolean = false, content: String) = edit(overwrite, buildMessage(client) { this.content = content })
 
     /**
      * Replies to this message
@@ -250,6 +251,18 @@ data class MessageCacheEntry(
 
     override val reactions: CacheReactionContainer
         get() = CacheReactionContainer(this, cacheManager.reactionCache.values.toList())
+
+    @OptIn(DiscordKMInternal::class)
+    fun copy() = DataMessage(
+        content = content,
+        tts = isTTSMessage,
+        embeds = embeds,
+        actionRows = components,
+        reference = reference,
+        stickerIds = stickers.map { it.id },
+        oldAttachments = attachments,
+        allowedMentions = AllowedMentions(),
+    )
 
 }
 

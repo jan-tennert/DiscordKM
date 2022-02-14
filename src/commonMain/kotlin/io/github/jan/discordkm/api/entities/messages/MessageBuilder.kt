@@ -27,7 +27,6 @@ import io.github.jan.discordkm.api.entities.interactions.modals.TextInputBuilder
 import io.github.jan.discordkm.api.media.Attachment
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.utils.putJsonObject
-import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.ktor.client.request.forms.FormBuilder
 import io.ktor.client.request.forms.FormPart
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -64,6 +63,7 @@ class MessageBuilder internal constructor(private val client: Client? = null) {
     var tts = false
     var attachments: MutableList<Attachment> = mutableListOf()
     var actionRows = mutableListOf<ActionRow>()
+    private val oldAttachments = mutableListOf<MessageAttachment>()
 
     fun import(message: DataMessage) {
         content = message.content
@@ -74,13 +74,14 @@ class MessageBuilder internal constructor(private val client: Client? = null) {
         tts = message.tts
         attachments = message.attachments.toMutableList()
         actionRows = message.actionRows.toMutableList()
+        oldAttachments.addAll(message.oldAttachments)
     }
+
+    fun import(message: MessageCacheEntry) = import(message.copy())
 
     fun reference(message: Message) { reference = Message.Reference(message.id, message.guild!!.id, message.channel.id, true) }
 
     fun allowedMentions(builder: AllowedMentions.() -> Unit) { allowedMentions = AllowedMentions().apply(builder) }
-
-   // fun import(message: Message) = import(message.copy())
 
     fun actionRow(builder: RowBuilder<MessageLayout>.() -> Unit) { actionRows += RowBuilder<MessageLayout>(client).apply(builder).build() }
 
@@ -92,10 +93,12 @@ class MessageBuilder internal constructor(private val client: Client? = null) {
 
     fun file(attachment: Attachment) { attachments += attachment }
 
+    fun attachment(attachment: MessageAttachment) { oldAttachments += attachment }
+
     fun embed(builder: EmbedBuilder.() -> Unit) { embeds += buildEmbed(builder) }
 
     @OptIn(DiscordKMInternal::class)
-    fun build() = DataMessage(content, tts, embeds, allowedMentions, attachments, actionRows, reference)
+    fun build() = DataMessage(content, tts, embeds, allowedMentions, attachments, actionRows, reference, stickerIds, oldAttachments)
 
 }
 
@@ -153,22 +156,24 @@ class DataMessage @DiscordKMInternal constructor(
     val attachments: List<Attachment> = emptyList(), //ToDo
     val actionRows: List<ActionRow>,
     val reference: Message.Reference? = null,
-    val stickerIds: List<Snowflake> = emptyList()
+    val stickerIds: List<Snowflake> = emptyList(),
+    val oldAttachments: List<MessageAttachment> = emptyList()
 ) {
 
-    private fun buildJson() = buildJsonObject {
+    private fun buildJson(enableStickers: Boolean = true) = buildJsonObject {
         put("content", content)
         put("tts", tts)
         put("embeds", Json.encodeToJsonElement(embeds).jsonArray)
         put("allowed_mentions", Json.encodeToJsonElement(allowedMentions).jsonObject)
         put("components", componentJson.encodeToJsonElement(actionRows))
         put("message_reference", Json.encodeToJsonElement(reference))
-        put("sticker_ids", Json.encodeToJsonElement(stickerIds))
-    }.toString()
+        if(enableStickers) put("sticker_ids", Json.encodeToJsonElement(stickerIds))
+        put("attachments", Json.encodeToJsonElement(oldAttachments))
+    }
 
-    fun build(ephemeral: Boolean = false): Any = if(attachments.isEmpty()) {
+    fun build(ephemeral: Boolean = false, enableStickers: Boolean = true): Any = if(attachments.isEmpty()) {
         buildJsonObject {
-            putJsonObject(buildJson().toJsonObject())
+            putJsonObject(buildJson(enableStickers))
             if(ephemeral) put("flags", 1 shl 6)
         }
     } else {
@@ -176,7 +181,7 @@ class DataMessage @DiscordKMInternal constructor(
             formData {
                 addAttachments(attachments)
                 append(FormPart("payload_json", buildJsonObject {
-                    putJsonObject(buildJson().toJsonObject())
+                    putJsonObject(buildJson())
                     if(ephemeral) put("flags", 1 shl 6)
                 }.toString(), headers = buildHeaders {
                     append(HttpHeaders.ContentType, "application/json")
@@ -188,7 +193,7 @@ class DataMessage @DiscordKMInternal constructor(
         buildJsonObject {
             put("type", type)
             put("data", buildJsonObject {
-                putJsonObject(buildJson().toJsonObject())
+                putJsonObject(buildJson())
                 if(ephemeral) put("flags", 1 shl 6)
             })
         }
@@ -200,7 +205,7 @@ class DataMessage @DiscordKMInternal constructor(
                     putJsonObject(buildJsonObject {
                         put("type", type)
                         put("data", buildJsonObject {
-                            putJsonObject(buildJson().toJsonObject())
+                            putJsonObject(buildJson())
                             if(ephemeral) put("flags", 1 shl 6)
                         })
                     })

@@ -40,6 +40,7 @@ class RestAction<T>(val requester: Requester) {
 
     @Suppress("UNCHECKED_CAST")
     suspend fun queue(): T {
+        println(route.body)
         val http = requester.http
         check()
         val request = Request(route.endpoint) {

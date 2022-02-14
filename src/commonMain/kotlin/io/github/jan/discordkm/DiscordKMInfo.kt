@@ -10,5 +10,5 @@
 package io.github.jan.discordkm
 
 object DiscordKMInfo {
-    const val DISCORD_API_VERSION = "9"
+    const val DISCORD_API_VERSION = "10"
 }

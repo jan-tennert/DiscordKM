@@ -50,6 +50,7 @@ data class TextInputBuilder(
  * @param minLength The minimum length of the text input
  * @param maxLength The maximum length of the text input
  * @param style The style of the text input
+ * @param required Whether the text input is required in the form
  */
 @ComponentDsl
 inline fun RowBuilder<ModalLayout>.textInput(
@@ -83,6 +84,7 @@ inline fun RowBuilder<ModalLayout>.textInput(
  * @param value The pre-filled value of the text input
  * @param minLength The minimum length of the text input
  * @param maxLength The maximum length of the text input
+ * @param required Whether the text input is required in the form
  */
 @ComponentDsl
 inline fun RowBuilder<ModalLayout>.shortTextInput(
@@ -115,6 +117,7 @@ inline fun RowBuilder<ModalLayout>.shortTextInput(
  * @param value The pre-filled value of the text input
  * @param minLength The minimum length of the text input
  * @param maxLength The maximum length of the text input
+ * @param required Whether the text input is required in the form
  */
 @ComponentDsl
 inline fun RowBuilder<ModalLayout>.multilineTextInput(
