@@ -128,6 +128,7 @@ kotlin {
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
         }
         withJava()
     }

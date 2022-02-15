@@ -98,6 +98,7 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
      * Edits this message
      */
     suspend fun edit(overwrite: Boolean = false, message: MessageBuilder.() -> Unit) = edit(overwrite, buildMessage(client, message))
+
     /**
      * Edits this message
      */
