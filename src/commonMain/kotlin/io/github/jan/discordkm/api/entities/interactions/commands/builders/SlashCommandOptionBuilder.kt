@@ -1,69 +1,182 @@
 package io.github.jan.discordkm.api.entities.interactions.commands.builders
 
+import io.github.jan.discordkm.api.entities.DiscordLocale
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.commands.OptionChoice
+import io.github.jan.discordkm.api.entities.misc.TranslationManager
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
-open class SlashCommandOptionBuilder(open val options: MutableList<CommandOption> = mutableListOf()) {
+open class SlashCommandOptionBuilder(
+    private val translationManager: TranslationManager?,
+    private val commandName: String,
+    private val subCommand: String? = null,
+    private val subCommandGroup: String? = null,
+    open val options: MutableList<CommandOption> = mutableListOf()
+) {
 
     @CommandBuilder
-    fun string(name: String, description: String, required: Boolean = false, autocomplete: Boolean? = null, choices: ChoicesBuilder<String>.() -> Unit = {}) {
+    fun string(
+        name: String,
+        description: String,
+        required: Boolean = false,
+        autocomplete: Boolean? = null,
+        translations: TranslationBuilder.() -> Unit = { },
+        choices: ChoicesBuilder<String>.() -> Unit = {}
+    ) {
         val choiceBuilder = ChoicesBuilder<String>()
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.STRING, name, description, required, choices = choiceBuilder, autocomplete = autocomplete)
+        options += CommandOption(CommandOption.OptionType.STRING, name, description, required, choices = choiceBuilder, autocomplete = autocomplete, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
     }
 
     @CommandBuilder
-    fun int(name: String, description: String, required: Boolean = false, max: Int? = null, min: Int? = null, autocomplete: Boolean? = null,  choices: ChoicesBuilder<Int>.() -> Unit = {}) {
+    fun int(
+        name: String,
+        description: String,
+        required: Boolean = false,
+        max: Int? = null,
+        min: Int? = null,
+        autocomplete: Boolean? = null,
+        translations: TranslationBuilder.() -> Unit = { },
+        choices: ChoicesBuilder<Int>.() -> Unit = {}
+    ) {
         val choiceBuilder = ChoicesBuilder<Int>()
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.INTEGER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder, autocomplete = autocomplete)
+        options += CommandOption(CommandOption.OptionType.INTEGER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder, autocomplete = autocomplete, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
     }
 
     @CommandBuilder
-    fun number(name: String, description: String, required: Boolean = false, max: Double? = null, min: Double? = null, autocomplete: Boolean? = null,  choices: ChoicesBuilder<Double>.() -> Unit = {}) {
+    fun number(
+        name: String,
+        description: String,
+        required: Boolean = false,
+        max: Double? = null,
+        min: Double? = null,
+        translations: TranslationBuilder.() -> Unit = { },
+        autocomplete: Boolean? = null,
+        choices: ChoicesBuilder<Double>.() -> Unit = {}
+    ) {
         val choiceBuilder = ChoicesBuilder<Double>()
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.NUMBER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder, autocomplete = autocomplete)
+        options += CommandOption(CommandOption.OptionType.NUMBER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder, autocomplete = autocomplete, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
     }
 
     @CommandBuilder
-    fun attachment(name: String, description: String, required: Boolean = false) { options += CommandOption(CommandOption.OptionType.ATTACHMENT, name, description, required) }
+    fun attachment(
+        name: String,
+        description: String,
+        required: Boolean = false,
+        translations: TranslationBuilder.() -> Unit = { }
+    ) {
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
+        options += CommandOption(CommandOption.OptionType.ATTACHMENT, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+    }
 
     @CommandBuilder
-    fun boolean(name: String, description: String, required: Boolean = false) { options += CommandOption(CommandOption.OptionType.BOOLEAN, name, description, required) }
+    fun boolean(
+        name: String,
+        description: String,
+        required: Boolean = false,
+        translations: TranslationBuilder.() -> Unit = { }
+    ) {
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
+        options += CommandOption(CommandOption.OptionType.BOOLEAN, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+    }
 
     @CommandBuilder
-    fun user(name: String, description: String, required: Boolean = false) { options += CommandOption(CommandOption.OptionType.USER, name, description, required) }
+    fun user(
+        name: String,
+        description: String,
+        required: Boolean = false,
+        translations: TranslationBuilder.() -> Unit = { }
+    ) {
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
+        options += CommandOption(CommandOption.OptionType.USER, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+    }
 
     @CommandBuilder
-    fun mentionable(name: String, description: String, required: Boolean = false) { options += CommandOption(
-        CommandOption.OptionType.MENTIONABLE, name, description, required) }
+    fun mentionable(
+        name: String,
+        description: String,
+        required: Boolean = false,
+        translations: TranslationBuilder.() -> Unit = { }
+    ) {
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
+        options += CommandOption(
+        CommandOption.OptionType.MENTIONABLE, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+    }
 
     @CommandBuilder
-    fun channel(name: String, description: String, required: Boolean = false, types: List<ChannelType> = emptyList()) { options += CommandOption(
-        CommandOption.OptionType.CHANNEL, name, description, required, channelTypes = types) }
+    fun channel(
+        name: String,
+        description: String,
+        required: Boolean = false,
+        types: List<ChannelType> = emptyList(),
+        translations: TranslationBuilder.() -> Unit = { }
+    ) {
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
+        options += CommandOption(
+        CommandOption.OptionType.CHANNEL, name, description, required, channelTypes = types, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+    }
 
     @CommandBuilder
-    fun role(name: String, description: String, required: Boolean = false) { options += CommandOption(CommandOption.OptionType.ROLE, name, description, required) }
+    fun role(
+        name: String,
+        description: String,
+        required: Boolean = false,
+        translations: TranslationBuilder.() -> Unit = { }
+    ) {
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
+        options += CommandOption(CommandOption.OptionType.ROLE, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+    }
 
     @CommandBuilder
-    fun subCommand(name: String, description: String, builder: SlashCommandOptionBuilder.() -> Unit = {}) {
-        val options = SlashCommandOptionBuilder()
+    fun subCommand(
+        name: String,
+        description: String,
+        translations: TranslationBuilder.() -> Unit = { },
+        builder: SlashCommandOptionBuilder.() -> Unit = {}
+    ) {
+        val options = SlashCommandOptionBuilder(translationManager, commandName, name)
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         options.builder()
-        this.options += CommandOption(CommandOption.OptionType.SUB_COMMAND, name, description, false, options = options.options)
+        this.options += CommandOption(CommandOption.OptionType.SUB_COMMAND, name, description, false, options = options.options, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
     }
 
     @CommandBuilder
-    fun subCommandGroup(name: String, description: String, builder: SubCommandGroupBuilder.() -> Unit) {
-        val subCommandGroups = SubCommandGroupBuilder()
+    fun subCommandGroup(
+        name: String,
+        description: String,
+        translations: TranslationBuilder.() -> Unit = { },
+        builder: SubCommandGroupBuilder.() -> Unit
+    ) {
+        val subCommandGroups = SubCommandGroupBuilder(translationManager, commandName, subCommandGroupName = name)
+        val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         subCommandGroups.builder()
-        options += CommandOption(CommandOption.OptionType.SUB_COMMAND_GROUP, name, description, false, options = subCommandGroups.subCommands)
+        options += CommandOption(CommandOption.OptionType.SUB_COMMAND_GROUP, name, description, false, options = subCommandGroups.subCommands, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
     }
 
-    inner class SubCommandGroupBuilder(internal val subCommands: MutableList<CommandOption> = mutableListOf()) {
+    private fun TranslationBuilder.applyFileTranslations(name: String) : TranslationBuilder {
+        val key = when {
+            subCommandGroup != null -> "application.command.$commandName.options.$subCommandGroup.options.$subCommand.options.$name"
+            subCommand != null -> "application.command.$commandName.options.$subCommand.options.$name"
+            else -> "application.command.$commandName.options.$name"
+        }
+        translationManager?.let {
+            this.name.putAll(it.getAll("$key.name"))
+            this.description.putAll(it.getAll("$key.description"))
+        }
+        return this
+    }
+
+    private fun Map<DiscordLocale, String>.format() = JsonObject(map { it.key.value to JsonPrimitive(it.value) }.toMap())
+
+    inner class SubCommandGroupBuilder(private val translationManager: TranslationManager?, val commandName: String, val subCommandGroupName: String, internal val subCommands: MutableList<CommandOption> = mutableListOf()) {
 
         @CommandBuilder
         fun subCommand(
@@ -72,7 +185,7 @@ open class SlashCommandOptionBuilder(open val options: MutableList<CommandOption
             required: Boolean = false,
             builder: SlashCommandOptionBuilder.() -> Unit = {}
         ) {
-            val options = SlashCommandOptionBuilder()
+            val options = SlashCommandOptionBuilder(translationManager, commandName, subCommandGroup = subCommandGroupName, subCommand = name)
             options.builder()
             subCommands += CommandOption(CommandOption.OptionType.SUB_COMMAND, name, description, required, options = options.options)
         }

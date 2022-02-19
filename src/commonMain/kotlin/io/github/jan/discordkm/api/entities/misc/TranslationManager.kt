@@ -24,6 +24,10 @@ class TranslationManager private constructor(private val rawTranslations: List<T
         return translation.flatMap { it.translations[key].toOption() }.map { it.format(args) }
     }
 
+    fun getAll(key: String, vararg args: Any) = translations.map { (locale, _) ->
+        locale to get(locale, key, *args)
+    }.filter { it.second is Some<String> }.associate { it.first to (it.second as Some<String>).value }
+
     companion object {
         suspend fun fromFolder(folder: VfsFile, mergeEnglish: Boolean = false, defaultLanguage: DiscordLocale = DiscordLocale.ENGLISH_US) : TranslationManager {
             val files = folder.list().let {

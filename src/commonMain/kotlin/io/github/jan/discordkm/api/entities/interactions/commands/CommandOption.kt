@@ -14,6 +14,7 @@ import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
@@ -32,8 +33,10 @@ data class CommandOption(
     @SerialName("channel_types")
     val channelTypes: List<ChannelType>? = null,
     val autocomplete: Boolean? = null,
-    //val nameLocalizations
-    //val descriptionLocalizations
+    @SerialName("name_localizations")
+    val nameLocalizations: JsonObject? = null,
+    @SerialName("description_localizations")
+    val descriptionLocalizations: JsonObject? = null
 ) {
 
     enum class OptionType : EnumWithValue<Int> {

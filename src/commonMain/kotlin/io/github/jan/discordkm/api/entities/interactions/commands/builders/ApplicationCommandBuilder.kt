@@ -12,11 +12,46 @@ package io.github.jan.discordkm.api.entities.interactions.commands.builders
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
+import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.api.events.CommandEvent
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name: String, var description: String, val client: DiscordWebSocketClient? = null) {
+
+    val translations = TranslationBuilder()
+    internal var translationManager: TranslationManager? = null
+
+    /**
+     * Imports translations from the translation manager.
+     *
+     * The translation keys can be changed like this in the translation files:
+     *
+     * **application.command.[name].name**
+     *
+     * **application.command.[name].description**
+     *
+     * To change the options, use the following keys:
+     *
+     * **application.command.[name].options.*optionName*.name**
+     *
+     * **application.command.[name].options.*optionName*.description**
+     *
+     * And if you use sub commands or sub commands groups
+     *
+     * **application.command.[name].options.*subCommandName*.options.*optionName*.description**
+     *
+     * **application.command.[name].options.*subCommandGroupName*.options.*subCommandName*.options.*optionName*.description**
+     */
+    open fun importTranslations(manager: TranslationManager) {
+        translations {
+            name.putAll(manager.getAll("application.command.$name.name"))
+            description.putAll(manager.getAll("application.command.$name.description"))
+        }
+        translationManager = manager
+    }
 
     @CommandBuilder
     inline fun <reified E : CommandEvent> onCommand(
@@ -29,6 +64,8 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name:
         put("name", name)
         put("description", description)
         put("type", type.ordinal + 1)
+        put("name_localizations", JsonObject(translations.name.map { it.key.value to JsonPrimitive(it.value) }.toMap()))
+        put("description_localizations", JsonObject(translations.description.map { it.key.value to JsonPrimitive(it.value) }.toMap()))
     }
 
 }

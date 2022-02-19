@@ -40,7 +40,7 @@ class ChatInputCommandBuilder(name: String, description: String, private val opt
 
     @CommandBuilder
     fun options(optionBuilder: SlashCommandOptionBuilder.() -> Unit) {
-        val builder = SlashCommandOptionBuilder()
+        val builder = SlashCommandOptionBuilder(translationManager, name)
         builder.optionBuilder()
         options.addAll(builder.options)
     }
