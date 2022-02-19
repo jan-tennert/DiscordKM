@@ -29,7 +29,16 @@ open class SlashCommandOptionBuilder(
         val choiceBuilder = ChoicesBuilder<String>()
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.STRING, name, description, required, choices = choiceBuilder, autocomplete = autocomplete, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+        options += CommandOption(
+            CommandOption.OptionType.STRING,
+            name,
+            description,
+            required,
+            choices = choiceBuilder,
+            autocomplete = autocomplete,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -46,7 +55,18 @@ open class SlashCommandOptionBuilder(
         val choiceBuilder = ChoicesBuilder<Int>()
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.INTEGER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder, autocomplete = autocomplete, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+        options += CommandOption(
+            CommandOption.OptionType.INTEGER,
+            name,
+            description,
+            required,
+            min?.let { JsonPrimitive(it) },
+            max?.let { JsonPrimitive(it) },
+            choiceBuilder,
+            autocomplete = autocomplete,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -63,7 +83,18 @@ open class SlashCommandOptionBuilder(
         val choiceBuilder = ChoicesBuilder<Double>()
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         choiceBuilder.choices()
-        options += CommandOption(CommandOption.OptionType.NUMBER, name, description, required, min?.let { JsonPrimitive(it) }, max?.let { JsonPrimitive(it) }, choiceBuilder, autocomplete = autocomplete, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+        options += CommandOption(
+            CommandOption.OptionType.NUMBER,
+            name,
+            description,
+            required,
+            min?.let { JsonPrimitive(it) },
+            max?.let { JsonPrimitive(it) },
+            choiceBuilder,
+            autocomplete = autocomplete,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -74,7 +105,14 @@ open class SlashCommandOptionBuilder(
         translations: TranslationBuilder.() -> Unit = { }
     ) {
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
-        options += CommandOption(CommandOption.OptionType.ATTACHMENT, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+        options += CommandOption(
+            CommandOption.OptionType.ATTACHMENT,
+            name,
+            description,
+            required,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -85,7 +123,14 @@ open class SlashCommandOptionBuilder(
         translations: TranslationBuilder.() -> Unit = { }
     ) {
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
-        options += CommandOption(CommandOption.OptionType.BOOLEAN, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+        options += CommandOption(
+            CommandOption.OptionType.BOOLEAN,
+            name,
+            description,
+            required,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -96,7 +141,14 @@ open class SlashCommandOptionBuilder(
         translations: TranslationBuilder.() -> Unit = { }
     ) {
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
-        options += CommandOption(CommandOption.OptionType.USER, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+        options += CommandOption(
+            CommandOption.OptionType.USER,
+            name,
+            description,
+            required,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -108,7 +160,13 @@ open class SlashCommandOptionBuilder(
     ) {
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         options += CommandOption(
-        CommandOption.OptionType.MENTIONABLE, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+            CommandOption.OptionType.MENTIONABLE,
+            name,
+            description,
+            required,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -121,7 +179,14 @@ open class SlashCommandOptionBuilder(
     ) {
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         options += CommandOption(
-        CommandOption.OptionType.CHANNEL, name, description, required, channelTypes = types, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+            CommandOption.OptionType.CHANNEL,
+            name,
+            description,
+            required,
+            channelTypes = types,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -132,7 +197,14 @@ open class SlashCommandOptionBuilder(
         translations: TranslationBuilder.() -> Unit = { }
     ) {
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
-        options += CommandOption(CommandOption.OptionType.ROLE, name, description, required, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+        options += CommandOption(
+            CommandOption.OptionType.ROLE,
+            name,
+            description,
+            required,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -145,7 +217,15 @@ open class SlashCommandOptionBuilder(
         val options = SlashCommandOptionBuilder(translationManager, commandName, name)
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         options.builder()
-        this.options += CommandOption(CommandOption.OptionType.SUB_COMMAND, name, description, false, options = options.options, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+        this.options += CommandOption(
+            CommandOption.OptionType.SUB_COMMAND,
+            name,
+            description,
+            false,
+            options = options.options,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     @CommandBuilder
@@ -158,7 +238,15 @@ open class SlashCommandOptionBuilder(
         val subCommandGroups = SubCommandGroupBuilder(translationManager, commandName, subCommandGroupName = name)
         val translation = TranslationBuilder().apply(translations).applyFileTranslations(name)
         subCommandGroups.builder()
-        options += CommandOption(CommandOption.OptionType.SUB_COMMAND_GROUP, name, description, false, options = subCommandGroups.subCommands, nameLocalizations = translation.name.format(), descriptionLocalizations = translation.description.format())
+        options += CommandOption(
+            CommandOption.OptionType.SUB_COMMAND_GROUP,
+            name,
+            description,
+            false,
+            options = subCommandGroups.subCommands,
+            nameLocalizations = translation.name.format(),
+            descriptionLocalizations = translation.description.format()
+        )
     }
 
     private fun TranslationBuilder.applyFileTranslations(name: String) : TranslationBuilder {
