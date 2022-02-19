@@ -10,3 +10,4 @@ buildSrc/.gradle/
 ignoreDir
 Http-Interactions/build
 Lavalink/build
+test.json

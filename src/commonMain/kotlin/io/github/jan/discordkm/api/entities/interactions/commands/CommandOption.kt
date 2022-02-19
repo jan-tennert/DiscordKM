@@ -12,19 +12,13 @@ package io.github.jan.discordkm.api.entities.interactions.commands
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
-import io.github.jan.discordkm.internal.utils.valueOfIndex
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
 data class CommandOption(
-    @Serializable(with = OptionTypeSerializer::class) val type: OptionType,
+    @Serializable(with = OptionType.Companion::class) val type: OptionType,
     val name: String,
     val description: String,
     @SerialName("required")
@@ -60,30 +54,5 @@ data class CommandOption(
 
         companion object : EnumWithValueGetter<OptionType, Int>(values())
     }
-
-}
-
-object ChannelTypeSerializer : KSerializer<ChannelType> {
-
-    override fun deserialize(decoder: Decoder) = valueOfIndex<ChannelType>(decoder.decodeInt())
-
-    override val descriptor = PrimitiveSerialDescriptor("ChannelType", PrimitiveKind.INT)
-
-    override fun serialize(encoder: Encoder, value: ChannelType) {
-        encoder.encodeInt(value.value)
-    }
-
-
-}
-
-object OptionTypeSerializer: KSerializer<CommandOption.OptionType> {
-
-    override fun deserialize(decoder: Decoder) = valueOfIndex<CommandOption.OptionType>(decoder.decodeInt(), 1)
-    override val descriptor = PrimitiveSerialDescriptor("OptionType", PrimitiveKind.INT)
-
-    override fun serialize(encoder: Encoder, value: CommandOption.OptionType) {
-        encoder.encodeInt(value.ordinal + 1)
-    }
-
 
 }

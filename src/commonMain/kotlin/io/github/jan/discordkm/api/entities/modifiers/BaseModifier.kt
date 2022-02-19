@@ -1,9 +1,7 @@
 package io.github.jan.discordkm.api.entities.modifiers
 
-import kotlinx.serialization.json.JsonObject
+sealed interface BaseModifier <T> {
 
-interface BaseModifier {
-
-    val data: JsonObject
+    val data: T
 
 }

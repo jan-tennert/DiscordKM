@@ -122,13 +122,11 @@ allprojects {
     }
 }
 
-
-
 kotlin {
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
-            kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+            //kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
         }
         withJava()
     }
@@ -150,12 +148,11 @@ kotlin {
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.COROUTINES}")
                 api("com.soywiz.korlibs.korio:korio:${Versions.KORLIBS}")
                 api("io.arrow-kt:arrow-core:${Versions.ARROW}")
-                // https://mvnrepository.com/artifact/com.google.guava/guava
-                api("com.google.guava:guava:31.0.1-jre")
             }
         }
         val jvmMain by getting {
             dependencies {
+                implementation("com.google.guava:guava:${Versions.GUAVA}")
                 implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
             }
         }

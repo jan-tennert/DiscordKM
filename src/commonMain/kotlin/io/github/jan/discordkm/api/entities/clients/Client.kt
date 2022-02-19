@@ -43,27 +43,23 @@ import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
 import io.github.jan.discordkm.internal.utils.LoggerConfig
+import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.Encoding
 import io.ktor.client.HttpClientConfig
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlin.coroutines.CoroutineContext
 
 abstract class Client(
     val config: ClientConfig
-) : CoroutineScope, CommandHolder, BaseEntity {
+) : CommandHolder, BaseEntity {
 
     val requester = Requester(config)
-    override val coroutineContext: CoroutineContext = Dispatchers.Default
     override val client: Client get() = this
     val cacheManager = ClientCacheManager(this)
     val eventListeners = mutableListOf<EventListener>()
@@ -97,12 +93,10 @@ abstract class Client(
     /**
      * Edits the bot's user
      */
-    suspend fun modifySelfUser(builder: suspend SelfUserEdit.() -> Unit) = buildRestAction<UserCacheEntry> {
-        val edit = SelfUserEdit()
-        edit.builder()
+    suspend fun modifySelfUser(username: String, image: Image? = null) = buildRestAction<UserCacheEntry> {
         route = Route.User.MODIFY_SELF_USER.patch(buildJsonObject {
-            edit.username?.let { put("username", it) }
-            edit.image?.let { put("image", it.encodedData) }
+            putOptional("username", username)
+            putOptional("image", image?.encodedData)
         })
         transform { UserSerializer.deserialize(it.toJsonObject(), this@Client) }
         onFinish {
@@ -110,14 +104,6 @@ abstract class Client(
                 client.selfUser = it
             }
         }
-    }
-
-    /**
-     * Edits the bot's user
-     */
-    suspend fun modifySelfUser(username: String, image: Image? = null) = modifySelfUser {
-        this.username = username
-        this.image = image
     }
 
     fun textFor(locale: DiscordLocale, key: String, vararg args: Any) = config.translationManager.get(locale, key, *args)
@@ -135,9 +121,6 @@ abstract class Client(
      * Starts the requester
      */
     abstract suspend fun login()
-
-    data class SelfUserEdit(var username: String? = null, var image: Image? = null)
-
 
 }
 

@@ -2,7 +2,6 @@ package io.github.jan.discordkm.api.entities.modifiers.guild
 
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
-import io.github.jan.discordkm.internal.check
 import io.github.jan.discordkm.internal.utils.modify
 import io.github.jan.discordkm.internal.utils.putJsonObject
 import io.github.jan.discordkm.internal.utils.putOptional
@@ -28,7 +27,6 @@ class ThreadModifier() : ParentalModifier(), MessageChannelModifier {
 
     override val data: JsonObject
         get() = super<MessageChannelModifier>.data.modify {
-            slowModeTime.check("The slowmode time has to be between zero and 21600 seconds") { it.seconds < 21600 && it.seconds > 0 }
             putOptional("name", name)
             putOptional("rate_limit_per_user", slowModeTime?.seconds?.toInt())
             putOptional("auto_archive_duration", autoArchiveDuration?.duration?.minutes?.toInt())

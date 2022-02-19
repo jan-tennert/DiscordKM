@@ -4,13 +4,13 @@ import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
-import io.github.jan.discordkm.api.entities.modifiers.BaseModifier
+import io.github.jan.discordkm.api.entities.modifiers.JsonModifier
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.putJsonArray
 
-sealed class GuildChannelModifier : BaseModifier {
+sealed class GuildChannelModifier : JsonModifier {
 
     /**
      * The new name for the guild channel

@@ -30,6 +30,7 @@ import io.github.jan.discordkm.api.entities.containers.CacheGuildMemberContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildRoleContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildThreadContainer
 import io.github.jan.discordkm.api.entities.containers.CacheScheduledEventContainer
+import io.github.jan.discordkm.api.entities.containers.CacheStickerContainer
 import io.github.jan.discordkm.api.entities.containers.CommandContainer
 import io.github.jan.discordkm.api.entities.containers.EmoteContainer
 import io.github.jan.discordkm.api.entities.containers.GuildChannelContainer
@@ -37,6 +38,7 @@ import io.github.jan.discordkm.api.entities.containers.GuildMemberContainer
 import io.github.jan.discordkm.api.entities.containers.GuildRoleContainer
 import io.github.jan.discordkm.api.entities.containers.GuildThreadContainer
 import io.github.jan.discordkm.api.entities.containers.ScheduledEventContainer
+import io.github.jan.discordkm.api.entities.containers.StickerContainer
 import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLog
 import io.github.jan.discordkm.api.entities.guild.auditlog.AuditLogAction
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
@@ -70,6 +72,7 @@ import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.buildJsonObject
@@ -97,6 +100,8 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         get() = EmoteContainer(this)
     val scheduledEvents: ScheduledEventContainer
         get() = ScheduledEventContainer(this)
+    val stickers: StickerContainer
+        get() = StickerContainer(this)
     override val commands: CommandContainer
         get() = CommandContainer(this, "/applications/${client.selfUser.id}/guilds/$id/commands")
 
@@ -524,6 +529,8 @@ class GuildCacheEntry(
         get() = CacheGuildThreadContainer(this, cacheManager.threadCache.safeValues)
     override val channels: CacheGuildChannelContainer
         get() = CacheGuildChannelContainer(this, cacheManager.channelCache.safeValues)
+    override val stickers: StickerContainer
+        get() = CacheStickerContainer(this, cacheManager.stickerCache.safeValues)
     val voiceStates: Map<Snowflake, VoiceStateCacheEntry>
         get() = cacheManager.voiceStates.safeValues.associateBy { it.user.id }
     val presences: Map<Snowflake, Guild.GuildPresenceCacheEntry>
@@ -590,6 +597,7 @@ class GuildCacheEntry(
      * @param timeout When something goes wrong, the function will not block forever and will just return an empty list when the timeout is reached
      * @return All members requested
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun requestGuildMembers(
         query: String? = null,
         limit: Int = 0,

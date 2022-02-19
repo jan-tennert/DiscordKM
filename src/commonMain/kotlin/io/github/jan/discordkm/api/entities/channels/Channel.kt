@@ -5,7 +5,6 @@ import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.channels.guild.Category
-import io.github.jan.discordkm.api.entities.channels.guild.GuildMessageChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.NewsChannel
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.TextChannel
@@ -13,7 +12,6 @@ import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.interactions.commands.ChannelTypeSerializer
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -60,7 +58,7 @@ interface Channel : SnowflakeEntity, BaseEntity, Mentionable, CacheEntity {
 
 interface ChannelCacheEntry : Channel, CacheEntry
 
-@Serializable(with = ChannelTypeSerializer::class)
+@Serializable(with = ChannelType.Companion::class)
 enum class ChannelType(override val value: Int) : EnumWithValue<Int>{
     UNKNOWN(-1),
     GUILD_TEXT(0),

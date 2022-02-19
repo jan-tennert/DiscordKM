@@ -9,14 +9,59 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
-import io.github.jan.discordkm.api.entities.BaseEntity
+import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.modifiers.guild.StickerModifier
+import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.DiscordImage
+import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.patch
+import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
+import io.github.jan.discordkm.internal.utils.toJsonObject
+
+sealed interface Sticker : GuildEntity, SnowflakeEntity {
+
+    /**
+     * Modifies this sticker
+     */
+    suspend fun modify(builder: StickerModifier.() -> Unit) = client.buildRestAction<Sticker> {
+        route = Route.Sticker.MODIFY_GUILD_STICKER(guild.id, id).patch(StickerModifier(true).apply(builder).data)
+        transform { GuildSerializer.deserializeSticker(it.toJsonObject(), guild) }
+    }
+
+    /**
+     * Deletes this sticker
+     */
+    suspend fun delete() = client.buildRestAction<Unit> {
+        route = Route.Sticker.DELETE_GUILD_STICKER(guild.id, id).delete()
+    }
+
+    enum class FormatType : EnumWithValue<Int> {
+        PNG,
+        APNG,
+        LOTTIE;
+
+        override val value: Int
+            get() = ordinal + 1
+
+        companion object : EnumWithValueGetter<FormatType, Int>(values())
+    }
+
+    companion object {
+
+        operator fun invoke(id: Snowflake, guild: Guild): Sticker = IndependentSticker(id, guild)
+
+    }
+
+}
+
+data class IndependentSticker(override val id: Snowflake, override val guild: Guild) : Sticker
 
 /**
  * Represents a Sticker. Can be a default sticker or a guild sticker
@@ -30,36 +75,27 @@ import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
  * @param isAvailable Whether the sticker is available. Can be false if the guild server boost tier changed
  * @param type The type of the sticker (DEFAULT, GUILD)
  */
-class Sticker(
+class StickerCacheEntry(
     val packId: Snowflake?,
-    val name: String,
+    override val name: String,
     val description: String?,
     val tags : List<String>,
     val type: StickerType,
-    val formatType: FormatType,
+    val formatType: Sticker.FormatType,
     val isAvailable: Boolean,
-    val guild: Guild?,
+    override val guild: Guild,
     val sortValue: Int?,
     val creator: User?,
-    override val client: Client,
     override val id: Snowflake
-) : BaseEntity, SnowflakeEntity {
+) : Sticker, Nameable {
 
     val url = DiscordImage.sticker(id, formatType)
 
-    enum class FormatType : EnumWithValue<Int> {
-        PNG,
-        APNG,
-        LOTTIE;
+    override val client = guild.client
 
-        override val value: Int
-            get() = ordinal + 1
-
-        companion object : EnumWithValueGetter<FormatType, Int>(values())
-    }
-
-    class Item(val name: String, override val id: Snowflake, val formatType: FormatType) : SnowflakeEntity
 }
+
+data class StickerItem(val name: String, override val id: Snowflake, val formatType: Sticker.FormatType) : SnowflakeEntity
 
 enum class StickerType : EnumWithValue<Int> {
     STANDARD,

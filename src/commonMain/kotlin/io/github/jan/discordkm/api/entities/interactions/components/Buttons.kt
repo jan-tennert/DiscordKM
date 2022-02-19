@@ -12,15 +12,11 @@ package io.github.jan.discordkm.api.entities.interactions.components
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.events.ButtonClickEvent
-import io.github.jan.discordkm.internal.utils.valueOfIndex
-import kotlinx.serialization.KSerializer
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 
 @Serializable
 data class Button(
@@ -36,13 +32,18 @@ data class Button(
     val url: String? = null
 )  : MessageComponent, ComponentWithId
 
-@Serializable(with = ButtonStyleSerializer::class)
-enum class ButtonStyle {
+@Serializable(with = ButtonStyle.Companion::class)
+enum class ButtonStyle : EnumWithValue<Int> {
     PRIMARY,
     SECONDARY,
     SUCCESS,
     DANGER,
-    LINK
+    LINK;
+
+    override val value: Int
+        get() = ordinal + 1
+
+    companion object : EnumWithValueGetter<ButtonStyle, Int>(values())
 }
 
 inline fun RowBuilder<MessageLayout>.actionButton(style: ButtonStyle, customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, crossinline onClick: suspend ButtonClickEvent.() -> Unit = {}) {
@@ -95,15 +96,4 @@ inline fun RowBuilder<MessageLayout>.secondaryButton(customId: String = "", labe
  * @param label The label of this button. Can be empty if an emoji is available
  * @param emoji The emoji of this button. Can be empty if a label is available
  */
-inline fun RowBuilder<MessageLayout>.linkButton(url: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false) { components += Button(url = url, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.LINK) }
-
-object ButtonStyleSerializer : KSerializer<ButtonStyle> {
-    override fun deserialize(decoder: Decoder) = valueOfIndex<ButtonStyle>(decoder.decodeInt(), 1)
-
-    override val descriptor = PrimitiveSerialDescriptor("ButtonStyle", PrimitiveKind.INT)
-
-    override fun serialize(encoder: Encoder, value: ButtonStyle) {
-        encoder.encodeInt(value.ordinal + 1)
-    }
-
-}
+fun RowBuilder<MessageLayout>.linkButton(url: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false) { components += Button(url = url, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.LINK) }

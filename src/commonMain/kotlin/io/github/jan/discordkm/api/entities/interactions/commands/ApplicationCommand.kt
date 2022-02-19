@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.commands
 
+import com.soywiz.korio.dynamic.KDynamic.Companion.int
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -17,10 +18,10 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
+import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
-import io.github.jan.discordkm.internal.utils.valueOfIndexOrDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -33,7 +34,7 @@ open class ApplicationCommand(override val client: Client, override val data: Js
      * The type of the application command
      */
     val type: ApplicationCommandType
-        get() = valueOfIndexOrDefault(data.getOrThrow<Int>("type"), default = ApplicationCommandType.CHAT_INPUT)
+        get() = ApplicationCommandType[data["type", true]?.int ?: 1]
 
     override val id: Snowflake
         get() = data.getId()

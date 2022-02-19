@@ -20,8 +20,8 @@ import kotlinx.serialization.json.jsonArray
 class GuildStickersUpdateEventHandler(val client: Client) : InternalEventHandler<GuildStickersUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildStickersUpdateEvent {
-        val stickers = data["stickers"]!!.jsonArray.map { GuildSerializer.deserializeSticker(data, client) }
         val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val stickers = data["stickers"]!!.jsonArray.map { GuildSerializer.deserializeSticker(data, guild) }
         guild.cache?.cacheManager?.let {
             it.stickerCache.clear()
             it.stickerCache.putAll(stickers.associateBy { s -> s.id })

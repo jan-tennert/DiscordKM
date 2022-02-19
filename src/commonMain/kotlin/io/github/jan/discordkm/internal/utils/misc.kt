@@ -13,17 +13,9 @@ import co.touchlab.stately.collections.IsoMutableMap
 
 operator fun <T> T.plus(other: T) = listOf(this, other)
 
-inline fun <reified T : Enum<T>> valueOfIndex(index: Int, add: Int = 0) = enumValues<T>().first { it.ordinal + add == index }
-
-inline fun <reified T : Enum<T>> valueOfIndexOrDefault(index: Int?, add: Int = 0, default: T) = enumValues<T>().firstOrNull { it.ordinal + add == index } ?: default
-
-inline fun <reified T : Enum<T>> valueOfIndexOrNull(index: Int?, add: Int = 0) = enumValues<T>().firstOrNull { it.ordinal + add == index }
-
 fun <K, V> Map<K, V>.toIsoMap() = IsoMutableMap { this@toIsoMap.toMutableMap() }
 
 fun <T>Collection<T>.ifNotEmpty(action: () -> Unit) = if(isNotEmpty()) action() else Unit
-
-inline fun <T> checkAndReturn(check: () -> T) = check()
 
 val <K, V> IsoMutableMap<K, V>.safeValues: List<V> get() {
     val list = mutableListOf<V>()

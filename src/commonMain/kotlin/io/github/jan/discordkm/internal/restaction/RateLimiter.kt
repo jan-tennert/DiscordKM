@@ -36,7 +36,9 @@ class RateLimiter(logging: LoggerConfig) {
     suspend fun queue(request: Request): HttpResponse {
         while(jobs.isNotEmpty())
         if(buckets[request.endpoint] != null && buckets[request.endpoint]!!.remaining == 0) {
-            delay(buckets[request.endpoint]!!.resetAfter)
+            val bucket = buckets[request.endpoint]!!
+            LOGGER.warn { "Rate limit exceeded for ${request.endpoint}. Sending requests in ${bucket.resetAfter}" }
+            delay(bucket.resetAfter)
             return queue(request)
         }
         val job = async(coroutineContext) { request.execute() }
@@ -56,6 +58,7 @@ class RateLimiter(logging: LoggerConfig) {
             headers["x-ratelimit-reset-after"]!!.toDouble().seconds,
             DateTime.fromUnix(headers["x-ratelimit-reset"]!!.toDouble() * 1000)
         )
+        LOGGER.debug { "Updating bucket ${bucket.bucket} on endpoint ${request.endpoint} with ${bucket.remaining} remaining" }
         buckets[request.endpoint] = bucket
     }
 

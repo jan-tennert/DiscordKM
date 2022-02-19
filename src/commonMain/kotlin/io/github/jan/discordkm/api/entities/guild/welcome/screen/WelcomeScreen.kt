@@ -6,7 +6,7 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.modifiers.BaseModifier
+import io.github.jan.discordkm.api.entities.modifiers.JsonModifier
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import kotlinx.serialization.json.JsonObject
@@ -44,7 +44,7 @@ class WelcomeScreenModifier(
     var enabled: Boolean? = null,
     var description: String? = null,
     val channels: MutableList<WelcomeScreen.WelcomeScreenChannel> = mutableListOf()
-) : BaseModifier {
+) : JsonModifier {
 
     fun channel(channel: GuildChannel, description: String, emoji: Emoji? = null) {
         channels.add(WelcomeScreen.WelcomeScreenChannel(channel, description, emoji))

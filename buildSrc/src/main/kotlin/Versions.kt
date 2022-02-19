@@ -18,6 +18,7 @@ object Versions {
     const val STATELY = "1.2.1"
     const val DISCORDKM = "0.7.3"
     const val ARROW = "1.0.1"
+    const val GUAVA = "31.0.1-jre"
     const val NEXUS_STAGING = "0.30.0"
 
 }

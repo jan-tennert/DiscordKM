@@ -2,14 +2,14 @@ package io.github.jan.discordkm.api.entities.modifiers.guild
 
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.misc.Color
-import io.github.jan.discordkm.api.entities.modifiers.BaseModifier
+import io.github.jan.discordkm.api.entities.modifiers.JsonModifier
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 
-class RoleModifier : BaseModifier {
+class RoleModifier : JsonModifier {
 
     var name: String? = null
     var permissions: MutableSet<Permission> = mutableSetOf()

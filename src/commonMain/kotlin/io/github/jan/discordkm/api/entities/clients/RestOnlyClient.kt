@@ -46,4 +46,5 @@ class RestOnlyClientBuilder @DiscordKMInternal constructor(var token: String) {
 /**
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
+@OptIn(DiscordKMInternal::class)
 inline fun buildRestOnlyClient(token: String, builder: RestOnlyClientBuilder.() -> Unit) =  RestOnlyClientBuilder(token).apply(builder).build()

@@ -53,7 +53,7 @@ data class TextInputBuilder(
  * @param required Whether the text input is required in the form
  */
 @ComponentDsl
-inline fun RowBuilder<ModalLayout>.textInput(
+fun RowBuilder<ModalLayout>.textInput(
     customId: String = "",
     label: String = "",
     placeholder: String? = null,
@@ -87,7 +87,7 @@ inline fun RowBuilder<ModalLayout>.textInput(
  * @param required Whether the text input is required in the form
  */
 @ComponentDsl
-inline fun RowBuilder<ModalLayout>.shortTextInput(
+fun RowBuilder<ModalLayout>.shortTextInput(
     customId: String = "",
     label: String = "",
     placeholder: String? = null,
@@ -120,7 +120,7 @@ inline fun RowBuilder<ModalLayout>.shortTextInput(
  * @param required Whether the text input is required in the form
  */
 @ComponentDsl
-inline fun RowBuilder<ModalLayout>.multilineTextInput(
+fun RowBuilder<ModalLayout>.multilineTextInput(
     customId: String = "",
     label: String = "",
     placeholder: String? = null,

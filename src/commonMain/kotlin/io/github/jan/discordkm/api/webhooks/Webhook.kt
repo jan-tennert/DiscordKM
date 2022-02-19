@@ -29,12 +29,14 @@ import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.utils.EnumWithValue
+import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.toJsonObject
-import io.github.jan.discordkm.internal.utils.valueOfIndex
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.JsonObject
 
@@ -48,7 +50,7 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
     /**
      * The [WebhookType] of the webhook
      */
-    val type = valueOfIndex<WebhookType>(data.getOrThrow("type"), 1)
+    val type = WebhookType[data["type"]!!.int]
 
     val guildId = data.getOrNull<Snowflake>("guild_id")
 
@@ -99,11 +101,15 @@ class Webhook(override val client: Client, override val data: JsonObject) : Seri
         transform { Webhook(client, it.toJsonObject()) }
     }
 
-    enum class WebhookType {
+    enum class WebhookType : EnumWithValue<Int> {
         INCOMING,
         CHANNEL_FOLLOWER,
         APPLICATION;
 
+        override val value: Int
+            get() = ordinal + 1
+
+        companion object : EnumWithValueGetter<WebhookType, Int>(values())
     }
 
     companion object {

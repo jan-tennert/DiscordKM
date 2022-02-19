@@ -4,7 +4,7 @@ import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
-import io.github.jan.discordkm.api.entities.modifiers.BaseModifier
+import io.github.jan.discordkm.api.entities.modifiers.JsonModifier
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.utils.ifNotEmpty
@@ -14,7 +14,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class GuildModifier : BaseModifier {
+class GuildModifier : JsonModifier {
 
     var name: String? = null
     var verificationLevel: Guild.VerificationLevel? = null

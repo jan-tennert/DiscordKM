@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.api.entities.modifiers
 
-interface Modifiable<M : BaseModifier, T> {
+interface Modifiable<M : JsonModifier, T> {
 
     /**
      * Modifies this entity

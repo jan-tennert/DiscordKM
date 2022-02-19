@@ -26,7 +26,7 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.Role
-import io.github.jan.discordkm.api.entities.guild.Sticker
+import io.github.jan.discordkm.api.entities.guild.StickerItem
 import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.internal.DiscordKMInternal
@@ -239,7 +239,7 @@ data class MessageCacheEntry(
     val type: MessageType,
     val activity: Activity?,
     val flags: Set<Message.Flag>,
-    val stickers: List<Sticker>,
+    val stickers: List<StickerItem>,
     val components: List<ActionRow>,
     val thread: Thread?,
     val interaction: Message.MessageInteraction?,

@@ -9,6 +9,8 @@ import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Role
+import io.github.jan.discordkm.api.entities.guild.Sticker
+import io.github.jan.discordkm.api.entities.guild.StickerItem
 import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.Button
@@ -21,13 +23,11 @@ import io.github.jan.discordkm.api.entities.messages.componentJson
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.get
-import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.isoTimestamp
 import io.github.jan.discordkm.internal.utils.long
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
-import io.github.jan.discordkm.internal.utils.valueOfIndex
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -62,7 +62,7 @@ object MessageSerializer : BaseEntitySerializer<MessageCacheEntry> {
             components = data["components"]?.let { json ->
                 json.jsonArray.map { row ->
                     val internalComponents = row.jsonObject["components"]!!.jsonArray.map { component ->
-                        when (valueOfIndex<ComponentType>(component.jsonObject.getOrThrow("type"), 1)) {
+                        when (ComponentType[component.jsonObject["type"]!!.int]) {
                             ComponentType.BUTTON -> componentJson.decodeFromJsonElement(
                                 Button.serializer(),
                                 component
@@ -82,9 +82,9 @@ object MessageSerializer : BaseEntitySerializer<MessageCacheEntry> {
             mentionedChannels = data["mention_channels", true]?.jsonArray?.let { mentionedChannels ->
                 mentionedChannels.map { deserializeChannelMention(it.jsonObject, guild!!) }
             } ?: emptyList(),
-            stickers = data["stickers", true]?.jsonArray?.let { stickers ->
+            stickers = data["sticker_items", true]?.jsonArray?.let { stickers ->
                 stickers.map { sticker ->
-                    GuildSerializer.deserializeSticker(sticker.jsonObject, value)
+                    StickerItem(sticker.jsonObject["name"]!!.string, sticker.jsonObject["id"]!!.snowflake, Sticker.FormatType[sticker.jsonObject["format_type"]!!.int])
                 }
             } ?: emptyList(),
             mentionedRoles = data["mention_roles", true]?.jsonArray?.let { mentionedRoles ->

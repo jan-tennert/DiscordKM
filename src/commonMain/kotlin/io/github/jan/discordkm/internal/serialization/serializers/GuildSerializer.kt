@@ -14,6 +14,7 @@ import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
+import io.github.jan.discordkm.api.entities.guild.StickerCacheEntry
 import io.github.jan.discordkm.api.entities.guild.StickerType
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreen
@@ -107,7 +108,7 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
         guild = guild
     )
 
-    fun deserializeSticker(data: JsonObject, client: Client) = Sticker(
+    fun deserializeSticker(data: JsonObject, guild: Guild) = StickerCacheEntry(
         id = data["id"]!!.snowflake,
         packId = data["pack_id", true]?.snowflake,
         name = data["name"]!!.string,
@@ -116,10 +117,9 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
         type = StickerType[data["type"]!!.int],
         formatType = Sticker.FormatType[data["format_type"]!!.int],
         isAvailable = data["available", true]?.boolean ?: false,
-        guild = data["guild_id", true]?.snowflake?.let { Guild(it, client) },
-        creator = data["creator"]?.jsonObject?.let { User(it, client) },
+        guild = guild,
+        creator = data["creator"]?.jsonObject?.let { User(it, guild.client) },
         sortValue = data["sort_value", true]?.int,
-        client = client
     )
 
     fun deserializeGuildPresence(data: JsonObject, client: Client) = Guild.GuildPresenceCacheEntry(

@@ -125,16 +125,16 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
             override fun create(targetId: Snowflake) = throw UnsupportedOperationException("You cannot create a target type from an unknown type")
         },
         STREAM {
-            override fun create(targetId: Snowflake) = Target(targetId, STREAM)
+            override fun create(targetId: Snowflake) = InviteTarget(targetId, STREAM)
         },
         EMBEDDED_APPLICATION {
-            override fun create(targetId: Snowflake) = Target(targetId, EMBEDDED_APPLICATION)
+            override fun create(targetId: Snowflake) = InviteTarget(targetId, EMBEDDED_APPLICATION)
         };
 
         override val value: Int
             get() = ordinal
 
-        abstract fun create(targetId: Snowflake) : Target
+        abstract fun create(targetId: Snowflake) : InviteTarget
 
         companion object : EnumWithValueGetter<TargetType, Int>(values())
     }

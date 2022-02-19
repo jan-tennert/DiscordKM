@@ -24,7 +24,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      */
     suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.post(baseURL, builder.build())
-        transform { ApplicationCommand(holder.client, it.toJsonObject()) }
+        transform { println(it); ApplicationCommand(holder.client, it.toJsonObject()) }
     }
 
     /**
@@ -45,7 +45,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
     /**
      * Retrieves all application commands
      */
-    suspend fun retrieve() = holder.client.buildRestAction<List<ApplicationCommand>> {
+    suspend fun retrieveAll() = holder.client.buildRestAction<List<ApplicationCommand>> {
         route = RestAction.get(baseURL)
         transform { it.toJsonArray().map { json -> ApplicationCommand(holder.client, json.jsonObject) } }
     }

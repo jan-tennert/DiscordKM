@@ -60,4 +60,5 @@ class HttpInteractionClientBuilder @DiscordKMInternal constructor(var token: Str
 /**
  * The HttpInteractionClient is used when you want to receive interactions over a post request rather than connecting to a websocket
  */
+@OptIn(DiscordKMInternal::class)
 inline fun buildHttpInteractionClient(token: String, builder: HttpInteractionClientBuilder.() -> Unit) =  HttpInteractionClientBuilder(token).apply(builder).build()

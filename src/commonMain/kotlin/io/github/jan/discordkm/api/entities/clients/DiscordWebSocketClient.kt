@@ -24,6 +24,7 @@ import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
 import io.github.jan.discordkm.internal.websocket.Encoding
 import io.ktor.client.HttpClientConfig
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
@@ -53,6 +54,7 @@ class DiscordWebSocketClient internal constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend inline fun <reified E : Event> awaitEvent(crossinline predicate: (E) -> Boolean = { true }) =
         suspendCancellableCoroutine<E> {
             val listener = object : EventListener {

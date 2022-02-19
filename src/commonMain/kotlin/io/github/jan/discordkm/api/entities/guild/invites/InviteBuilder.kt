@@ -11,12 +11,8 @@ package io.github.jan.discordkm.api.entities.guild.invites
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.invites.Invite.TargetType
-import io.github.jan.discordkm.api.entities.modifiers.BaseModifier
-import io.github.jan.discordkm.internal.check
-import io.github.jan.discordkm.internal.utils.checkAndReturn
+import io.github.jan.discordkm.api.entities.modifiers.JsonModifier
 import io.github.jan.discordkm.internal.utils.putOptional
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -25,55 +21,45 @@ import kotlinx.serialization.json.put
  * Represents an invite target.
  * Use [TargetType] to create one
  */
-data class Target internal constructor(val targetId: Snowflake, val type: TargetType)
+data class InviteTarget internal constructor(val targetId: Snowflake, val type: TargetType)
 
-@Serializable
-data class InviteBuilderObject internal constructor(
-    @SerialName("max_age")
-    var maxAge: Int? = null,
-    @SerialName("max_uses")
-    var maxUses: Int? = null,
-    @SerialName("temporary")
-    var isTemporary: Boolean? = null,
-    @SerialName("unique")
-    var isUnique: Boolean? = null,
-    @SerialName("target_type")
-    var targetType: Int? = null,
-    @SerialName("target_user_id")
-    var targetUserId: Snowflake? = null,
-    @SerialName("target_application_id")
-    var targetApplicationId: Snowflake? = null
-)
+class InviteBuilder : JsonModifier {
 
-/**
- * @param maxAge The duration of invite in seconds before expire.
- *               (0-604800). 0 means never
- * @param maxUses Max number of uses (0-100). 0 means unlimited
- * @param isTemporary "Whether this invite only grants temporary membership"
- * @param isUnique "If true, don't try to reuse a similar invite (useful for creating many unique one time use invites)"
- * @param target The target of this invite. Can refer to a EmbeddedApplication or a user's stream
- */
-class InviteBuilder : BaseModifier {
-
+    /**
+     * The duration of invite in seconds before expire.
+     * (0-604800). 0 means never
+     */
     var maxAge: Int? = null
+
+    /**
+     * Max number of uses (0-100). 0 means unlimited
+     */
     var maxUses: Int? = null
+
+    /**
+     * "Whether this invite only grants temporary membership"
+     */
     var isTemporary: Boolean? = null
+
+    /**
+     * "If true, don't try to reuse a similar invite (useful for creating many unique one time use invites)"
+     */
     var isUnique: Boolean? = null
-    var target: Target? = null
+
+    /**
+     * The target of this invite. Can refer to a EmbeddedApplication or a user's stream
+     */
+    var target: InviteTarget? = null
 
     override val data: JsonObject
-        get() = checkAndReturn {
-            maxAge.check("The maximum age of an invite has to be between 0 and 604800 seconds") { it in 0..604799 }
-            maxUses.check("The maximum uses of an invite have to be between 0 and 100") { it in 0..100 }
-            buildJsonObject {
-                putOptional("max_age", maxAge)
-                putOptional("max_uses", maxUses)
-                putOptional("unique", isUnique)
-                putOptional("temporary", isTemporary)
-                putOptional("target_type", target?.type?.value)
-                if (target?.type == TargetType.STREAM) put("target_user_id", target!!.targetId.string)
-                if (target?.type == TargetType.EMBEDDED_APPLICATION) put("target_application_id", target!!.targetId.string)
-            }
+        get() = buildJsonObject {
+            putOptional("max_age", maxAge)
+            putOptional("max_uses", maxUses)
+            putOptional("unique", isUnique)
+            putOptional("temporary", isTemporary)
+            putOptional("target_type", target?.type?.value)
+            if (target?.type == TargetType.STREAM) put("target_user_id", target!!.targetId.string)
+            if (target?.type == TargetType.EMBEDDED_APPLICATION) put("target_application_id", target!!.targetId.string)
         }
 
 }
