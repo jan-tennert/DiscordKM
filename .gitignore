@@ -11,3 +11,4 @@ ignoreDir
 Http-Interactions/build
 Lavalink/build
 test.json
+kotlin-js-store
