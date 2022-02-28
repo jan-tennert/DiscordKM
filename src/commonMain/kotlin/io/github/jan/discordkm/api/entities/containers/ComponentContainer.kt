@@ -5,9 +5,9 @@ import io.github.jan.discordkm.api.entities.interactions.components.ComponentWit
 import kotlin.reflect.KProperty
 
 @Suppress("UNCHECKED_CAST")
-class ComponentContainer<S : ComponentWithId>(val rows: List<ActionRow>) : List<S> by rows.map(ActionRow::components).flatten().map({ it as S }) {
+class ComponentContainer<S : ComponentWithId>(val rows: List<ActionRow>) : List<S> by rows.flatMap(ActionRow::components).map({ it as S }) {
 
-    inline operator fun <reified T : S> get(id: String) = (this.first { it.customId == id } as? T) ?: throw IllegalArgumentException("No component with id $id")
+    inline operator fun <reified T : S> get(id: String) = (this.firstOrNull { it.customId == id } as? T) ?: throw IllegalArgumentException("No component with id $id and type ${T::class.simpleName} found")
 
     inline operator fun <reified T : S> getValue(thisRef: Any?, property: KProperty<*>) = get<T>(property.name)
 

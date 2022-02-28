@@ -20,7 +20,7 @@ class OptionContainer(val raw: List<InteractionOption>) : Iterable<InteractionOp
         }
     }
 
-    inline fun <reified T>getOrNull(position: Int) = raw.getOrNull(position)?.let {
+    inline fun <reified T> getOrNull(position: Int) = raw.getOrNull(position)?.let {
         when(T::class) {
             InteractionOption::class -> it as? T
             else -> (it.value as? T)
