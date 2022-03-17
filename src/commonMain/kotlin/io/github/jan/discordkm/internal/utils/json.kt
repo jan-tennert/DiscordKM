@@ -36,6 +36,17 @@ fun JsonObject.getId(): Snowflake {
 fun String.toJsonObject() = Json.decodeFromString<JsonObject>(this)
 fun String.toJsonArray() = Json.decodeFromString<JsonArray>(this)
 
+inline fun <reified V, T : EnumWithValue<V>> JsonObjectBuilder.put(key: String, value: T) {
+    val v = when(V::class) {
+        Int::class -> JsonPrimitive(value.value as Int)
+        Long::class -> JsonPrimitive(value.value as Long)
+        Double::class -> JsonPrimitive(value.value as Double)
+        Boolean::class -> JsonPrimitive(value.value as Boolean)
+        String::class -> JsonPrimitive(value.value as String)
+        else -> throw IllegalArgumentException("Can't put a ${V::class.simpleName} in a JsonObject")
+    }
+}
+
 fun JsonObject.modify(builder: JsonObjectBuilder.() -> Unit) = buildJsonObject {
     this@modify.forEach { put(it.key, it.value) }
     builder(this)

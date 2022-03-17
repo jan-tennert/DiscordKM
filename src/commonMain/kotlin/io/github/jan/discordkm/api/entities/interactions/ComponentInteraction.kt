@@ -18,11 +18,11 @@ import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.utils.put
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.put
 
 class ComponentInteraction(client: Client, data: JsonObject) : StandardInteraction(client, data), ModalInteraction {
 
@@ -36,7 +36,7 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
      */
     suspend fun deferEdit() = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
-            put("type", 6) //defer edit
+            put("type", InteractionCallbackType.DEFERRED_UPDATE_MESSAGE)
         })
     }
 
@@ -45,7 +45,7 @@ class ComponentInteraction(client: Client, data: JsonObject) : StandardInteracti
      */
     suspend fun edit(message: DataMessage) = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
-            put("type", 7) //edit
+            put("type", InteractionCallbackType.UPDATE_MESSAGE)
             put("data", message.build().toString().toJsonObject())
         })
     }

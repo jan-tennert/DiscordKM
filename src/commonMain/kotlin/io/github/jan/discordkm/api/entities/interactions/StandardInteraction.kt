@@ -23,6 +23,7 @@ import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.utils.put
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -35,7 +36,7 @@ open class StandardInteraction(override val client: Client, override val data: J
      */
     suspend fun deferReply(ephemeral: Boolean = false) = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
-            put("type", 5) //reply without message
+            put("type", InteractionCallbackType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE)
             if (ephemeral) {
                 put("data", buildJsonObject {
                     put("flags", 1 shl 6)
@@ -48,7 +49,7 @@ open class StandardInteraction(override val client: Client, override val data: J
      * Replies to this interaction with a message
      */
     suspend fun reply(message: DataMessage, ephemeral: Boolean = false) = client.buildRestAction<Unit> {
-        route = Route.Interaction.CALLBACK(id, token).post(message.buildCallback(4, ephemeral))
+        route = Route.Interaction.CALLBACK(id, token).post(message.buildCallback(InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE.value, ephemeral))
     }
 
     /**

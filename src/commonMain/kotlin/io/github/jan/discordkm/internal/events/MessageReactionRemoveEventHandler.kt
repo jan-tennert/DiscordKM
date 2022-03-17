@@ -11,8 +11,6 @@ package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.channels.Channel
-import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Emoji
@@ -20,12 +18,12 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.events.MessageReactionRemoveEvent
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
+import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import io.github.jan.discordkm.internal.utils.get
 
 class MessageReactionRemoveEventHandler(val client: Client) : InternalEventHandler<MessageReactionRemoveEvent> {
 
@@ -34,7 +32,7 @@ class MessageReactionRemoveEventHandler(val client: Client) : InternalEventHandl
         val emojiObject = data.getValue("emoji").jsonObject
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, client) }
         val emoji = if(emojiObject.getOrNull<Snowflake>("id") == null) {
-            Emoji.fromEmoji(emojiObject.getOrThrow("name"))
+            Emoji.fromUnicode(emojiObject.getOrThrow("name"))
         } else {
             Emoji.fromEmote(GuildSerializer.deserializeGuildEmote(emojiObject, client))
         }

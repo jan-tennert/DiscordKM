@@ -12,23 +12,19 @@ package io.github.jan.discordkm.api.entities.guild
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Nameable
-import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.internal.utils.getId
-import io.github.jan.discordkm.internal.utils.getOrThrow
+import io.github.jan.discordkm.api.entities.guild.Emoji.Emote
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
-import kotlin.jvm.JvmName
 
 /**
  * An emoji can be a unicode emoji or an [Emote]
  */
 @Serializable
-class Emoji(
+class Emoji private constructor(
     val id: Snowflake? = null,
     val name: String,
     @SerialName("animated")
@@ -47,7 +43,7 @@ class Emoji(
      * @param requiresColons Whether this emoji must be wrapped in colons
      * @param isManagedByAnIntegration Whether this emoji is managed by an integration
      */
-    class Emote @PublishedApi internal constructor(
+    class Emote internal constructor(
         override val client: Client,
         override val id: Snowflake,
         override val name: String,
@@ -65,7 +61,7 @@ class Emoji(
 
     companion object {
 
-        fun fromEmoji(unicode: String) = Emoji(name = unicode)
+        fun fromUnicode(unicode: String) = Emoji(name = unicode)
 
         fun fromEmote(name: String, id: Snowflake) = Emoji(name = name, id = id)
 

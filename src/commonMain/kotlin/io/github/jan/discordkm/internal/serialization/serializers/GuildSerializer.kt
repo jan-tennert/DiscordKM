@@ -164,7 +164,7 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
                     if(it.jsonObject["emoji_id", true]?.snowflake != null) {
                         Emoji.fromEmote(it.jsonObject["emoji_name"]!!.string, it.jsonObject["emoji_id", true]!!.snowflake)
                     } else if(it.jsonObject["emoji_name", true]?.string != null) {
-                        Emoji.fromEmoji(it.jsonObject["emoji_name", true]!!.string)
+                        Emoji.fromUnicode(it.jsonObject["emoji_name", true]!!.string)
                     } else {
                         null
                     }

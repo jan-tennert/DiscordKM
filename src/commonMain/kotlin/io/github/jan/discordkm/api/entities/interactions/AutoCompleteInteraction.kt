@@ -15,10 +15,11 @@ import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.utils.put
+import io.github.jan.discordkm.internal.utils.toJsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonArray
 
 class AutoCompleteInteraction<T>(override val client: Client, override val data: JsonObject)  : Interaction {
 
@@ -30,11 +31,9 @@ class AutoCompleteInteraction<T>(override val client: Client, override val data:
             .apply(choices)
             .map { buildJsonObject { put("name", it.name); put("value", it.string) } }
         route = Route.Interaction.CALLBACK(id, token).post(buildJsonObject {
-            put("type", 8) //reply choices
+            put("type", InteractionCallbackType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT)
             put("data", buildJsonObject {
-                putJsonArray("choices") {
-                    formattedChoices.forEach { add(it) }
-                }
+                put("choices", formattedChoices.toJsonArray())
             })
         })
     }

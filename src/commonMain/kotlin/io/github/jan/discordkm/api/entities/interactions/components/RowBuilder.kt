@@ -16,7 +16,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
-class RowBuilder<T : RowLayout>(val client: Client? = null, val components: MutableList<Component> = mutableListOf()) {
+@Suppress("unused")
+class RowBuilder<T: RowLayout>(val client: Client? = null, val components: MutableList<Component> = mutableListOf()) {
 
     fun build() = ActionRow(components)
 

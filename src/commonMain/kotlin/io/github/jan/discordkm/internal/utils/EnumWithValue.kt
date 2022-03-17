@@ -21,7 +21,15 @@ open class EnumWithValueGetter <V : EnumWithValue<T>, T>(val values: Collection<
 
     fun getOption(value: T) = values.firstOrNone { it.value == value }
 
-    override val descriptor = PrimitiveSerialDescriptor("EnumWithValue", PrimitiveKind.INT)
+    override val descriptor = PrimitiveSerialDescriptor("EnumWithValue", when(values.first().value) {
+        is String -> PrimitiveKind.STRING
+        is Int -> PrimitiveKind.INT
+        is Long -> PrimitiveKind.LONG
+        is Float -> PrimitiveKind.FLOAT
+        is Double -> PrimitiveKind.DOUBLE
+        is Boolean -> PrimitiveKind.BOOLEAN
+        else -> throw IllegalStateException("Unsupported type ${values.first().value!!::class.simpleName}")
+    })
 
     override fun deserialize(decoder: Decoder): V {
         val value = decoder.decodeInt()
