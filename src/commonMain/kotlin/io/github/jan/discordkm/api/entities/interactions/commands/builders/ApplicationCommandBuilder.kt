@@ -10,10 +10,12 @@
 package io.github.jan.discordkm.api.entities.interactions.commands.builders
 
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.api.events.CommandEvent
+import io.github.jan.discordkm.internal.DiscordKMUnstable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -21,6 +23,7 @@ import kotlinx.serialization.json.put
 
 open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name: String, var description: String, val client: DiscordWebSocketClient? = null) {
 
+    var defaultMemberPermissions: MutableSet<Permission> = mutableSetOf()
     val translations = TranslationBuilder()
     internal var translationManager: TranslationManager? = null
 
@@ -45,13 +48,20 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name:
      *
      * **application.command.[name].options.*subCommandGroupName*.options.*subCommandName*.options.*optionName*.description**
      */
-    open fun importTranslations(manager: TranslationManager) {
+    @DiscordKMUnstable
+    open fun useTranslationManager(manager: TranslationManager) {
         translations {
-            name.putAll(manager.getAll("application.command.$name.name"))
-            description.putAll(manager.getAll("application.command.$name.description"))
+            name.putAll(manager.getAll("application.command.${this@ApplicationCommandBuilder.name}.name"))
+            description.putAll(manager.getAll("application.command.${this@ApplicationCommandBuilder.name}.description"))
         }
         translationManager = manager
     }
+
+    @DiscordKMUnstable
+    fun useDefaultTranslationManager() { client?.config?.translationManager?.let { useTranslationManager(it) } }
+
+    @DiscordKMUnstable
+    fun defaultPermissions(vararg permissions: Permission) { defaultMemberPermissions.addAll(permissions) }
 
     @CommandBuilder
     inline fun <reified E : CommandEvent> onCommand(
@@ -64,6 +74,7 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name:
         put("name", name)
         put("description", description)
         put("type", type.ordinal + 1)
+        put("default_member_permissions", Permission.encode(defaultMemberPermissions))
         put("name_localizations", JsonObject(translations.name.map { it.key.value to JsonPrimitive(it.value) }.toMap()))
         put("description_localizations", JsonObject(translations.description.map { it.key.value to JsonPrimitive(it.value) }.toMap()))
     }

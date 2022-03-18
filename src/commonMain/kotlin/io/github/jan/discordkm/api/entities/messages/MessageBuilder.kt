@@ -138,6 +138,7 @@ data class AllowedMentions(
 val componentJson = Json {
     classDiscriminator = "classType"
     ignoreUnknownKeys = true
+    encodeDefaults = true
     serializersModule = SerializersModule {
         polymorphic(Component::class) {
             subclass(SelectionMenu::class)
