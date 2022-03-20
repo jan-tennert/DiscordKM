@@ -77,13 +77,13 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      * Overrides all application commands with new ones
      */
     suspend fun override(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {
-        route = RestAction.put(baseURL, JsonArray(CommandBulkOverride().apply(commands).commands.map(ApplicationCommandBuilder::build)))
+        route = RestAction.put(baseURL, JsonArray(CommandBulkOverride(holder.client as? DiscordWebSocketClient).apply(commands).commands.map(ApplicationCommandBuilder::build)))
         transform { it.toJsonArray().map { json -> ApplicationCommand(holder.client, json.jsonObject) } }
     }
 
 }
 
-class CommandBulkOverride {
+class CommandBulkOverride(private val client: DiscordWebSocketClient?) {
 
     internal val commands = mutableListOf<ApplicationCommandBuilder>()
 
@@ -92,12 +92,12 @@ class CommandBulkOverride {
     operator fun plus(command: ApplicationCommandBuilder) = add(command)
 
     fun chatInput(builder: ApplicationCommandBuilder.() -> Unit) { add(ApplicationCommandBuilder(
-        ApplicationCommandType.CHAT_INPUT, "", "").apply(builder)) }
+        ApplicationCommandType.CHAT_INPUT, client).apply(builder)) }
 
     fun user(builder: ApplicationCommandBuilder.() -> Unit) { add(ApplicationCommandBuilder(
-        ApplicationCommandType.USER, "", "").apply(builder)) }
+        ApplicationCommandType.USER, client).apply(builder)) }
 
     fun message(builder: ApplicationCommandBuilder.() -> Unit) { add(ApplicationCommandBuilder(
-        ApplicationCommandType.MESSAGE, "", "").apply(builder)) }
+        ApplicationCommandType.MESSAGE, client).apply(builder)) }
 
 }
