@@ -13,7 +13,7 @@ object Versions {
     const val DOKKA = "1.6.10"
     const val KTOR = "1.6.7"
     const val SERIALIZATION = "1.3.2"
-    const val KORLIBS = "2.4.10"
+    const val KORLIBS = "2.6.3"
     const val COROUTINES = "1.6.0"
     const val STATELY = "1.2.1"
     const val DISCORDKM = "0.7.5"

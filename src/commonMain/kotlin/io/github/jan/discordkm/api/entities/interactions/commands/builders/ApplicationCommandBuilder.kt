@@ -14,16 +14,19 @@ import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
-import io.github.jan.discordkm.api.events.CommandEvent
+import io.github.jan.discordkm.api.events.MessageCommandEvent
+import io.github.jan.discordkm.api.events.UserCommandEvent
 import io.github.jan.discordkm.internal.DiscordKMUnstable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name: String, var description: String, val client: DiscordWebSocketClient? = null) {
+open class ApplicationCommandBuilder(val type: ApplicationCommandType, val client: DiscordWebSocketClient? = null) {
 
     var defaultMemberPermissions: MutableSet<Permission> = mutableSetOf()
+    var name: String = ""
+    var description: String = ""
     val translations = TranslationBuilder()
     internal var translationManager: TranslationManager? = null
 
@@ -63,13 +66,6 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name:
     @DiscordKMUnstable
     fun defaultPermissions(vararg permissions: Permission) { defaultMemberPermissions.addAll(permissions) }
 
-    @CommandBuilder
-    inline fun <reified E : CommandEvent> onCommand(
-        crossinline action: suspend E.() -> Unit
-    ) {
-        client?.let { c -> c.on<E>(predicate = { it.commandName == name }) { action(this) } }
-    }
-
     internal open fun build() = buildJsonObject {
         put("name", name)
         put("description", description)
@@ -81,14 +77,32 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, var name:
 
 }
 
-inline fun messageCommand(client: DiscordWebSocketClient? = null, builder: ApplicationCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
-    val commandBuilder = ApplicationCommandBuilder(ApplicationCommandType.MESSAGE, "", "", client)
+class MessageCommandBuilder(client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.MESSAGE, client) {
+
+    @CommandBuilder
+    inline fun onCommand(crossinline action: MessageCommandEvent.() -> Unit) {
+        client?.let { c -> c.on<MessageCommandEvent>(predicate = { it.commandName == name }) { action(this) } }
+    }
+
+}
+
+class UserCommandBuilder(client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.USER, client) {
+
+    @CommandBuilder
+    inline fun onCommand(crossinline action: UserCommandEvent.() -> Unit) {
+        client?.let { c -> c.on<UserCommandEvent>(predicate = { it.commandName == name }) { action(this) } }
+    }
+
+}
+
+inline fun messageCommand(client: DiscordWebSocketClient? = null, builder: MessageCommandBuilder.() -> Unit) : MessageCommandBuilder {
+    val commandBuilder = MessageCommandBuilder(client)
     commandBuilder.builder()
     return commandBuilder
 }
 
-inline fun userCommand(client: DiscordWebSocketClient? = null, builder: ApplicationCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
-    val commandBuilder = ApplicationCommandBuilder(ApplicationCommandType.USER, "", "", client)
+inline fun userCommand(client: DiscordWebSocketClient? = null, builder: UserCommandBuilder.() -> Unit) : UserCommandBuilder {
+    val commandBuilder = UserCommandBuilder(client)
     commandBuilder.builder()
     return commandBuilder
 }

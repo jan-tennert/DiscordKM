@@ -12,22 +12,17 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 
-class ChatInputCommandBuilder(name: String, description: String, private val options: MutableList<CommandOption>, client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(
-    ApplicationCommandType.CHAT_INPUT, name, description, client) {
+class ChatInputCommandBuilder(client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT) {
+
+    private val options: MutableList<CommandOption> = mutableListOf()
 
     @CommandBuilder
-    inline fun onCommand(
-        subCommand: String? = null,
-        subCommandGroup: String? = null,
-        crossinline action: suspend SlashCommandEvent.() -> Unit
-    ) {
-        client?.let { c -> c.on<SlashCommandEvent>(predicate = { it.commandName == name && it.subCommand == subCommand && it.subCommandGroup == subCommandGroup }) {
-            action(this)
-        } }
+    inline fun onCommand(crossinline action: SlashCommandEvent.() -> Unit) {
+        client?.let { c -> c.on<SlashCommandEvent>(predicate = { it.commandName == name }) { action(this) } }
     }
 
     @CommandBuilder
-    inline fun <T> onAutoComplete(
+    inline fun <T : AutoCompleteEvent<*>> onAutoComplete(
         optionName: String,
         subCommand: String? = null,
         subCommandGroup: String? = null,
@@ -53,7 +48,7 @@ class ChatInputCommandBuilder(name: String, description: String, private val opt
 }
 
 inline fun chatInputCommand(client: DiscordWebSocketClient? = null, builder: ChatInputCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
-    val commandBuilder = ChatInputCommandBuilder("", "", mutableListOf(), client)
+    val commandBuilder = ChatInputCommandBuilder(client)
     commandBuilder.builder()
     return commandBuilder
 }
