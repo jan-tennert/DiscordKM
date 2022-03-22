@@ -17,8 +17,8 @@ import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
 import com.soywiz.korio.async.async
 import com.soywiz.korio.async.delay
+import com.soywiz.korio.net.http.HttpClient
 import io.github.jan.discordkm.internal.utils.LoggerConfig
-import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.Job
 import kotlin.coroutines.coroutineContext
 
@@ -33,7 +33,7 @@ class RateLimiter(logging: LoggerConfig) {
         LOGGER.output = logging.output
     }
 
-    suspend fun queue(request: Request): HttpResponse {
+    suspend fun queue(request: Request): HttpClient.Response {
         while(jobs.isNotEmpty())
         if(buckets[request.endpoint] != null && buckets[request.endpoint]!!.remaining == 0) {
             val bucket = buckets[request.endpoint]!!
@@ -48,9 +48,9 @@ class RateLimiter(logging: LoggerConfig) {
         return result
     }
 
-    fun updateRateLimits(request: Request, response: HttpResponse) {
+    fun updateRateLimits(request: Request, response: HttpClient.Response) {
         val headers = response.headers
-        if("X-ratelimit-bucket" !in headers) return
+        if(headers["X-ratelimit-bucket"] == null) return
         val bucket = Bucket(
             headers["x-ratelimit-bucket"]!!,
             headers["x-ratelimit-limit"]!!.toInt(),

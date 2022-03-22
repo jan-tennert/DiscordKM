@@ -13,7 +13,6 @@ import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.utils.LoggerConfig
-import io.ktor.client.HttpClientConfig
 
 /**
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
@@ -21,7 +20,7 @@ import io.ktor.client.HttpClientConfig
 class RestOnlyClient internal constructor (config: ClientConfig) : Client(config) {
 
     override suspend fun disconnect() {
-        requester.http.close()
+       // requester.http.close()
     }
 
     override suspend fun login() {
@@ -34,12 +33,9 @@ class RestOnlyClientBuilder @DiscordKMInternal constructor(var token: String) {
     var logging = LoggerConfig()
     var enabledCache = CacheFlag.values().toMutableSet()
     var translationManager = TranslationManager.empty()
-    private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
     @OptIn(DiscordKMInternal::class)
-    fun build() = RestOnlyClient(ClientConfig(token = token, logging = logging, enabledCache = enabledCache, httpClientConfig = httpClientConfig, translationManager = translationManager))
-
-    fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
+    fun build() = RestOnlyClient(ClientConfig(token = token, logging = logging, enabledCache = enabledCache, translationManager = translationManager))
 
 }
 

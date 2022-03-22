@@ -21,4 +21,11 @@ class Attachment internal constructor(val bytes: ByteArray, val fileName: String
 
     }
 
+    val contentType = when(fileName.split(".").last()) {
+        "jpg", "jpeg" -> "image/jpeg"
+        "png" -> "image/png"
+        "gif" -> "image/gif"
+        else -> ""
+    }
+
 }

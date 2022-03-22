@@ -23,7 +23,6 @@ import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
 import io.github.jan.discordkm.internal.websocket.Encoding
-import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -85,7 +84,7 @@ class DiscordWebSocketClient internal constructor(
     }
 
     override suspend fun disconnect() {
-        requester.http.close()
+       // requester.http.
         shardConnections.forEach { it.close() }
     }
 
@@ -139,7 +138,6 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
     var logging = LoggerConfig()
 
     private val shards = mutableSetOf<Int>()
-    private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
     /**
      * Specifies the total amount of shards. [Sharding](https://discord.com/developers/docs/topics/gateway#sharding)
@@ -168,17 +166,12 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
         activity = PresenceModifier().apply(builder)
     }
 
-    fun httpClient(builder: HttpClientConfig<*>.() -> Unit) {
-        httpClientConfig = builder
-    }
-
     fun build() = DiscordWebSocketClient(
         ClientConfig(
             token,
             intents,
             logging,
             enabledCache,
-            httpClientConfig,
             totalShards,
             shards,
             reconnectDelay,

@@ -1,17 +1,15 @@
 package io.github.jan.discordkm.internal.restaction
 
+import com.soywiz.korio.net.http.HttpClient
+import com.soywiz.korio.net.http.createHttpClient
 import io.github.jan.discordkm.DiscordKMInfo
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
-import io.ktor.client.HttpClient
-import io.ktor.client.features.defaultRequest
-import io.ktor.client.request.header
-import io.ktor.client.statement.HttpResponse
 
-class Requester(private val config: ClientConfig) {
+class Requester(val config: ClientConfig) {
 
     private val rateLimiter = RateLimiter(config.logging)
 
-    val http = HttpClient {
+    /*val http = HttpClient {
         config.httpClientConfig(this)
         defaultRequest {
             header("Authorization", "Bot ${config.token}")
@@ -19,9 +17,10 @@ class Requester(private val config: ClientConfig) {
         }
 
         expectSuccess = false
-    }
+    }*/
+    val http = createHttpClient()
 
-    suspend fun handle(request: Request) : HttpResponse {
+    suspend fun handle(request: Request) : HttpClient.Response {
         val response = rateLimiter.queue(request)
         rateLimiter.updateRateLimits(request, response)
         ErrorHandler.handle(response)

@@ -1,5 +1,5 @@
 package io.github.jan.discordkm.api.entities.modifiers
 
-import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.github.jan.discordkm.internal.restaction.Multipart
 
-interface MultipartModifier : BaseModifier<MultiPartFormDataContent>
+interface MultipartModifier : BaseModifier<Multipart>

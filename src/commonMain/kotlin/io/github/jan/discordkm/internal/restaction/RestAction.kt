@@ -9,24 +9,15 @@
  */
 package io.github.jan.discordkm.internal.restaction
 
+import com.soywiz.korio.net.http.Http
+import com.soywiz.korio.stream.openAsync
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.ktor.client.call.receive
-import io.ktor.client.request.delete
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.patch
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.contentType
 
 typealias RestActionListener <T> = suspend (T) -> Unit
 
-class FormattedRoute internal constructor(val endpoint: String, val method: HttpMethod, val body: Any? = null)
+class FormattedRoute internal constructor(val endpoint: String, val method: Http.Method, val body: Any? = null)
 
-class RestAction<T>(val requester: Requester) {
+class RestAction<T>(private val requester: Requester) {
 
     lateinit var route: FormattedRoute
     private lateinit var transformer: (String) -> T
@@ -43,66 +34,23 @@ class RestAction<T>(val requester: Requester) {
         println(route.body)
         val http = requester.http
         check()
-        val request = Request(route.endpoint) {
-            when (route.method.value) {
-                "GET" -> {
-                    http.get(generateUrl(route.endpoint)) {
-                        header("X-Audit-Log-Reason", reason)
-                    }
-                }
-                "POST" -> {
-                    http.post(generateUrl(route.endpoint)) {
-                        header("X-Audit-Log-Reason", reason)
-                        route.body.let {
-                            body = if (it is MultiPartFormDataContent) {
-                                it
-                            } else {
-                                contentType(ContentType.Application.Json)
-                                it.toString()
-                            }
-                        }
-                    }
-
-                }
-                "DELETE" -> {
-                    http.delete(generateUrl(route.endpoint)) {
-                        header("X-Audit-Log-Reason", reason)
-                    }
-
-                }
-                "PATCH" -> {
-                    http.patch(generateUrl(route.endpoint)) {
-                        header("X-Audit-Log-Reason", reason)
-                        route.body?.let {
-                            body = if (it is MultiPartFormDataContent) {
-                                it
-                            } else {
-                                contentType(ContentType.Application.Json)
-                                it.toString()
-                            }
-                        }
-
-                    }
-                }
-                "PUT" -> {
-                    http.put(generateUrl(route.endpoint)) {
-                        header("X-Audit-Log-Reason", reason)
-                        route.body?.let {
-                            body = if (it is MultiPartFormDataContent) {
-                                it
-                            } else {
-                                contentType(ContentType.Application.Json)
-                                it.toString()
-                            }
-                        }
-                    }
-
-                }
-                else -> throw UnsupportedOperationException()
+        val body = route.body?.let {
+            if(it is Multipart) {
+                it.stream
+            } else {
+                it.toString().openAsync()
             }
         }
+        val request = Request(route.endpoint) {
+            http.request(method = route.method, url = generateUrl(route.endpoint), headers = Http.Headers.build {
+                put("X-Audit-Log-Reason", reason)
+                put("Authorization", "Bot ${requester.config.token}")
+                put("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.3)")
+                put(Http.Headers.ContentType, if(route.body is Multipart) "multipart/form-data; boundary=boundary" else "application/json")
+            }, content = body)
+        }
         val response = requester.handle(request)
-        val result = if (!this::transformer.isInitialized) Unit as T else transformer(response.receive())
+        val result = if (!this::transformer.isInitialized) Unit as T else transformer(response.readAllString())
         onFinish(result)
         return result
     }
@@ -116,11 +64,11 @@ class RestAction<T>(val requester: Requester) {
     }
 
     companion object {
-        fun get(endpoint: String) = FormattedRoute(endpoint, HttpMethod.Get)
-        fun post(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, HttpMethod.Post, body)
-        fun delete(endpoint: String) = FormattedRoute(endpoint, HttpMethod.Delete)
-        fun patch(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, HttpMethod.Patch, body)
-        fun put(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, HttpMethod.Put, body)
+        fun get(endpoint: String) = FormattedRoute(endpoint, Http.Methods.GET)
+        fun post(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, Http.Methods.POST, body)
+        fun delete(endpoint: String) = FormattedRoute(endpoint, Http.Methods.DELETE)
+        fun patch(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, Http.Methods.PATCH, body)
+        fun put(endpoint: String, body: Any? = null) = FormattedRoute(endpoint, Http.Methods.PUT, body)
     }
 
 }

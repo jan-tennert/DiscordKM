@@ -48,7 +48,6 @@ import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.Encoding
-import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -156,7 +155,6 @@ open class ClientConfig(
     val intents: Set<Intent> = emptySet(),
     val logging: LoggerConfig,
     val enabledCache: Set<CacheFlag> = emptySet(),
-    val httpClientConfig: HttpClientConfig<*>.() -> Unit,
     val totalShards: Int = -1,
     val shards: Set<Int> = emptySet(),
     val reconnectDelay: TimeSpan = 5.seconds,

@@ -9,13 +9,12 @@
  */
 package io.github.jan.discordkm.internal.serialization
 
+import com.soywiz.korio.net.ws.WebSocketClient
 import com.soywiz.korio.util.OS
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
-import io.ktor.client.features.websocket.DefaultClientWebSocketSession
-import io.ktor.http.cio.websocket.send
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -87,4 +86,4 @@ fun RequestGuildMemberPayload(guildId: Snowflake, query: String?, limit: Int = 0
 
 fun UpdatePresencePayload(modifier: PresenceModifier) = Payload(3, eventData = modifier.build())
 
-suspend fun DefaultClientWebSocketSession.send(payload: Payload) = send(Json.encodeToString(payload))
+suspend fun WebSocketClient.send(payload: Payload) = send(Json.encodeToString(payload))
