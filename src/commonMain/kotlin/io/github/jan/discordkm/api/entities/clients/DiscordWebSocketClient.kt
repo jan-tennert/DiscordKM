@@ -153,6 +153,14 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
         this.shards.addAll(shards.toList())
     }
 
+    fun intents(vararg intents: Intent) {
+        this.intents.addAll(intents.toList())
+    }
+
+    fun intents(intents: Set<Intent>) {
+        this.intents.addAll(intents)
+    }
+
     /**
      * Sets the default activity which is set after connecting to the websocket.
      */
