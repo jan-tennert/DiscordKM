@@ -82,6 +82,9 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
 
     @Serializable
     data class ThreadMetadata(
+        @Serializable(with = ISO8601Serializer::class)
+        @SerialName("create_timestamp")
+        val createTimeStamp: DateTimeTz,
         @SerialName("archived")
         val isArchived: Boolean,
         @SerialName("auto_archive_duration")
