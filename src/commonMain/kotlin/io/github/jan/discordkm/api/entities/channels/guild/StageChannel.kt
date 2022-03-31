@@ -8,6 +8,7 @@ import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
 import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifiable
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventVoiceChannel
+import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
 import io.github.jan.discordkm.internal.Route
@@ -74,5 +75,7 @@ class StageChannelCacheEntry(
     override val id: Snowflake,
     override val name: String,
     override val position: Int,
-    override val permissionOverwrites: Set<PermissionOverwrite>
-) : StageChannel, VoiceChannelCacheEntry(userLimit, regionId, bitrate, videoQualityMode, guild, id, name, position, permissionOverwrites)
+    override val permissionOverwrites: Set<PermissionOverwrite>,
+    parent: Category?,
+    lastMessageId: Message?
+) : StageChannel, VoiceChannelCacheEntry(userLimit, regionId, bitrate, videoQualityMode, guild, id, name, position, permissionOverwrites, lastMessageId, parent)

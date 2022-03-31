@@ -1,16 +1,20 @@
 package io.github.jan.discordkm.api.entities.channels.guild
 
+import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifiable
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventVoiceChannel
+import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
 import io.github.jan.discordkm.internal.Route
+import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -21,7 +25,7 @@ import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 
-sealed interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceChannelCacheEntry>, InvitableGuildChannel {
+sealed interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, VoiceChannelCacheEntry>, InvitableGuildChannel, GuildMessageChannel {
 
     override val type: ChannelType
         get() = ChannelType.GUILD_VOICE
@@ -79,5 +83,14 @@ open class VoiceChannelCacheEntry(
     override val id: Snowflake,
     override val name: String,
     override val position: Int,
-    override val permissionOverwrites: Set<PermissionOverwrite>
-) : VoiceChannel, GuildChannelCacheEntry, IPositionable
+    override val permissionOverwrites: Set<PermissionOverwrite>,
+    override val lastMessage: Message?,
+    override val parent: Category?
+) : VoiceChannel, GuildChannelCacheEntry, IPositionable, GuildMessageChannelCacheEntry {
+
+    override val cacheManager = MessageCacheManager(client)
+
+    override val slowModeTime: TimeSpan
+        get() = throw UnsupportedOperationException("A text channel in a voice chanel cannot have a slow mode enabled")
+
+}

@@ -69,8 +69,8 @@ object ChannelSerializer : GuildEntitySerializer<Channel> {
         return when(T::class) {
             TextChannelCacheEntry::class -> TextChannelCacheEntry(guild, position!!, permissionOverwrites!!, slowModeTime!!, nsfw ?: false, topic, defaultAutoArchiveDuration ?: Thread.ThreadDuration.DAY, Category(parentId!!, guild), id, lastMessageId, name!!)
             NewsChannelCacheEntry::class -> NewsChannelCacheEntry(guild, position!!, permissionOverwrites!!, slowModeTime!!, nsfw ?: false, topic, defaultAutoArchiveDuration ?: Thread.ThreadDuration.DAY, Category(parentId!!, guild), id, lastMessageId, name!!)
-            StageChannelCacheEntry::class -> StageChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild, id, name!!, position!!, permissionOverwrites!!)
-            VoiceChannelCacheEntry::class -> VoiceChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild, id, name!!, position!!, permissionOverwrites!!)
+            StageChannelCacheEntry::class -> StageChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild, id, name!!, position!!, permissionOverwrites!!, Category(parentId!!, guild), lastMessageId)
+            VoiceChannelCacheEntry::class -> VoiceChannelCacheEntry(userLimit!!, regionId, bitrate!!, videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO, guild, id, name!!, position!!, permissionOverwrites!!, lastMessageId, Category(parentId!!, guild))
             CategoryCacheEntry::class -> CategoryCacheEntry(guild, position!!, permissionOverwrites!!, id, name!!)
             ThreadCacheEntry::class -> ThreadCacheEntry(guild, permissionOverwrites ?: emptySet(), slowModeTime!!, GuildTextChannel(parentId!!, guild), id, lastMessageId, name!!, type, Json.decodeFromJsonElement(data["thread_metadata"]!!))
             else -> TODO()
