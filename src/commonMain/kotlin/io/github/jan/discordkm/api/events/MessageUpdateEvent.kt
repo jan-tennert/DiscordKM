@@ -12,7 +12,6 @@ package io.github.jan.discordkm.api.events
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.Intent
-import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 
 /**
@@ -24,4 +23,4 @@ class MessageUpdateEvent(
     override val client: Client,
     override val message: MessageCacheEntry,
     override val channel: MessageChannel
-) : MessageEvent
+) : MessageEvent, MessageCacheEntry by message

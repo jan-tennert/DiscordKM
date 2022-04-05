@@ -25,7 +25,7 @@ class MessageCreateEvent(
     override val client: Client,
     override val message: MessageCacheEntry,
     override val channel: MessageChannel
-) : MessageEvent
+) : MessageEvent, MessageCacheEntry by message
 
 /**
  * Sent when someone deletes a message

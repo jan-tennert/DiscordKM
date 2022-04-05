@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.messages
 
+import com.soywiz.kds.fastCastTo
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -77,7 +78,7 @@ class MessageBuilder internal constructor(private val client: Client? = null) {
         oldAttachments.addAll(message.oldAttachments)
     }
 
-    fun import(message: MessageCacheEntry) = import(message.copy())
+    fun import(message: MessageCacheEntry) = import(message.fastCastTo<MessageCacheEntryImpl>().copy())
 
     fun reference(message: Message) { reference = Message.Reference(message.id, message.guild!!.id, message.channel.id, true) }
 

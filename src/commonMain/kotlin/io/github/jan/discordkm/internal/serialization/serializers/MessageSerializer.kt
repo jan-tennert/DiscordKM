@@ -18,6 +18,7 @@ import io.github.jan.discordkm.api.entities.interactions.components.ComponentTyp
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
+import io.github.jan.discordkm.api.entities.messages.MessageCacheEntryImpl
 import io.github.jan.discordkm.api.entities.messages.MessageType
 import io.github.jan.discordkm.api.entities.messages.componentJson
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
@@ -38,7 +39,7 @@ object MessageSerializer : BaseEntitySerializer<MessageCacheEntry> {
     override fun deserialize(data: JsonObject, value: Client): MessageCacheEntry {
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, value) }
         val author = data["author"]?.jsonObject?.let { User(it, value) }
-        return MessageCacheEntry(
+        return MessageCacheEntryImpl(
             id = data["id"]!!.snowflake,
             channel = MessageChannel(data["channel_id"]!!.snowflake, value),
             author = author,

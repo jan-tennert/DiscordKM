@@ -9,33 +9,20 @@
  */
 package io.github.jan.discordkm.api.entities.messages
 
-import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
-import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.containers.CacheReactionContainer
 import io.github.jan.discordkm.api.entities.containers.ReactionContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Permission
-import io.github.jan.discordkm.api.entities.guild.Role
-import io.github.jan.discordkm.api.entities.guild.StickerItem
 import io.github.jan.discordkm.api.entities.interactions.InteractionType
-import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
-import io.github.jan.discordkm.internal.DiscordKMInternal
-import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
-import io.github.jan.discordkm.internal.caching.CacheEntry
-import io.github.jan.discordkm.internal.caching.ReactionCacheManager
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
@@ -45,8 +32,6 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.serializers.MessageSerializer
-import io.github.jan.discordkm.internal.utils.EnumWithValue
-import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.SerialName
@@ -194,109 +179,3 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
 }
 
 data class IndependentMessage(override val id: Snowflake, override val channel: MessageChannel) : Message
-
-/**
- * Represents a message sent in a [MessageChannel]
- *
- * @param channel The channel this message was sent in
- * @param id The id of this message
- * @param author The author of this message
- * @param content The content of this message
- * @param timestamp The timestamp when this message was sent
- * @param editedTimestamp The timestamp when this message was edited
- * @param isTTSMessage Whether this message was sent with text-to-speech
- * @param mentions The mentioned users
- * @param attachments The attachments of this message
- * @param embeds The embeds of this message
- * @param flags The flags of this message
- * @param nonce The nonce of this message
- * @param isPinned Whether this message is pinned
- * @param activity The activity of this message
- * @param reference The message reference of this message
- * @param interaction The message interaction of this message
- * @param guild The guild this message was sent in
- * @param webhookId The id of the webhook this message was sent by
- * @param type The type of this message
- * @param stickers The stickers of this message
- * @param components The message components of this message
- */
-data class MessageCacheEntry(
-    override val id: Snowflake,
-    override val guild: Guild? = null,
-    override val channel: MessageChannel,
-    val author: User?,
-    val member: Member?,
-    val content: String,
-    val timestamp: DateTimeTz,
-    val editedTimestamp: DateTimeTz?,
-    val isTTSMessage: Boolean,
-    val mentionsEveryone: Boolean,
-    val mentions: List<User>,
-    val mentionedRoles: List<Role>,
-    val mentionedChannels: List<GuildChannel>,
-    val attachments: List<MessageAttachment>,
-    val embeds: List<MessageEmbed>,
-    val nonce: String?,
-    val isPinned: Boolean,
-    val type: MessageType,
-    val activity: Activity?,
-    val flags: Set<Message.Flag>,
-    val stickers: List<StickerItem>,
-    val components: List<ActionRow>,
-    val thread: Thread?,
-    val interaction: Message.MessageInteraction?,
-    val reference: Message.Reference?,
-    val referencedMessage: MessageCacheEntry?,
-    val webhookId: Snowflake?
-) : Message, CacheEntry {
-
-    val cacheManager = ReactionCacheManager(client)
-
-    @DiscordKMUnstable
-    val channelAsVoiceChannel: VoiceChannel?
-        get() = guild?.let { VoiceChannel(channel.id, it) }
-
-    override val reactions: CacheReactionContainer
-        get() = CacheReactionContainer(this, cacheManager.reactionCache.values.toList())
-
-    @OptIn(DiscordKMInternal::class)
-    fun copy() = DataMessage(
-        content = content,
-        tts = isTTSMessage,
-        embeds = embeds,
-        actionRows = components,
-        reference = reference,
-        stickerIds = stickers.map { it.id },
-        oldAttachments = attachments,
-        allowedMentions = AllowedMentions(),
-    )
-
-}
-
-enum class MessageType(override val value: Int) : EnumWithValue<Int> {
-    DEFAULT(0),
-    RECIPIENT_ADD(1),
-    RECIPIENT_REMOVE(2),
-    CALL(3),
-    CHANNEL_NAME_CHANGE(4),
-    CHANNEL_ICON_CHANGE(5),
-    CHANNEL_PINNED_MESSAGE(6),
-    GUILD_MEMBER_JOIN(7),
-    USER_PREMIUM_GUILD_SUBSCRIPTION(8),
-    USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_1(9),
-    USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_2(10),
-    USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_3(11),
-    CHANNEL_FOLLOW_ADD(12),
-    GUILD_DISCOVERY_DISQUALIFIED(14),
-    GUILD_DISCOVERY_REQUALIFIED(15),
-    GUILD_DISCOVERY_GRACE_PERIOD_INITIAL_WARNING(16),
-    GUILD_DISCOVERY_GRACE_PERIOD_FINAL_WARNING(17),
-    THREAD_CREATED(18),
-    REPLY(19),
-    CHAT_INPUT_COMMAND(20),
-    THREAD_STARTER_MESSAGE(21),
-    GUILD_INVITE_REMINDER(22),
-    CONTEXT_MENU_COMMAND(23);
-
-    companion object : EnumWithValueGetter<MessageType, Int>(values())
-}
