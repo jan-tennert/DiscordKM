@@ -12,7 +12,6 @@ import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
-import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.invoke
