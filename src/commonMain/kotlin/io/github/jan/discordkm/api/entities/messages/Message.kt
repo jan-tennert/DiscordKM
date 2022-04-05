@@ -19,6 +19,7 @@ import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
+import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.containers.CacheReactionContainer
 import io.github.jan.discordkm.api.entities.containers.ReactionContainer
@@ -30,6 +31,7 @@ import io.github.jan.discordkm.api.entities.guild.StickerItem
 import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.internal.DiscordKMInternal
+import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -249,6 +251,10 @@ data class MessageCacheEntry(
 ) : Message, CacheEntry {
 
     val cacheManager = ReactionCacheManager(client)
+
+    @DiscordKMUnstable
+    val channelAsVoiceChannel: VoiceChannel?
+        get() = guild?.let { VoiceChannel(channel.id, it) }
 
     override val reactions: CacheReactionContainer
         get() = CacheReactionContainer(this, cacheManager.reactionCache.values.toList())
