@@ -10,7 +10,6 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
 
 /**
@@ -18,4 +17,4 @@ import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
  *
  * Requires the intent [Intent.GUILDS]
  */
-class GuildUpdateEvent(override val client: Client, val guild: GuildCacheEntry, val oldGuild: GuildCacheEntry?) : Event
+class GuildUpdateEvent(override val client: Client, val guild: GuildCacheEntry, val oldGuild: GuildCacheEntry?) : Event, GuildCacheEntry by guild

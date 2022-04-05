@@ -8,16 +8,14 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.containers.CacheGuildThreadContainer
 import io.github.jan.discordkm.api.entities.containers.GuildThreadContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.CategoryModifier
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelModifier
 import io.github.jan.discordkm.api.entities.modifiers.guild.TextChannelModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.post
-import io.github.jan.discordkm.internal.restaction.RestAction.Companion.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import io.github.jan.discordkm.internal.utils.putOptional
@@ -26,6 +24,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
+
 
 interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier, GuildTextChannelCacheEntry>, InvitableGuildChannel {
 

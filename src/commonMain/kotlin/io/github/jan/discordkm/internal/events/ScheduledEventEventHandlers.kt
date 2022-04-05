@@ -4,8 +4,11 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
-import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent.EventStatus.*
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent.EventStatus.ACTIVE
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent.EventStatus.CANCELED
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent.EventStatus.COMPLETED
 import io.github.jan.discordkm.api.events.ScheduledEventCancelEvent
 import io.github.jan.discordkm.api.events.ScheduledEventCompleteEvent
 import io.github.jan.discordkm.api.events.ScheduledEventCreateEvent

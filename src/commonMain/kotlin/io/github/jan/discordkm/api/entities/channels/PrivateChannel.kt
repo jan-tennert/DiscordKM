@@ -18,11 +18,11 @@ sealed interface PrivateChannel : MessageChannel {
         get() = ChannelType.DM
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client): PrivateChannel = IndependentPrivateChannel(id, client)
+        operator fun invoke(id: Snowflake, client: Client): PrivateChannel = PrivateChannelImpl(id, client)
     }
 
 }
 
-data class IndependentPrivateChannel(override val id: Snowflake, override val client: Client) : PrivateChannel {
+internal class PrivateChannelImpl(override val id: Snowflake, override val client: Client) : PrivateChannel {
     override val cache: Nothing? = null
 }

@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.GuildUpdateEvent
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import kotlinx.serialization.json.JsonObject

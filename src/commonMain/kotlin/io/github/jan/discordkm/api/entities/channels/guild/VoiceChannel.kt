@@ -6,6 +6,7 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifiable
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventVoiceChannel
 import io.github.jan.discordkm.api.entities.messages.Message
@@ -56,7 +57,7 @@ sealed interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, V
     companion object : GuildChannelBuilder<VoiceChannelModifier, VoiceChannel>, ScheduledEventModifiable<ScheduledEventVoiceChannel> {
         override fun create(modifier: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(ChannelType.GUILD_VOICE).apply(modifier)
 
-        operator fun invoke(id: Snowflake, guild: Guild): VoiceChannel = IndependentVoiceChannel(id, guild)
+        operator fun invoke(id: Snowflake, guild: Guild): VoiceChannel = VoiceChannelImpl(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<VoiceChannelCacheEntry>(data, guild)
 
         override fun build(modifier: ScheduledEventVoiceChannel.() -> Unit) = ScheduledEventVoiceChannel(false).apply(modifier).build()
@@ -64,7 +65,7 @@ sealed interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, V
 
 }
 
-data class IndependentVoiceChannel(override val id: Snowflake, override val guild: Guild) : VoiceChannel {
+internal class VoiceChannelImpl(override val id: Snowflake, override val guild: Guild) : VoiceChannel {
     override val type: ChannelType
         get() = if(guild.cache?.cacheManager?.channelCache?.get(id) is StageChannelCacheEntry) {
             ChannelType.GUILD_STAGE_VOICE

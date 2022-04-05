@@ -5,12 +5,14 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.modifiers.guild.TextChannelModifier
 import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
 import kotlinx.serialization.json.JsonObject
+
 
 sealed interface TextChannel : GuildTextChannel {
 
@@ -22,13 +24,13 @@ sealed interface TextChannel : GuildTextChannel {
     companion object : GuildChannelBuilder<TextChannelModifier, TextChannel> {
         override fun create(modifier: TextChannelModifier.() -> Unit) = TextChannelModifier().apply { convertToTextChannel(); modifier(this) }
 
-        operator fun invoke(id: Snowflake, guild: Guild): TextChannel = IndependentTextChannel(id, guild)
+        operator fun invoke(id: Snowflake, guild: Guild): TextChannel = TextChannelImpl(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<TextChannelCacheEntry>(data, guild)
     }
 
 }
 
-data class IndependentTextChannel(override val id: Snowflake, override val guild: Guild) : TextChannel
+internal class TextChannelImpl(override val id: Snowflake, override val guild: Guild) : TextChannel
 
 class TextChannelCacheEntry(
     override val guild: Guild,

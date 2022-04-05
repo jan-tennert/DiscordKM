@@ -13,6 +13,7 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Member
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.GuildMemberAddEvent
 import io.github.jan.discordkm.api.events.GuildMemberRemoveEvent
 import io.github.jan.discordkm.api.events.GuildMemberUpdateEvent

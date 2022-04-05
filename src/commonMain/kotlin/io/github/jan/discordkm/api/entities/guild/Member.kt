@@ -40,6 +40,7 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmName
 
+
 interface Member : SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<MemberModifier, Member> {
 
     override val cache: MemberCacheEntry?

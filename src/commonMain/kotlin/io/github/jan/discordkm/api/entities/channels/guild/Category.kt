@@ -4,6 +4,7 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.CategoryModifier
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
@@ -31,13 +32,13 @@ sealed interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryC
     companion object : GuildChannelBuilder<CategoryModifier, Category> {
         override fun create(modifier: CategoryModifier.() -> Unit) = CategoryModifier().apply(modifier)
 
-        operator fun invoke(id: Snowflake, guild: Guild): Category = IndependentCategory(id, guild)
+        operator fun invoke(id: Snowflake, guild: Guild): Category = CategoryImpl(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<CategoryCacheEntry>(data, guild)
     }
 
 }
 
-data class IndependentCategory(override val id: Snowflake, override val guild: Guild) : Category
+internal class CategoryImpl(override val id: Snowflake, override val guild: Guild) : Category
 
 class CategoryCacheEntry(
     override val guild: Guild,

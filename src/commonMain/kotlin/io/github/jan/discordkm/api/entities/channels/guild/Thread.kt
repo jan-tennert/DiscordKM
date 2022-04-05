@@ -12,6 +12,7 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.containers.ThreadMemberContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.ThreadModifier
@@ -99,7 +100,7 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
     )
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild, type: ChannelType): Thread = IndependentThread(id, guild, type)
+        operator fun invoke(id: Snowflake, guild: Guild, type: ChannelType): Thread = ThreadImpl(id, guild, type)
 
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<ThreadCacheEntry>(data, guild)
     }
@@ -125,7 +126,7 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
 
 }
 
-data class IndependentThread(override val id: Snowflake, override val guild: Guild, override val type: ChannelType) : Thread
+internal class ThreadImpl(override val id: Snowflake, override val guild: Guild, override val type: ChannelType) : Thread
 
 class ThreadCacheEntry(
     override val guild: Guild,

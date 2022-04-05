@@ -16,6 +16,7 @@ import io.github.jan.discordkm.api.entities.channels.guild.GuildMessageChannelCa
 import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.ChannelCreateEvent
 import io.github.jan.discordkm.api.events.ChannelDeleteEvent
 import io.github.jan.discordkm.api.events.ChannelPinUpdateEvent

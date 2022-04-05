@@ -103,12 +103,12 @@ sealed interface ScheduledEvent : SnowflakeEntity, GuildEntity, CacheEntity {
     )
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild): ScheduledEvent = IndependentScheduledEvent(id, guild)
+        operator fun invoke(id: Snowflake, guild: Guild): ScheduledEvent = ScheduledEventImpl(id, guild)
     }
 
 }
 
-data class IndependentScheduledEvent(override val id: Snowflake, override val guild: Guild) : ScheduledEvent
+internal class ScheduledEventImpl(override val id: Snowflake, override val guild: Guild) : ScheduledEvent
 
 /**
  * Represents a cached scheduled event

@@ -11,6 +11,7 @@ package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.PresenceUpdateEvent
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.utils.snowflake

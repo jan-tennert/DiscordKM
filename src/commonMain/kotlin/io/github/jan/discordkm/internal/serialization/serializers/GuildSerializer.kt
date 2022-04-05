@@ -11,6 +11,7 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
+import io.github.jan.discordkm.api.entities.guild.GuildCacheEntryImpl
 import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.Sticker
@@ -38,7 +39,7 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
 
     override fun deserialize(data: JsonObject, value: Client): GuildCacheEntry {
         val basicGuild = Guild(data["id"]!!.snowflake, value)
-        return GuildCacheEntry(
+        return GuildCacheEntryImpl(
             id = data["id"]!!.snowflake,
             name = data["name"]!!.string,
             iconHash = data["icon", true]?.string,

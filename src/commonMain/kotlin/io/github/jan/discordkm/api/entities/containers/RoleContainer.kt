@@ -6,6 +6,7 @@ import io.github.jan.discordkm.api.entities.guild.Member
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.Role
 import io.github.jan.discordkm.api.entities.guild.RoleCacheEntry
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.modifiers.guild.RoleModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
@@ -18,6 +19,7 @@ import io.github.jan.discordkm.internal.serialization.serializers.RoleSerializer
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.jsonObject
+
 
 open class GuildRoleContainer(val guild: Guild) {
 

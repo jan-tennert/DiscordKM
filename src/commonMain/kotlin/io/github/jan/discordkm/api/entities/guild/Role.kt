@@ -35,6 +35,7 @@ import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.put
 
+
 sealed interface Role : Mentionable, SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<RoleModifier, RoleCacheEntry> {
 
     override val client
@@ -74,12 +75,12 @@ sealed interface Role : Mentionable, SnowflakeEntity, GuildEntity, CacheEntity, 
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild): Role = IndependentRole(id, guild)
+        operator fun invoke(id: Snowflake, guild: Guild): Role = RoleImpl(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = RoleSerializer.deserialize(data, guild)
     }
 }
 
-data class IndependentRole(override val id: Snowflake, override val guild: Guild) : Role
+internal class RoleImpl(override val id: Snowflake, override val guild: Guild) : Role
 
 /**
  * A role cache entry contains all information given by the Discord API

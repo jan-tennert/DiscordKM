@@ -55,13 +55,13 @@ sealed interface Sticker : GuildEntity, SnowflakeEntity {
 
     companion object {
 
-        operator fun invoke(id: Snowflake, guild: Guild): Sticker = IndependentSticker(id, guild)
+        operator fun invoke(id: Snowflake, guild: Guild): Sticker = StickerImpl(id, guild)
 
     }
 
 }
 
-data class IndependentSticker(override val id: Snowflake, override val guild: Guild) : Sticker
+internal class StickerImpl(override val id: Snowflake, override val guild: Guild) : Sticker
 
 /**
  * Represents a Sticker. Can be a default sticker or a guild sticker

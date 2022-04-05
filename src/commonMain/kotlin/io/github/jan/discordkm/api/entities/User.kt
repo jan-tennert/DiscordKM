@@ -73,13 +73,13 @@ sealed interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntit
     override suspend fun retrieve() = client.users.retrieve(id)
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client): User = IndependentUser(id, client)
+        operator fun invoke(id: Snowflake, client: Client): User = UserImpl(id, client)
         operator fun invoke(data: JsonObject, client: Client) = UserSerializer.deserialize(data, client)
     }
 
 }
 
-data class IndependentUser(override val id: Snowflake, override val client: Client) : User
+internal class UserImpl(override val id: Snowflake, override val client: Client) : User
 
 /**
  * The user cache entry contains all information given by the Discord API

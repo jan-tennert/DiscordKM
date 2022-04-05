@@ -1,22 +1,13 @@
 package io.github.jan.discordkm.api.entities.channels.guild
 
 import io.github.jan.discordkm.api.entities.Nameable
+import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
-import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.CategoryModifier
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelModifier
-import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.entities.channels.Invitable
-import io.github.jan.discordkm.internal.invoke
-import io.github.jan.discordkm.internal.patch
-import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.serialization.serializers.channel.ChannelSerializer
-import io.github.jan.discordkm.internal.utils.toJsonObject
 
 sealed interface GuildChannel : Channel {
 
@@ -35,7 +26,17 @@ sealed interface GuildChannel : Channel {
 
 }
 
-sealed interface GuildChannelCacheEntry: GuildChannel, ChannelCacheEntry, Nameable {
+internal class GuildChannelImpl(override val id: Snowflake, override val guild: Guild) : GuildChannel {
+
+    override val cache: GuildChannelCacheEntry?
+        get() = guild.cache?.channels?.get(id)
+
+    override val type: ChannelType
+        get() = cache?.type ?: ChannelType.UNKNOWN
+
+}
+
+interface GuildChannelCacheEntry: GuildChannel, ChannelCacheEntry, Nameable {
 
     /**
      * The permission overrides for this channel

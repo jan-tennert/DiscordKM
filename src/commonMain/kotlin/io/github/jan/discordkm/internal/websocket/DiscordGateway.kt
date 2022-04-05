@@ -398,6 +398,10 @@ suspend fun Client.handleRawEvent(payload: Payload, LOGGER: Logger) = coroutineS
             "VOICE_STATE_UPDATE" -> VoiceStateUpdateEventHandler(client).handle(data)
             else -> return@launch
         }
-        client.handleEvent(event)
+        runCatching {
+            client.handleEvent(event)
+        }.onFailure {
+            LOGGER.error { "Error while handling event ${event::class.simpleName}: ${it::class.simpleName} ${it.message}" }
+        }
     }
 }

@@ -5,6 +5,7 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.modifiers.guild.TextChannelModifier
@@ -17,6 +18,7 @@ import io.github.jan.discordkm.internal.serialization.serializers.channel.Channe
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+
 
 sealed interface NewsChannel: GuildTextChannel {
 
@@ -40,13 +42,13 @@ sealed interface NewsChannel: GuildTextChannel {
     companion object : GuildChannelBuilder<TextChannelModifier, NewsChannel> {
         override fun create(modifier: TextChannelModifier.() -> Unit) = TextChannelModifier().apply { convertToNewsChannel(); modifier(this) }
 
-        operator fun invoke(id: Snowflake, guild: Guild): NewsChannel = IndependentNewsChannel(id, guild)
+        operator fun invoke(id: Snowflake, guild: Guild): NewsChannel = NewsChannelImpl(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<NewsChannelCacheEntry>(data, guild)
     }
 
 }
 
-data class IndependentNewsChannel(override val id: Snowflake, override val guild: Guild) : NewsChannel
+internal class NewsChannelImpl(override val id: Snowflake, override val guild: Guild) : NewsChannel
 
 class NewsChannelCacheEntry(
     override val guild: Guild,

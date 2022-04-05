@@ -11,6 +11,7 @@ package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.StageInstance
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.StageInstanceCreateEvent
 import io.github.jan.discordkm.api.events.StageInstanceDeleteEvent
 import io.github.jan.discordkm.api.events.StageInstanceUpdateEvent

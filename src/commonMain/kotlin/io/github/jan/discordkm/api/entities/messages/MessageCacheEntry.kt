@@ -21,7 +21,7 @@ import io.github.jan.discordkm.internal.caching.ReactionCacheManager
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 
-interface MessageCacheEntry : CacheEntry, Message{
+interface MessageCacheEntry : CacheEntry, Message {
 
     /**
      * The user who sent this message
@@ -178,7 +178,7 @@ internal class MessageCacheEntryImpl(
     override val reference: Message.Reference?,
     override val referencedMessage: MessageCacheEntry?,
     override val webhookId: Snowflake?
-) : Message, MessageCacheEntry {
+) : MessageCacheEntry {
 
     val cacheManager = ReactionCacheManager(client)
 
@@ -200,6 +200,17 @@ internal class MessageCacheEntryImpl(
         oldAttachments = attachments,
         allowedMentions = AllowedMentions(),
     )
+
+    override fun equals(other: Any?): Boolean {
+        if(other !is MessageCacheEntry && other is Message && other.id == id)
+            return true
+        if(other !is MessageCacheEntry)
+            return false
+        return other.id == id && other.channel.id == channel.id
+    }
+
+    override fun hashCode() = id.hashCode()
+    override fun toString() = "MessageCacheEntry(id=$id, channelId=${channel.id})"
 
 }
 

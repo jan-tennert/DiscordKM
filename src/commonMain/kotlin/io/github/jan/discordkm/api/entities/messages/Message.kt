@@ -173,9 +173,15 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
     )
 
     companion object {
-        operator fun invoke(id: Snowflake, channel: MessageChannel): Message = IndependentMessage(id, channel)
+        operator fun invoke(id: Snowflake, channel: MessageChannel): Message = MessageImpl(id, channel)
         operator fun invoke(data: JsonObject, client: Client) = MessageSerializer.deserialize(data, client)
     }
 }
 
-data class IndependentMessage(override val id: Snowflake, override val channel: MessageChannel) : Message
+internal class MessageImpl(override val id: Snowflake, override val channel: MessageChannel) : Message {
+
+    override fun equals(other: Any?) = other is Message && other.id == id
+    override fun hashCode() = id.hashCode()
+    override fun toString() = "IndependentMessage[id=$id)"
+
+}

@@ -14,6 +14,7 @@ import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.ThreadCreateEvent
 import io.github.jan.discordkm.api.events.ThreadDeleteEvent
 import io.github.jan.discordkm.api.events.ThreadMembersUpdateEvent
