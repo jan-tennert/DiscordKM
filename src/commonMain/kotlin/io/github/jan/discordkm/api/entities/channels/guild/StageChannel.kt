@@ -71,7 +71,7 @@ class StageChannelCacheEntry(
     regionId: String?,
     bitrate: Int,
     videoQualityMode: VoiceChannel.VideoQualityMode,
-    override val guild: Guild,
+    guild: Guild,
     override val id: Snowflake,
     override val name: String,
     override val position: Int,

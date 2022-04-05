@@ -78,7 +78,7 @@ open class VoiceChannelCacheEntry(
     val regionId: String?,
     val bitrate: Int,
     val videoQualityMode: VoiceChannel.VideoQualityMode,
-    override val guild: Guild,
+    final override val guild: Guild,
     override val id: Snowflake,
     override val name: String,
     override val position: Int,
@@ -87,7 +87,7 @@ open class VoiceChannelCacheEntry(
     override val parent: Category?
 ) : VoiceChannel, GuildChannelCacheEntry, IPositionable, GuildMessageChannelCacheEntry {
 
-    override val cacheManager = MessageCacheManager(client)
+    override val cacheManager = MessageCacheManager(guild.client)
 
     override val slowModeTime: TimeSpan
         get() = throw UnsupportedOperationException("A text channel in a voice chanel cannot have a slow mode enabled")
