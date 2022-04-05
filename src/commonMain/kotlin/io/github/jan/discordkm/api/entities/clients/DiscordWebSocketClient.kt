@@ -85,7 +85,7 @@ class DiscordWebSocketClient internal constructor(
 
     override suspend fun disconnect() {
        // requester.http.
-        shardConnections.forEach { it.close() }
+        shardConnections.forEach { it.close(true) }
     }
 
 }

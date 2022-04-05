@@ -9,7 +9,6 @@
  */
 package io.github.jan.discordkm.internal.websocket
 
-import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
 import com.soywiz.korio.net.ws.WebSocketClient
 import com.soywiz.korio.net.ws.WsCloseInfo
@@ -123,8 +122,12 @@ class DiscordGateway(
 
     suspend fun start(delay: Boolean = false) {
         if(isConnected) return
+        println(config.reconnectDelay)
         if (delay) com.soywiz.korio.async.delay(config.reconnectDelay)
+        println("helo")
         LOGGER.log(true, Logger.Level.INFO) { "Connecting to gateway..." }
+        println("helo2")
+        println("Blabla")
         try {
             ws = WebSocketClient(generateWebsocketURL(
                 config.encoding,
@@ -136,21 +139,13 @@ class DiscordGateway(
                     onMessage(it)
                 }
             }
-            /*with(ws) {
-                LOGGER.log(true, Logger.Level.INFO) { "Connected to gateway!" }
-                while (isConnected) {
-                    try {
-                        val message = receive().readBytes().decodeToString()
-
-                    } catch (e: Exception) {
-                        mutex.withLock { isConnected = false }
-                        val reason = closeReason.await()!!
-                        ErrorHandler.handle(reason, LOGGER, config.reconnectDelay)
-                        launch(kotlin.coroutines.coroutineContext) { start(delay = true) }
-                    }
-                    com.soywiz.korio.async.delay(100.milliseconds)
+            ws.onError {
+                LOGGER.error { "Error on websocket, reconnecting in ${config.reconnectDelay}...\n${it.message}" }
+                com.soywiz.korio.async.launch(Dispatchers.Default) {
+                    close()
+                    start(true)
                 }
-            }*/
+            }
         } catch (e: Exception) {
             mutex.withLock { isConnected = false }
             LOGGER.log(true, Logger.Level.ERROR) { "Failed to connect to the gateway!. Retrying in ${config.reconnectDelay}..." }
@@ -160,7 +155,17 @@ class DiscordGateway(
     }
 
     suspend fun send(payload: Payload) {
-        ws.send(payload)
+        try {
+            ws.send(payload)
+            println("tes")
+        } catch (_: Exception) {
+            mutex.withLock { isConnected = false }
+            LOGGER.log(
+                true,
+                Logger.Level.ERROR
+            ) { "Failed to send a payload to the server. Reconnecting in ${config.reconnectDelay}..." }
+            com.soywiz.korio.async.launch(coroutineContext) { start(delay = true) }
+        }
     }
 
     private suspend fun onMessage(message: String) {
@@ -211,10 +216,6 @@ class DiscordGateway(
                         LOGGER.debug { "Start heartbeating..." }
                         startHeartbeating()
                     }
-                    heartbeatWatcher = launch {
-                        LOGGER.debug { "Start heartbeat watcher..." }
-                        startHeartbeatWatcher()
-                    }
                     launch {
                         if (sessionId != null && resumeTries < config.maxResumeTries) {
                             val tryMessage =
@@ -252,20 +253,6 @@ class DiscordGateway(
         }
     }
 
-    private suspend fun CoroutineScope.startHeartbeatWatcher() {
-        while(isActive) {
-            com.soywiz.korio.async.delay(10.seconds)
-            if(heartbeatSent > heartbeatReceived && isActive) {
-                com.soywiz.korio.async.delay(30.seconds)
-                if(heartbeatSent == heartbeatReceived || !isActive) continue
-                LOGGER.warn { "No heartbeat response received, reconnecting in ${config.reconnectDelay}..." }
-                close()
-                start(true)
-                break
-            }
-        }
-    }
-
     private suspend fun CoroutineScope.startHeartbeating() {
         while (isActive) {
             delay(heartbeatInterval)
@@ -278,11 +265,11 @@ class DiscordGateway(
 
     private suspend fun sendHeartbeat() = send(Payload(1, JsonPrimitive(heartbeatInterval), lastSequenceNumber, null))
 
-    suspend fun close() {
+    suspend fun close(closeWs: Boolean = false) {
         LOGGER.warn { "Closing websocket connection on shard $shardId" }
         if(::heartbeatTask.isInitialized) heartbeatTask.cancel()
         if(::heartbeatWatcher.isInitialized) heartbeatWatcher.cancel()
-        ws.close(WsCloseInfo(1000, "Closing"))
+        if(closeWs) ws.close(WsCloseInfo(1000, "Closing"))
         mutex.withLock {
             heartbeatSent = 0
             heartbeatReceived = 0

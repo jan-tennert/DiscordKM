@@ -4,12 +4,12 @@ import com.soywiz.klock.DateTime
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
+import com.soywiz.korio.net.http.Http
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.github.jan.discordkm.lavalink.LavalinkNode
 import io.github.jan.discordkm.lavalink.LavalinkRoute
-import io.ktor.http.HttpMethod
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
@@ -87,7 +87,7 @@ class AudioTrackData(data: JsonObject, override val node: LavalinkNode) : AudioT
 data class EncodedTrack(val encodedTrack: String, private val node: LavalinkNode) {
 
     suspend fun decode(): AudioTrack {
-        val track = node.request(HttpMethod.Get, LavalinkRoute.DECODE_TRACK(encodedTrack))
+        val track = node.request(Http.Method.GET, LavalinkRoute.DECODE_TRACK(encodedTrack)).readAllString()
         return AudioTrackData(buildJsonObject {
             put("track", encodedTrack)
             put("info", track.toJsonObject())

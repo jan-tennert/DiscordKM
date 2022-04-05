@@ -31,6 +31,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                api("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.SERIALIZATION}")
+
                 implementation(project(":"))
             }
         }
