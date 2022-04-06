@@ -117,4 +117,8 @@ internal class ScheduledEventCacheEntryImpl(
         }
     }
 
+    override fun toString(): String = "ScheduledEventCacheEntry(id=$id, guildId=${guild.id}, name=$name)"
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is ScheduledEvent && other.id == id && other.guild.id == guild.id
+
 }

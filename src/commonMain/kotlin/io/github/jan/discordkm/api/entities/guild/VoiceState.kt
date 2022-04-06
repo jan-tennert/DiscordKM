@@ -4,6 +4,7 @@ import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
@@ -88,5 +89,9 @@ class VoiceStateCacheEntry(
         })
         transform {  }
     }
+
+    override fun toString() = "VoiceStateCacheEntry(userId = ${user.id}, guildId = ${guild.id})"
+    override fun hashCode() = user.id.hashCode()
+    override fun equals(other: Any?): Boolean = other is VoiceStateCacheEntry && other.user.id == user.id && other.guild.id == guild.id
 
 }

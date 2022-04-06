@@ -16,7 +16,7 @@ import io.github.jan.discordkm.api.events.MessageCreateEvent
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class MessageCreateEventHandler(val client: Client) : InternalEventHandler<MessageCreateEvent> {
+internal class MessageCreateEventHandler(val client: Client) : InternalEventHandler<MessageCreateEvent> {
 
     override suspend fun handle(data: JsonObject): MessageCreateEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)

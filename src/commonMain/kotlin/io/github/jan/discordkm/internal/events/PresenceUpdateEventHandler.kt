@@ -17,7 +17,7 @@ import io.github.jan.discordkm.internal.serialization.serializers.GuildSerialize
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class PresenceUpdateEventHandler(val client: Client) : InternalEventHandler<PresenceUpdateEvent> {
+internal class PresenceUpdateEventHandler(val client: Client) : InternalEventHandler<PresenceUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): PresenceUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

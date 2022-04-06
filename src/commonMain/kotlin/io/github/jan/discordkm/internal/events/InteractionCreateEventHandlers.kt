@@ -53,7 +53,7 @@ import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<InteractionCreateEvent> {
+internal class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<InteractionCreateEvent> {
 
     override suspend fun handle(data: JsonObject) = when(InteractionType[data["type"]!!.int]) {
         InteractionType.PING -> TODO()

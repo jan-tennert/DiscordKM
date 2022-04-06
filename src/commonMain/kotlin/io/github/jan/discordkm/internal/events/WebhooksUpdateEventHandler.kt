@@ -16,7 +16,7 @@ import io.github.jan.discordkm.api.events.WebhooksUpdateEvent
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class WebhooksUpdateEventHandler(val client: Client) : InternalEventHandler<WebhooksUpdateEvent> {
+internal class WebhooksUpdateEventHandler(val client: Client) : InternalEventHandler<WebhooksUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): WebhooksUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

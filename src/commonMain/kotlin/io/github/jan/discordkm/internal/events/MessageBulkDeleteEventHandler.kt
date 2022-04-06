@@ -21,7 +21,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
-class MessageBulkDeleteEventHandler(val client: Client) : InternalEventHandler<MessageBulkDeleteEvent> {
+internal class MessageBulkDeleteEventHandler(val client: Client) : InternalEventHandler<MessageBulkDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): MessageBulkDeleteEvent {
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, client) }

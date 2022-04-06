@@ -20,7 +20,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import io.github.jan.discordkm.internal.utils.get
 
-class MessageReactionRemoveAllEventHandler(val client: Client) : InternalEventHandler<MessageReactionRemoveAllEvent> {
+internal class MessageReactionRemoveAllEventHandler(val client: Client) : InternalEventHandler<MessageReactionRemoveAllEvent> {
 
     override suspend fun handle(data: JsonObject): MessageReactionRemoveAllEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)

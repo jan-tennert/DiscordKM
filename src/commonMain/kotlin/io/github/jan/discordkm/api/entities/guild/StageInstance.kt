@@ -55,12 +55,17 @@ interface StageInstance : SnowflakeEntity, BaseEntity {
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, channel: StageChannel) = object : StageInstance {
-            override val id = id
-            override val stageChannel = channel
-        }
+        operator fun invoke(id: Snowflake, channel: StageChannel): StageInstance = StageInstanceImpl(id, channel)
         operator fun invoke(data: JsonObject, client: Client) = StageInstanceSerializer.deserialize(data, client)
     }
+
+}
+
+internal class StageInstanceImpl(override val id: Snowflake, override val stageChannel: StageChannel) : StageInstance {
+
+    override fun toString(): String = "StageInstance(id=$id, guildId=${stageChannel.guild.id}, stageChannelId=${stageChannel.id})"
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is StageInstance && other.id == id && other.stageChannel.id == stageChannel.id
 
 }
 
@@ -76,5 +81,9 @@ class StageInstanceCacheEntry(
 
     override val client: Client
         get() = stageChannel.client
+
+    override fun toString(): String = "StageInstanceCacheEntry(id=$id, guildId=${guild.id}, stageChannelId=${stageChannel.id}, topic=$topic)"
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is StageInstance && other.id == id && other.stageChannel.id == stageChannel.id
 
 }

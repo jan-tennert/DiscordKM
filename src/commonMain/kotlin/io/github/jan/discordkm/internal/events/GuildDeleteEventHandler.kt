@@ -17,7 +17,7 @@ import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class GuildDeleteEventHandler(val client: Client, private val LOGGER: Logger) :
+internal class GuildDeleteEventHandler(val client: Client, private val LOGGER: Logger) :
     InternalEventHandler<GuildDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): GuildDeleteEvent {

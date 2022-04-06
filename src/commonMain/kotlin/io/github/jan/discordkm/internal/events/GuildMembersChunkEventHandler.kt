@@ -13,7 +13,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-class GuildMembersChunkEventHandler(private val client: Client) : InternalEventHandler<GuildMembersChunkEvent> {
+internal class GuildMembersChunkEventHandler(private val client: Client) : InternalEventHandler<GuildMembersChunkEvent> {
 
     override suspend fun handle(data: JsonObject): GuildMembersChunkEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

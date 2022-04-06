@@ -18,7 +18,7 @@ object DiscordImage {
 
     fun applicationImage(id: Snowflake, hash: String) = getImage("app-icons", id, hash)
 
-    fun guildBanner(id: Snowflake, hash: String) = getImage("banners", id, hash)
+    fun guildBanner(id: Snowflake, hash: String) = getImage("banners", id, hash, if(hash.startsWith("a_")) "gif" else "png")
 
     fun guildIcon(id: Snowflake, hash: String) = getImage("icons", id, hash, if(hash.startsWith("a_")) "gif" else "png")
 

@@ -69,6 +69,10 @@ open class ApplicationCommand(override val client: Client, override val data: Js
     val version: Snowflake
         get() = data.getOrThrow<Snowflake>("version")
 
+    override fun toString(): String = "ApplicationCommand(id=$id, name=$name, guildId=${guild?.id}, type=$type)"
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is ApplicationCommand && other.id == id
+
 }
 
 class ChatInputCommand(client: Client, data: JsonObject) : ApplicationCommand(client, data) {

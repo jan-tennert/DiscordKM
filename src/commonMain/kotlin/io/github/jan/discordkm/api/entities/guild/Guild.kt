@@ -111,8 +111,12 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
     /**
      * Retrieves all bans for this guild
      */
-    suspend fun retrieveBans() = client.buildRestAction<List<Ban>> {
-        route = Route.Ban.GET_BANS(id).get()
+    suspend fun retrieveBans(limit: Int = 1000, before: Snowflake? = null, after: Snowflake? = null) = client.buildRestAction<List<Ban>> {
+        route = Route.Ban.GET_BANS(id).get {
+            put("limit", limit)
+            putOptional("before", before)
+            putOptional("after", after)
+        }
         transform { it.toJsonArray().map { ban -> GuildSerializer.deserializeBan(ban.jsonObject, this@Guild) } }
     }
 

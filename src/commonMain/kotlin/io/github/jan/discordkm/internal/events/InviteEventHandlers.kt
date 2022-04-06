@@ -22,7 +22,7 @@ import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class InviteCreateEventHandler(val client: Client) : InternalEventHandler<InviteCreateEvent> {
+internal class InviteCreateEventHandler(val client: Client) : InternalEventHandler<InviteCreateEvent> {
 
     override suspend fun handle(data: JsonObject): InviteCreateEvent {
         val invite = Invite(client, data)
@@ -31,7 +31,7 @@ class InviteCreateEventHandler(val client: Client) : InternalEventHandler<Invite
 
 }
 
-class InviteDeleteEventHandler(val client: Client) : InternalEventHandler<InviteDeleteEvent> {
+internal class InviteDeleteEventHandler(val client: Client) : InternalEventHandler<InviteDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): InviteDeleteEvent {
         val channel = Channel(data["channel"]!!.snowflake, ChannelType.UNKNOWN, client)

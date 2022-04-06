@@ -113,12 +113,17 @@ interface Member : SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<MemberM
     suspend fun ban(delDays: Int?) = guild.members.ban(id, null, delDays)
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = object : Member {
-            override val id: Snowflake = id
-            override val guild: Guild = guild
-        }
+        operator fun invoke(id: Snowflake, guild: Guild): Member = MemberImpl(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = MemberSerializer.deserialize(data, guild)
     }
+
+}
+
+internal class MemberImpl(override val id: Snowflake, override val guild: Guild) : Member {
+
+    override fun toString(): String = "Member(id=$id, guildId=${guild.id})"
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is Member && other.id == id && other.guild.id == guild.id
 
 }
 
@@ -250,5 +255,8 @@ data class MemberCacheEntry(
 
     override val type = PermissionOverwrite.HolderType.MEMBER
 
+    override fun toString(): String = "MemberCacheEntry(id=$id, guildId=${guild.id}, name=$name)"
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is Member && other.id == id && other.guild.id == guild.id
 
 }

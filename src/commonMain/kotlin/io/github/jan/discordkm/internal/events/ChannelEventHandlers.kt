@@ -26,7 +26,7 @@ import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class ChannelCreateEventHandler(val client: Client) :
+internal class ChannelCreateEventHandler(val client: Client) :
     InternalEventHandler<ChannelCreateEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelCreateEvent {
@@ -38,7 +38,7 @@ class ChannelCreateEventHandler(val client: Client) :
 
 }
 
-class ChannelDeleteEventHandler(val client: Client) :
+internal class ChannelDeleteEventHandler(val client: Client) :
     InternalEventHandler<ChannelDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelDeleteEvent {
@@ -50,7 +50,7 @@ class ChannelDeleteEventHandler(val client: Client) :
 
 }
 
-class ChannelUpdateEventHandler(val client: Client) :
+internal class ChannelUpdateEventHandler(val client: Client) :
     InternalEventHandler<ChannelUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelUpdateEvent {
@@ -66,7 +66,7 @@ class ChannelUpdateEventHandler(val client: Client) :
 
 }
 
-class ChannelPinUpdateEventHandler(val client: Client) :
+internal class ChannelPinUpdateEventHandler(val client: Client) :
     InternalEventHandler<ChannelPinUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelPinUpdateEvent {

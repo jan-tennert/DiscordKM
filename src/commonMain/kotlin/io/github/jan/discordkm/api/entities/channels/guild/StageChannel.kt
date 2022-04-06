@@ -37,11 +37,11 @@ sealed interface StageChannel : VoiceChannel {
      * @param topic The topic of this stage instance
      * @param public Whether this stage instance will be available in Stage Discovery or not
      */
-    suspend fun createInstance(topic: String, public: Boolean = false, reason: String? = null) = client.buildRestAction<StageInstance> {
+    suspend fun createInstance(topic: String, reason: String? = null) = client.buildRestAction<StageInstance> {
         route = Route.StageInstance.CREATE_INSTANCE.post(buildJsonObject {
             put("channel_id", id.long)
             put("topic", topic)
-            put("privacy_level", if(public) PrivacyLevel.PUBLIC.value else PrivacyLevel.GUILD_ONLY.value)
+            put("privacy_level", PrivacyLevel.GUILD_ONLY.value)
         })
         transform { StageInstance(it.toJsonObject(), client) }
         this.reason = reason

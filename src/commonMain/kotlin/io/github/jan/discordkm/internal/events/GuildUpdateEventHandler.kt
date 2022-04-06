@@ -15,7 +15,7 @@ import io.github.jan.discordkm.api.events.GuildUpdateEvent
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import kotlinx.serialization.json.JsonObject
 
-class GuildUpdateEventHandler(val client: Client) : InternalEventHandler<GuildUpdateEvent> {
+internal class GuildUpdateEventHandler(val client: Client) : InternalEventHandler<GuildUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildUpdateEvent {
         val guild = GuildSerializer.deserialize(data, client)

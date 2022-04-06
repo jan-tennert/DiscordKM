@@ -22,7 +22,7 @@ import io.github.jan.discordkm.internal.serialization.serializers.ScheduledEvent
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class ScheduledEventCreateHandler(val client: Client) : InternalEventHandler<ScheduledEventCreateEvent> {
+internal class ScheduledEventCreateHandler(val client: Client) : InternalEventHandler<ScheduledEventCreateEvent> {
 
     override suspend fun handle(data: JsonObject): ScheduledEventCreateEvent {
         val scheduledEvent = ScheduledEventSerializer.deserialize(data, client)
@@ -32,7 +32,7 @@ class ScheduledEventCreateHandler(val client: Client) : InternalEventHandler<Sch
 
 }
 
-class ScheduledEventUpdateHandler(val client: Client) : InternalEventHandler<ScheduledEventUpdateEvent> {
+internal class ScheduledEventUpdateHandler(val client: Client) : InternalEventHandler<ScheduledEventUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): ScheduledEventUpdateEvent {
         val scheduledEvent = ScheduledEventSerializer.deserialize(data, client)
@@ -51,7 +51,7 @@ class ScheduledEventUpdateHandler(val client: Client) : InternalEventHandler<Sch
 
 }
 
-class ScheduledEventDeleteHandler(val client: Client) : InternalEventHandler<ScheduledEventDeleteEvent> {
+internal class ScheduledEventDeleteHandler(val client: Client) : InternalEventHandler<ScheduledEventDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): ScheduledEventDeleteEvent {
         val scheduledEvent = ScheduledEventSerializer.deserialize(data, client)
@@ -68,7 +68,7 @@ class ScheduledEventDeleteHandler(val client: Client) : InternalEventHandler<Sch
 
 }
 
-class ScheduledEventUserAddEventHandler(val client: Client) : InternalEventHandler<ScheduledEventUserAddEvent> {
+internal class ScheduledEventUserAddEventHandler(val client: Client) : InternalEventHandler<ScheduledEventUserAddEvent> {
 
     override suspend fun handle(data: JsonObject): ScheduledEventUserAddEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -80,7 +80,7 @@ class ScheduledEventUserAddEventHandler(val client: Client) : InternalEventHandl
 
 }
 
-class ScheduledEventUserRemoveEventHandler(val client: Client) : InternalEventHandler<ScheduledEventUserRemoveEvent> {
+internal class ScheduledEventUserRemoveEventHandler(val client: Client) : InternalEventHandler<ScheduledEventUserRemoveEvent> {
 
     override suspend fun handle(data: JsonObject): ScheduledEventUserRemoveEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

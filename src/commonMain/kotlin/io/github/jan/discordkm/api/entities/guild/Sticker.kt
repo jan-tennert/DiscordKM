@@ -13,6 +13,7 @@ import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.api.entities.modifiers.guild.StickerModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
@@ -61,7 +62,13 @@ sealed interface Sticker : GuildEntity, SnowflakeEntity {
 
 }
 
-internal class StickerImpl(override val id: Snowflake, override val guild: Guild) : Sticker
+internal class StickerImpl(override val id: Snowflake, override val guild: Guild) : Sticker {
+
+    override fun toString(): String = "Sticker(id=$id, guildId=${guild.id})"
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is Sticker && other.id == id && other.guild.id == guild.id
+
+}
 
 /**
  * Represents a Sticker. Can be a default sticker or a guild sticker
@@ -92,6 +99,10 @@ class StickerCacheEntry(
     val url = DiscordImage.sticker(id, formatType)
 
     override val client = guild.client
+
+    override fun toString(): String = "StickerCacheEntry(id=$id, guildId=${guild.id}, name=$name, description=$description)"
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is ScheduledEvent && other.id == id && other.guild.id == guild.id
 
 }
 

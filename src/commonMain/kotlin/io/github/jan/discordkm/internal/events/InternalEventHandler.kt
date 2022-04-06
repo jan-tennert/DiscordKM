@@ -12,7 +12,7 @@ package io.github.jan.discordkm.internal.events
 import io.github.jan.discordkm.api.events.Event
 import kotlinx.serialization.json.JsonObject
 
-internal interface InternalEventHandler <T : Event> {
+internal sealed interface InternalEventHandler <T : Event> {
 
     suspend fun handle(data: JsonObject) : T
 

@@ -17,7 +17,7 @@ import io.github.jan.discordkm.api.events.StageInstanceDeleteEvent
 import io.github.jan.discordkm.api.events.StageInstanceUpdateEvent
 import kotlinx.serialization.json.JsonObject
 
-class StageInstanceCreateEventHandler(val client: Client) : InternalEventHandler<StageInstanceCreateEvent> {
+internal class StageInstanceCreateEventHandler(val client: Client) : InternalEventHandler<StageInstanceCreateEvent> {
 
     override suspend fun handle(data: JsonObject): StageInstanceCreateEvent {
         val stageInstance = StageInstance(data, client)
@@ -27,7 +27,7 @@ class StageInstanceCreateEventHandler(val client: Client) : InternalEventHandler
 
 }
 
-class StageInstanceUpdateEventHandler(val client: Client) : InternalEventHandler<StageInstanceUpdateEvent> {
+internal class StageInstanceUpdateEventHandler(val client: Client) : InternalEventHandler<StageInstanceUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): StageInstanceUpdateEvent {
         val stageInstance = StageInstance(data, client)
@@ -38,7 +38,7 @@ class StageInstanceUpdateEventHandler(val client: Client) : InternalEventHandler
 
 }
 
-class StageInstanceDeleteEventHandler(val client: Client) : InternalEventHandler<StageInstanceDeleteEvent> {
+internal class StageInstanceDeleteEventHandler(val client: Client) : InternalEventHandler<StageInstanceDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): StageInstanceDeleteEvent {
         val stageInstance = StageInstance(data, client)

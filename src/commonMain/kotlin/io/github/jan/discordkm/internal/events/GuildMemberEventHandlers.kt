@@ -21,7 +21,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
-class GuildMemberAddEventHandler(val client: Client) : InternalEventHandler<GuildMemberAddEvent> {
+internal class GuildMemberAddEventHandler(val client: Client) : InternalEventHandler<GuildMemberAddEvent> {
 
     override suspend fun handle(data: JsonObject): GuildMemberAddEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -32,7 +32,7 @@ class GuildMemberAddEventHandler(val client: Client) : InternalEventHandler<Guil
 
 }
 
-class GuildMemberUpdateEventHandler(val client: Client) : InternalEventHandler<GuildMemberUpdateEvent> {
+internal class GuildMemberUpdateEventHandler(val client: Client) : InternalEventHandler<GuildMemberUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildMemberUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -43,7 +43,7 @@ class GuildMemberUpdateEventHandler(val client: Client) : InternalEventHandler<G
 
 }
 
-class GuildMemberRemoveEventHandler(val client: Client) : InternalEventHandler<GuildMemberRemoveEvent> {
+internal class GuildMemberRemoveEventHandler(val client: Client) : InternalEventHandler<GuildMemberRemoveEvent> {
 
     override suspend fun handle(data: JsonObject): GuildMemberRemoveEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

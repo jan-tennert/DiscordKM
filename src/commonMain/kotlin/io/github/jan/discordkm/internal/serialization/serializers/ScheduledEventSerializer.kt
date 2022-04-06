@@ -22,26 +22,26 @@ import kotlinx.serialization.json.jsonObject
 object ScheduledEventSerializer : BaseEntitySerializer<ScheduledEventCacheEntry> {
     override fun deserialize(data: JsonObject, value: Client): ScheduledEventCacheEntry {
         val guild = Guild(data["guild_id"]!!.snowflake, value)
-        val channel = data["channel_id", false]?.snowflake?.let { VoiceChannel(it, guild) }
+        val channel = data["channel_id", true]?.snowflake?.let { VoiceChannel(it, guild) }
         return ScheduledEventCacheEntryImpl(
             data["id"]!!.snowflake,
             guild,
             channel,
             creator = User(data["creator_id"]!!.snowflake, value),
             data["name"]!!.string,
-            data["description", false]?.string,
+            data["description", true]?.string,
             data["scheduled_start_time"]!!.isoTimestamp,
-            data["scheduled_end_time", false]?.isoTimestamp,
+            data["scheduled_end_time", true]?.isoTimestamp,
             PrivacyLevel[data["privacy_level"]!!.int],
             ScheduledEvent.EventStatus[data["status"]!!.int],
             ScheduledEvent.EntityType[data["entity_type"]!!.int],
-            data["entity_id", false]?.let { StageInstance(it.snowflake, channel as StageChannel) },
-            data["user_count", false]?.int ?: 0,
-            data["metadata", false]?.jsonObject?.let {
-                val location = it["location", false]?.string
+            data["entity_id", true]?.let { StageInstance(it.snowflake, channel as StageChannel) },
+            data["user_count", true]?.int ?: 0,
+            data["metadata", true]?.jsonObject?.let {
+                val location = it["location", true]?.string
                 ScheduledEvent.EventMetadata(location)
             },
-            data["image", false]?.string
+            data["image", true]?.string
         )
     }
 }

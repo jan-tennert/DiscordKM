@@ -18,7 +18,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 
-class GuildStickersUpdateEventHandler(val client: Client) : InternalEventHandler<GuildStickersUpdateEvent> {
+internal class GuildStickersUpdateEventHandler(val client: Client) : InternalEventHandler<GuildStickersUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildStickersUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

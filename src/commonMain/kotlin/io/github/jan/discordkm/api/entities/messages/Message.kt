@@ -182,6 +182,6 @@ internal class MessageImpl(override val id: Snowflake, override val channel: Mes
 
     override fun equals(other: Any?) = other is Message && other.id == id
     override fun hashCode() = id.hashCode()
-    override fun toString() = "IndependentMessage[id=$id)"
+    override fun toString() = "IndependentMessage(id=$id)"
 
 }

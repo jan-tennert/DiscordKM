@@ -19,7 +19,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
-class BanEventHandler(val client: Client) {
+internal class BanEventHandler(val client: Client) {
 
     inline fun <reified C : BanEvent> handle(data: JsonObject): C {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

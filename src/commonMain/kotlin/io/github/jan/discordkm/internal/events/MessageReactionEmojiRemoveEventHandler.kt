@@ -24,7 +24,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
-class MessageReactionEmojiRemoveEventHandler(val client: Client) : InternalEventHandler<MessageReactionEmojiRemoveEvent> {
+internal class MessageReactionEmojiRemoveEventHandler(val client: Client) : InternalEventHandler<MessageReactionEmojiRemoveEvent> {
 
     override suspend fun handle(data: JsonObject): MessageReactionEmojiRemoveEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)

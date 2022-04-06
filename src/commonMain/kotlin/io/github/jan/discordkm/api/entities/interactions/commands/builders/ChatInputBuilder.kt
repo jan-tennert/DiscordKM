@@ -12,7 +12,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 
-class ChatInputCommandBuilder(client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT) {
+class ChatInputCommandBuilder(client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT, client) {
 
     private val options: MutableList<CommandOption> = mutableListOf()
 

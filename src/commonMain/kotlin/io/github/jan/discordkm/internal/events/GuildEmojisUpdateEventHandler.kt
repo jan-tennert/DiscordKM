@@ -19,7 +19,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-class GuildEmojisUpdateEventHandler(val client: Client) : InternalEventHandler<GuildEmojisUpdateEvent> {
+internal class GuildEmojisUpdateEventHandler(val client: Client) : InternalEventHandler<GuildEmojisUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildEmojisUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

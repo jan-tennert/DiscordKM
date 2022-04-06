@@ -15,7 +15,7 @@ import io.github.jan.discordkm.api.events.SelfUserUpdateEvent
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
 
-class SelfUserUpdateEventHandler(val client: Client) : InternalEventHandler<SelfUserUpdateEvent> {
+internal class SelfUserUpdateEventHandler(val client: Client) : InternalEventHandler<SelfUserUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): SelfUserUpdateEvent {
         val user = User(data, client)

@@ -25,7 +25,7 @@ object StageInstanceSerializer : BaseEntitySerializer<StageInstanceCacheEntry> {
             topic = data["topic"]!!.string,
             privacyLevel = PrivacyLevel[data["privacy_level"]!!.int],
             isDiscoveryEnabled = !(data["discovery_disabled"]!!.boolean),
-            scheduledEvent = ScheduledEvent(data["guild_scheduled_event_id", false]!!.snowflake, guild)
+            scheduledEvent = ScheduledEvent(data["guild_scheduled_event_id", true]!!.snowflake, guild)
             )
     }
 

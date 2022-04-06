@@ -25,7 +25,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-class ThreadCreateEventHandler(val client: Client) : InternalEventHandler<ThreadCreateEvent> {
+internal class ThreadCreateEventHandler(val client: Client) : InternalEventHandler<ThreadCreateEvent> {
 
     override suspend fun handle(data: JsonObject): ThreadCreateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -36,7 +36,7 @@ class ThreadCreateEventHandler(val client: Client) : InternalEventHandler<Thread
 
 }
 
-class ThreadUpdateEventHandler(val client: Client) : InternalEventHandler<ThreadUpdateEvent> {
+internal class ThreadUpdateEventHandler(val client: Client) : InternalEventHandler<ThreadUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): ThreadUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -48,7 +48,7 @@ class ThreadUpdateEventHandler(val client: Client) : InternalEventHandler<Thread
 
 }
 
-class ThreadDeleteEventHandler(val client: Client) : InternalEventHandler<ThreadDeleteEvent> {
+internal class ThreadDeleteEventHandler(val client: Client) : InternalEventHandler<ThreadDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): ThreadDeleteEvent {
         val threadId = data["id"]!!.snowflake
@@ -61,7 +61,7 @@ class ThreadDeleteEventHandler(val client: Client) : InternalEventHandler<Thread
 
 }
 
-class ThreadMembersUpdateEventHandler(val client: Client) : InternalEventHandler<ThreadMembersUpdateEvent> {
+internal class ThreadMembersUpdateEventHandler(val client: Client) : InternalEventHandler<ThreadMembersUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): ThreadMembersUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

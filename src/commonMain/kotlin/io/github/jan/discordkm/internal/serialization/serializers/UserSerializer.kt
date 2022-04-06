@@ -12,6 +12,7 @@ package io.github.jan.discordkm.internal.serialization.serializers
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.int
@@ -34,6 +35,8 @@ object UserSerializer {
         premiumType = data["premium_type", true]?.int?.let { User.PremiumType.get(it) } ?: User.PremiumType.NONE,
         publicFlags = data["flags", true]?.long?.let { User.UserFlag.decode(it) } ?: setOf(),
         isSystem = data["system", true]?.boolean ?: false,
+        accentColor = data["accent_color", true]?.string?.let { Color.fromHex(it) },
+        bannerHash = data["banner", true]?.string,
         client = value
     )
 

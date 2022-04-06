@@ -17,7 +17,7 @@ import io.github.jan.discordkm.internal.serialization.serializers.VoiceStateSeri
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-class VoiceStateUpdateEventHandler(val client: Client) : InternalEventHandler<VoiceStateUpdateEvent> {
+internal class VoiceStateUpdateEventHandler(val client: Client) : InternalEventHandler<VoiceStateUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): VoiceStateUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

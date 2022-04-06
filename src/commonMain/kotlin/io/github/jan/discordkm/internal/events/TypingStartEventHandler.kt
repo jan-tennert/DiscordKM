@@ -22,7 +22,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import io.github.jan.discordkm.internal.utils.get
 
-class TypingStartEventHandler(val client: Client) : InternalEventHandler<TypingStartEvent> {
+internal class TypingStartEventHandler(val client: Client) : InternalEventHandler<TypingStartEvent> {
 
     override suspend fun handle(data: JsonObject): TypingStartEvent {
         val user = User(data["user_id"]!!.snowflake, client)
