@@ -14,14 +14,13 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.serializers.StageInstanceSerializer
-import io.github.jan.discordkm.internal.utils.EnumWithValue
-import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
@@ -71,7 +70,8 @@ class StageInstanceCacheEntry(
     val topic: String,
     override val stageChannel: StageChannel,
     val privacyLevel: PrivacyLevel,
-    val isDiscoveryEnabled: Boolean
+    val isDiscoveryEnabled: Boolean,
+    val scheduledEvent: ScheduledEvent?
 ) : StageInstance, GuildEntity {
 
     override val client: Client

@@ -4,7 +4,7 @@ import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 
 enum class PrivacyLevel : EnumWithValue<Int> {
-    PUBLIC,
+    @Deprecated("Public scheduled events or stage instances are deprecated", level = DeprecationLevel.ERROR) PUBLIC,
     GUILD_ONLY;
 
     override val value: Int

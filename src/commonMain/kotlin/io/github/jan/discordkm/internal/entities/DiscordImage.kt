@@ -38,6 +38,8 @@ object DiscordImage {
 
     fun memberAvatar(id: Snowflake, guildId: Snowflake, hash: String) = "${baseURL}guilds/$guildId/users/$id/avatars/$hash.png"
 
+    fun eventCoverImage(id: Snowflake, hash: String) = getImage("guild-events", id, hash)
+
     private fun getImage(path: String, id: Snowflake, hash: String, extension: String = "png") = "$baseURL$path/$id/$hash.$extension"
 
 }

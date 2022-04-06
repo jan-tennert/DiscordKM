@@ -4,11 +4,11 @@ import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
-import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.guild.StageInstanceCacheEntry
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
-import io.github.jan.discordkm.internal.serialization.GuildEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
+import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
@@ -25,6 +25,7 @@ object StageInstanceSerializer : BaseEntitySerializer<StageInstanceCacheEntry> {
             topic = data["topic"]!!.string,
             privacyLevel = PrivacyLevel[data["privacy_level"]!!.int],
             isDiscoveryEnabled = !(data["discovery_disabled"]!!.boolean),
+            scheduledEvent = ScheduledEvent(data["guild_scheduled_event_id", false]!!.snowflake, guild)
             )
     }
 

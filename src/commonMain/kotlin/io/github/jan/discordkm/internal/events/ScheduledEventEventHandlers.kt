@@ -9,6 +9,7 @@ import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent.EventStatus.ACTIVE
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent.EventStatus.CANCELED
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent.EventStatus.COMPLETED
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntryImpl
 import io.github.jan.discordkm.api.events.ScheduledEventCancelEvent
 import io.github.jan.discordkm.api.events.ScheduledEventCompleteEvent
 import io.github.jan.discordkm.api.events.ScheduledEventCreateEvent
@@ -72,6 +73,7 @@ class ScheduledEventUserAddEventHandler(val client: Client) : InternalEventHandl
     override suspend fun handle(data: JsonObject): ScheduledEventUserAddEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val scheduledEvent = ScheduledEvent(data["guild_scheduled_event_id"]!!.snowflake, guild)
+        (scheduledEvent.cache as? ScheduledEventCacheEntryImpl)?.addUser()
         val user = User(data["user_id"]!!.snowflake, client)
         return ScheduledEventUserAddEvent(scheduledEvent, user, guild)
     }
@@ -83,6 +85,7 @@ class ScheduledEventUserRemoveEventHandler(val client: Client) : InternalEventHa
     override suspend fun handle(data: JsonObject): ScheduledEventUserRemoveEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val scheduledEvent = ScheduledEvent(data["guild_scheduled_event_id"]!!.snowflake, guild)
+        (scheduledEvent.cache as? ScheduledEventCacheEntryImpl)?.removeUser()
         val user = User(data["user_id"]!!.snowflake, client)
         return ScheduledEventUserRemoveEvent(scheduledEvent, user, guild)
     }

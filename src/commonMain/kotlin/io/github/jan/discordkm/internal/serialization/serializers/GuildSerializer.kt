@@ -30,6 +30,7 @@ import io.github.jan.discordkm.internal.utils.long
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
@@ -49,7 +50,7 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
             verificationLevel = Guild.VerificationLevel[data["verification_level"]!!.int],
             defaultMessageNotifications = Guild.NotificationLevel[data["default_message_notifications"]!!.int],
             explicitContentFilter = Guild.ExplicitContentFilter[data["explicit_content_filter"]!!.int],
-            features = data["features"]!!.jsonArray.map { Guild.Feature[it.string] }.toSet(),
+            features = data["features"]!!.jsonArray.map(JsonElement::string).toSet(),
             mfaLevel = Guild.MfaLevel[data["mfa_level"]!!.int],
             applicationId = data["application_id", true]?.snowflake,
             widgetEnabled = data["widget_enabled", true]?.boolean ?: false,

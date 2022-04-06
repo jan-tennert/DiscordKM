@@ -31,38 +31,166 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 
+/**
+ * A guild cache entry contains all information given by the Discord API
+**/
 interface GuildCacheEntry : Guild, Nameable, CacheEntry {
+
+    /**
+     * The icon hash of the guild
+     */
     val iconHash: String?
+
+    /**
+     * The splash hash of the guild
+     */
     val splashHash: String?
+
+    /**
+     * The channel where members get moved to when they are longer afk than [afkTimeout]
+     */
     val afkChannel: VoiceChannel?
+
+    /**
+     * The timeout after an afk member gets moved to [afkChannel]
+     */
     val afkTimeout: TimeSpan
+
+    /**
+     * The verification level of the guild
+     */
     val verificationLevel: Guild.VerificationLevel
+
+    /**
+     * The default message notifications of the guild
+     */
     val defaultMessageNotifications: Guild.NotificationLevel
+
+    /**
+     * The explicit content filter of the guild
+     */
     val explicitContentFilter: Guild.ExplicitContentFilter
-    val features: Set<Guild.Feature>
+
+    /**
+     * The features of the guild
+     */
+    val features: Set<String>
+
+    /**
+     * The mfa level of the guild
+     */
     val mfaLevel: Guild.MfaLevel
+
+    /**
+     * The id of the application that created the guild, if it was created by an application
+     */
     val applicationId: Snowflake?
+
+    /**
+     * Whether widgets are enabled, or not
+     */
     val widgetEnabled: Boolean
-    val widgetChannel: GuildChannel? //TODO: Make channel ids actual channel but with optional caching
+
+    /**
+     * The channel the widget referred to
+     */
+    val widgetChannel: GuildChannel?
+
+    /**
+     * The channel the system messages are sent to
+     */
     val systemChannel: GuildTextChannel?
+
+    /**
+     * The flags of the [systemChannel]
+     */
     val systemChannelFlags: Set<Guild.SystemChannelFlag>
+
+    /**
+     * The channel where the rules are posted
+     */
     val rulesChannel: GuildTextChannel?
+
+    /**
+     * The time the user joined the guild
+     */
     val joinedAt: DateTimeTz?
+
+    /**
+     * Whether the guild is considered as large or not
+     */
     val isLarge: Boolean
+
+    /**
+     * Whether the guild is unavailable or not
+     */
     val isUnavailable: Boolean
+
+    /**
+     * The member count of the guild
+     */
     val memberCount: Int
+
+    /**
+     * The vanity url code of the guild
+     */
     val vanityUrlCode: String?
+
+    /**
+     * The description of the guild
+     */
     val description: String?
+
+    /**
+     * The banner hash of the guild
+     */
     val bannerHash: String?
+
+    /**
+     * The boost level of the guild
+     */
     val premiumTier: Guild.PremiumTier
+
+    /**
+     * The amount of people boosting the guild
+     */
     val premiumSubscriptionCount: Int
+
+    /**
+     * The preferred locale of the guild
+     */
     val preferredLocale: DiscordLocale
+
+    /**
+     * The public updates channel of the guild
+     */
     val publicUpdatesChannel: GuildTextChannel?
+
+    /**
+     * The owner of the guild
+     */
     val owner: User
+
+    /**
+     * The screen shown when a new member joins the guild
+     */
     val welcomeScreen: WelcomeScreen?
+
+    /**
+     * The discovery hash of the guild
+     */
     val discoveryHash: String?
+
+    /**
+     * Whether the guild enabled premium progress bar
+     */
     val hasPremiumProgressBarEnabled: Boolean
+
+    /**
+     * The NSFW Level of the guild
+     */
     val nsfwLevel: Guild.NSFWLevel
+
     override val roles: CacheGuildRoleContainer
     override val members: CacheGuildMemberContainer
     override val threads: CacheGuildThreadContainer
@@ -75,26 +203,30 @@ interface GuildCacheEntry : Guild, Nameable, CacheEntry {
     override val scheduledEvents: CacheScheduledEventContainer
 
     /**
+     * The @everyone role of this guild
+     */
+    val publicRole: RoleCacheEntry
+        get() = cacheManager.roleCache.safeValues.first { it.id == id }
+
+    /**
      * The discovery image shown on the discovery tab
      */
-    val discoveryImageUrl: String?
+    val discoveryImageUrl get() = discoveryHash?.let { DiscordImage.guildDiscoverySplash(id, it) }
 
     /**
      * The icon of this guild
      */
-    val iconUrl: String?
+    val iconUrl get() = iconHash?.let { DiscordImage.guildIcon(id, it) }
 
     /**
      * The banner of this guild
      */
-    val bannerUrl: String?
+    val bannerUrl get()  = bannerHash?.let { DiscordImage.guildBanner(id, it) }
 
     /**
      * The splash of this guild
      */
-    val splashUrl: String?
-
-    val publicRole: RoleCacheEntry
+    val splashUrl get() = splashHash?.let { DiscordImage.guildSplash(id, it) }
 
     val shardId get() = (if (client.config.totalShards != -1) (id.long shr 22) % client.config.totalShards else 0).toInt()
 
@@ -115,53 +247,16 @@ interface GuildCacheEntry : Guild, Nameable, CacheEntry {
         timeout: TimeSpan? = null,
     ): List<MemberCacheEntry>
 
+    operator fun contains(member: Member) = members.any { it.id == member.id }
+
+    operator fun contains(user: User) = members.any { it.id == user.id }
+
+    operator fun contains(role: Role) = roles.any { it.id == role.id }
+
+    operator fun contains(channel: GuildChannel) = channels.any { it.id == channel.id }
+
 }
 
-/**
- * A guild cache entry contains all information given by the Discord API
- * @param id The id of the guild
- * @param name The name of the guild
- * @param iconHash The icon hash of the guild
- * @param splashHash The splash hash of the guild
- * @param ownerId The id of the owner of the guild
- * @param afkChannelId The id of the afk channel
- * @param afkTimeout The afk timeout of the guild
- * @param verificationLevel The verification level of the guild
- * @param defaultMessageNotifications The default message notifications of the guild
- * @param explicitContentFilter The explicit content filter of the guild
- * @param features The features of the guild
- * @param mfaLevel The mfa level of the guild
- * @param applicationId The id of the application
- * @param widgetEnabled Whether the widget is enabled or not
- * @param widgetChannelId The id of the widget channel
- * @param systemChannelId The id of the system channel
- * @param memberCount The member count of the guild
- * @param joinedAt The time the user joined the guild
- * @param isLarge Whether the guild is large or not
- * @param isUnavailable Whether the guild is unavailable or not
- * @param memberCount The member count of the guild
- * @param vanityUrlCode The vanity url of the guild
- * @param description The description of the guild
- * @param bannerHash The banner hash of the guild
- * @param premiumTier The premium tier of the guild
- * @param premiumSubscriptionCount The premium subscription count of the guild
- * @param preferredLocale The preferred locale of the guild
- * @param publicUpdatesChannelId The id of the public updates channel
- * @param bannerHash The banner of the guild
- * @param premiumSubscriptionCount The premium subscription count of the guild
- * @param systemChannelFlags The system channel flags of the guild
- * @param rulesChannelId The id of the rules channel
- *
- * @see GuildChannel
- * @see Role
- * @see Member
- * @see Emoji.Emote
- * @see Guild.VerificationLevel
- * @see Guild.NotificationLevel
- * @see Guild.ExplicitContentFilter
- * @See Guild.SystemChannelFlag
- * @see Guild.Feature
- */
 internal class GuildCacheEntryImpl(
     override val id: Snowflake,
     override val client: Client,
@@ -173,7 +268,7 @@ internal class GuildCacheEntryImpl(
     override val verificationLevel: Guild.VerificationLevel,
     override val defaultMessageNotifications: Guild.NotificationLevel,
     override val explicitContentFilter: Guild.ExplicitContentFilter,
-    override val features: Set<Guild.Feature>,
+    override val features: Set<String>,
     override val mfaLevel: Guild.MfaLevel,
     override val applicationId: Snowflake?,
     override val widgetEnabled: Boolean,
@@ -228,29 +323,6 @@ internal class GuildCacheEntryImpl(
     override val widgetChannel: GuildChannel? = widgetChannelId?.let { GuildChannelImpl(id, this) }
     override val systemChannel = systemChannelId?.let { GuildTextChannel(it, this) }
     override val rulesChannel = rulesChannelId?.let { GuildTextChannel(it, this) }
-
-    override val publicRole: RoleCacheEntry
-        get() = cacheManager.roleCache.safeValues.first { it.id == id }
-
-    /**
-     * The discovery image shown on the discovery tab
-     */
-    override val discoveryImageUrl = discoveryHash?.let { DiscordImage.guildDiscoverySplash(id, it) }
-
-    /**
-     * The icon of this guild
-     */
-    override val iconUrl = iconHash?.let { DiscordImage.guildIcon(id, it) }
-
-    /**
-     * The banner of this guild
-     */
-    override val bannerUrl = bannerHash?.let { DiscordImage.guildBanner(id, it) }
-
-    /**
-     * The splash of this guild
-     */
-    override val splashUrl = splashHash?.let { DiscordImage.guildSplash(id, it) }
 
     override val shardId get() = (if (client.config.totalShards != -1) (id.long shr 22) % client.config.totalShards else 0).toInt()
 

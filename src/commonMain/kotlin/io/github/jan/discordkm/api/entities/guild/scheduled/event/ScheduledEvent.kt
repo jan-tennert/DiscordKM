@@ -1,18 +1,12 @@
 package io.github.jan.discordkm.api.entities.guild.scheduled.event
 
-import com.soywiz.klock.DateTimeTz
-import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
-import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
-import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
-import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
@@ -108,36 +102,10 @@ sealed interface ScheduledEvent : SnowflakeEntity, GuildEntity, CacheEntity {
 
 }
 
-internal class ScheduledEventImpl(override val id: Snowflake, override val guild: Guild) : ScheduledEvent
+internal class ScheduledEventImpl(override val id: Snowflake, override val guild: Guild) : ScheduledEvent {
 
-/**
- * Represents a cached scheduled event
- * @param id The id of the scheduled event
- * @param guild The guild this scheduled event belongs to
- * @param name The name of the scheduled event
- * @param description The description of the scheduled event
- * @param startTime The time when the event starts
- * @param endTime The time when the event ends
- * @param status The status of the scheduled event
- * @param privacyLevel The privacy level of the scheduled event
- * @param entityType The type of entity this scheduled event is linked to
- * @param entity The entity this scheduled event is linked to (StageInstance for now)
- * @param metadata The metadata of the scheduled event
- * @param userCount The amount of users who are interested in this scheduled event
- */
-class ScheduledEventCacheEntry(
-    override val id: Snowflake,
-    override val guild: Guild,
-    val channel: VoiceChannel?,
-    val creator: User,
-    override val name: String,
-    val description: String?,
-    val startTime: DateTimeTz,
-    val endTime: DateTimeTz?,
-    val privacyLevel: PrivacyLevel,
-    val status: ScheduledEvent.EventStatus,
-    val entityType: ScheduledEvent.EntityType,
-    val entity: StageInstance?,
-    val userCount: Int,
-    val metadata: ScheduledEvent.EventMetadata?
-) : ScheduledEvent, Nameable, CacheEntry
+    override fun toString(): String = "ScheduledEvent(id=$id, guildId=${guild.id})"
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is ScheduledEvent && other.id == id && other.guild.id == guild.id
+
+}

@@ -182,7 +182,7 @@ data class MemberCacheEntry(
      */
     val isOwner: Boolean
         @get:JvmName("isOwner")
-        get() = guild.cache?.ownerId == id
+        get() = guild.cache?.owner?.id == id
 
     /**
      * The avatar url of the member

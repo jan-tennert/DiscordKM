@@ -9,6 +9,7 @@ import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
 import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntry
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntryImpl
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
 import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.int
@@ -16,14 +17,13 @@ import io.github.jan.discordkm.internal.utils.isoTimestamp
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
 object ScheduledEventSerializer : BaseEntitySerializer<ScheduledEventCacheEntry> {
     override fun deserialize(data: JsonObject, value: Client): ScheduledEventCacheEntry {
         val guild = Guild(data["guild_id"]!!.snowflake, value)
         val channel = data["channel_id", false]?.snowflake?.let { VoiceChannel(it, guild) }
-        return ScheduledEventCacheEntry(
+        return ScheduledEventCacheEntryImpl(
             data["id"]!!.snowflake,
             guild,
             channel,
@@ -40,7 +40,8 @@ object ScheduledEventSerializer : BaseEntitySerializer<ScheduledEventCacheEntry>
             data["metadata", false]?.jsonObject?.let {
                 val location = it["location", false]?.string
                 ScheduledEvent.EventMetadata(location)
-            }
+            },
+            data["image", false]?.string
         )
     }
 }
