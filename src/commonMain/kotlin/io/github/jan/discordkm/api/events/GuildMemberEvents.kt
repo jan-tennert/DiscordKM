@@ -13,8 +13,8 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Member
-import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
+import io.github.jan.discordkm.api.entities.guild.member.Member
+import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
 
 interface MemberEvent : Event {
 

@@ -10,9 +10,9 @@ import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.containers.CacheReactionContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Member
-import io.github.jan.discordkm.api.entities.guild.Role
-import io.github.jan.discordkm.api.entities.guild.StickerItem
+import io.github.jan.discordkm.api.entities.guild.member.Member
+import io.github.jan.discordkm.api.entities.guild.role.Role
+import io.github.jan.discordkm.api.entities.guild.sticker.StickerItem
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.DiscordKMUnstable

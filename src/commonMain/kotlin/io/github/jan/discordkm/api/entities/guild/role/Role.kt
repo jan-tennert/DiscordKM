@@ -7,11 +7,14 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.guild
+package io.github.jan.discordkm.api.entities.guild.role
 
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.GuildEntity
+import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.RoleModifier
 import io.github.jan.discordkm.internal.Route

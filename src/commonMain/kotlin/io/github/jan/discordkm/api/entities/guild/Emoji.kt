@@ -17,6 +17,7 @@ import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Emoji.Emote
+import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -56,6 +57,10 @@ class Emoji private constructor(
     ) : SnowflakeEntity, BaseEntity, Nameable {
 
         fun toEmoji() = Emoji(id, name, isAnimated)
+
+        override fun toString(): String = "GuildEmote(id=$id, name=$name)"
+        override fun equals(other: Any?): Boolean = other is Emote && other.id == id
+        override fun hashCode(): Int = id.hashCode()
 
     }
 

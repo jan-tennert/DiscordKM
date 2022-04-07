@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.entities.misc
 
 import kotlin.reflect.KProperty
 
-class LimitedInt(val min: Int = Int.MIN_VALUE, val max: Int = Int.MAX_VALUE) {
+class LimitedInt(private val min: Int = Int.MIN_VALUE, private val max: Int = Int.MAX_VALUE) {
 
     var value: Int = 0
 
@@ -24,7 +24,7 @@ class LimitedInt(val min: Int = Int.MIN_VALUE, val max: Int = Int.MAX_VALUE) {
 
 }
 
-class NullableLimitedInt(val min: Int = Int.MIN_VALUE, val max: Int = Int.MAX_VALUE) {
+class NullableLimitedInt(private val min: Int = Int.MIN_VALUE, val max: Int = Int.MAX_VALUE) {
 
     var value: Int? = null
 

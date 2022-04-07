@@ -2,8 +2,8 @@ package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Member
-import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
+import io.github.jan.discordkm.api.entities.guild.member.Member
+import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete

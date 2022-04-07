@@ -4,7 +4,7 @@ import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
-import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
+import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch

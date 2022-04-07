@@ -14,6 +14,7 @@ import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
@@ -79,6 +80,10 @@ data class GuildTemplate(
         route = Route.Template.SYNC_GUILD_TEMPLATE(sourceGuild.id, code).put()
         transform { GuildSerializer.deserializeGuildTemplate(it.toJsonObject(), client) }
     }
+
+    override fun toString(): String = "GuildTemplate(code=$code, name=$name)"
+    override fun equals(other: Any?): Boolean = other is GuildTemplate && other.code == code
+    override fun hashCode(): Int = code.hashCode()
 
 }
 

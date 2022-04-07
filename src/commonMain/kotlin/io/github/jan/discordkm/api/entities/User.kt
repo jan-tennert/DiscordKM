@@ -2,11 +2,8 @@ package io.github.jan.discordkm.api.entities
 
 import io.github.jan.discordkm.api.entities.channels.PrivateChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
-import io.github.jan.discordkm.internal.caching.CacheEntry
-import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
@@ -83,58 +80,6 @@ sealed interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntit
 internal class UserImpl(override val id: Snowflake, override val client: Client) : User {
 
     override fun toString() = "User(id=$id)"
-    override fun hashCode() = id.hashCode()
-    override fun equals(other: Any?) = other is User && other.id == id
-
-}
-
-/**
- * The user cache entry contains all information given by the Discord API
- *  @param id The id of the user
- *  @param name The name of the user
- *  @param discriminator The discriminator of the user. Example Test#**__1234__**
- *  @param avatarHash The avatar hash of the user
- *  @param isBot Whether the user is a bot
- *  @param isSystem Whether the user is an official discord system user
- *  @param hasMfaEnabled Whether the user has two-factor authentication enabled
- *  @param flags The flags on the user's account
- *  @param premiumType The type of nitro subscription on a user's account
- *  @param publicFlags The public flags on the user's account
- *  @param accentColor The accent color of the user's banner
- *  @param bannerHash The banner hash of the user
- */
-class UserCacheEntry (
-    override val id : Snowflake,
-    override val name: String,
-    val discriminator: String,
-    val avatarHash: String?,
-    val isBot: Boolean,
-    val isSystem: Boolean,
-    val hasMfaEnabled: Boolean,
-    val flags: Set<User.UserFlag>,
-    val premiumType: User.PremiumType,
-    val publicFlags: Set<User.UserFlag>,
-    val bannerHash: String?,
-    val accentColor: Color?,
-    override val client: Client
-) : User, CacheEntry, Nameable {
-
-    /**
-     * Whether this user has nitro or not
-     */
-    val hasNitro = premiumType != User.PremiumType.NONE;
-
-    /**
-     * The avatar url of the user
-     */
-    val avatarUrl = avatarHash?.let { DiscordImage.userAvatar(id, it) }
-
-    /**
-     * The banner url of the user
-     */
-    val bannerUrl = bannerHash?.let { DiscordImage.userBanner(id, it) }
-
-    override fun toString() = "UserCacheEntry(id=$id, name=$name)"
     override fun hashCode() = id.hashCode()
     override fun equals(other: Any?) = other is User && other.id == id
 

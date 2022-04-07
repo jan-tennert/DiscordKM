@@ -19,7 +19,7 @@ import kotlinx.serialization.json.put
  * @param channels The channels shown in the welcome screen
  * @see Channel
  */
-class WelcomeScreen(
+data class WelcomeScreen(
     val description: String? = null,
     val channels: List<WelcomeScreenChannel> = emptyList()
 ) {
@@ -32,7 +32,7 @@ class WelcomeScreen(
      * @param emojiName The name of the emoji shown in the welcome screen
      */
 
-    class WelcomeScreenChannel(
+    data class WelcomeScreenChannel(
         val channel: GuildChannel,
         val description: String,
         val emoji: Emoji? = null

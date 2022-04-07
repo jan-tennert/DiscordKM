@@ -23,6 +23,12 @@ sealed interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryC
     override val cache: CategoryCacheEntry?
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? CategoryCacheEntry
 
+    /**
+     * Returns a list of guild channel objects of cached channels who have this category as their parent
+     */
+    val children: List<GuildChannelCacheEntry>
+        get() = guild.cache?.channels?.filter { it is ParentChannel && it.parent?.id == id } ?: emptyList()
+
     override suspend fun modify(reason: String?, modifier: CategoryModifier.() -> Unit) = client.buildRestAction<CategoryCacheEntry> {
         route = Route.Channel.MODIFY_CHANNEL(id).patch(CategoryModifier().apply(modifier).data)
         this.reason = reason
@@ -38,7 +44,13 @@ sealed interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryC
 
 }
 
-internal class CategoryImpl(override val id: Snowflake, override val guild: Guild) : Category
+internal class CategoryImpl(override val id: Snowflake, override val guild: Guild) : Category {
+
+    override fun toString(): String = "Category(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is Category && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
+
+}
 
 class CategoryCacheEntry(
     override val guild: Guild,
@@ -46,4 +58,10 @@ class CategoryCacheEntry(
     override val permissionOverwrites: Set<PermissionOverwrite>,
     override val id: Snowflake,
     override val name: String
-) : Category, GuildChannelCacheEntry, IPositionable
+) : Category, GuildChannelCacheEntry, IPositionable {
+
+    override fun toString(): String = "CategoryCacheEntry(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is Category && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
+
+}

@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.internal.entities
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.guild.Sticker
+import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
 
 object DiscordImage {
 

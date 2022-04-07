@@ -14,7 +14,7 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Member
+import io.github.jan.discordkm.api.entities.guild.member.Member
 import io.github.jan.discordkm.api.events.TypingStartEvent
 import io.github.jan.discordkm.internal.utils.long
 import io.github.jan.discordkm.internal.utils.snowflake

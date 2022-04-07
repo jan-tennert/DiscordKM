@@ -1,12 +1,16 @@
-package io.github.jan.discordkm.api.entities.guild
+package io.github.jan.discordkm.api.entities.guild.role
 
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.Permission
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.caching.CacheEntry
+import io.github.jan.discordkm.internal.entities.DiscordImage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -21,11 +25,6 @@ interface RoleCacheEntry : Role, PermissionHolder, Nameable, CacheEntry {
      * Whether the role is pinned in the user list
      */
     val isHoist: Boolean
-
-    /**
-     * The icon appearing next to the roles name in the chat & in the user list
-     */
-    val iconHash: String?
 
     /**
      * The emoji appearing next to the roles name in the chat & in the user list
@@ -53,6 +52,11 @@ interface RoleCacheEntry : Role, PermissionHolder, Nameable, CacheEntry {
     val tags: Tag?
 
     /**
+     * The icon of the role, shown in the user list and in the chat
+     */
+    val iconUrl: String?
+
+    /**
      * @param botId The id of the bot the role belongs to
      * @param integrationId The id of the integration the role belongs to
      * @param isPremiumSubscriber Whether this is the guild's premium subscriber role
@@ -73,7 +77,7 @@ internal class RoleCacheEntryImpl(
     override val name: String,
     override val color: Color,
     override val isHoist: Boolean,
-    override val iconHash: String?,
+    iconHash: String?,
     override val unicodeEmoji: String?,
     override val position: Int,
     override val isManagedByAnIntegration: Boolean,
@@ -82,6 +86,8 @@ internal class RoleCacheEntryImpl(
 ) : RoleCacheEntry {
 
     override val client: Client = guild.client
+
+    override val iconUrl = iconHash?.let { DiscordImage.roleIcon(id, iconHash) }
 
     override fun getPermissionsFor(channel: GuildChannelCacheEntry) = channel.permissionOverwrites.first { it.type == PermissionOverwrite.HolderType.ROLE && it.holderId == id }.allow
 

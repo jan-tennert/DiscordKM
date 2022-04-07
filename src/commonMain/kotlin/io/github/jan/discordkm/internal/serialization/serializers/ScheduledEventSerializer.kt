@@ -6,10 +6,10 @@ import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
-import io.github.jan.discordkm.api.entities.guild.StageInstance
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntry
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntryImpl
+import io.github.jan.discordkm.api.entities.guild.stage.StageInstance
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
 import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.int

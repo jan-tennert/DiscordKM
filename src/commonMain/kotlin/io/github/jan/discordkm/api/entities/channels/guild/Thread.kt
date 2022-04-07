@@ -13,7 +13,6 @@ import io.github.jan.discordkm.api.entities.containers.ThreadMemberContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.cacheManager
-import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.ThreadModifier
 import io.github.jan.discordkm.internal.Route
@@ -126,7 +125,13 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
 
 }
 
-internal class ThreadImpl(override val id: Snowflake, override val guild: Guild, override val type: ChannelType) : Thread
+internal class ThreadImpl(override val id: Snowflake, override val guild: Guild, override val type: ChannelType) : Thread {
+
+    override fun toString(): String = "Thread(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is Thread && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
+
+}
 
 class ThreadCacheEntry(
     override val guild: Guild,
@@ -134,12 +139,15 @@ class ThreadCacheEntry(
     override val slowModeTime: TimeSpan,
     override val parent: GuildTextChannel,
     override val id: Snowflake,
-    override val lastMessage: Message?,
     override val name: String,
     override val type: ChannelType,
     val metadata: Thread.ThreadMetadata,
 ) : Thread, GuildMessageChannelCacheEntry {
 
     override val cacheManager = MessageCacheManager(client)
+
+    override fun toString(): String = "ThreadCacheEntry(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is Thread && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
 
 }

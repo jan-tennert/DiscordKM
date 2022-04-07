@@ -2,8 +2,8 @@ package io.github.jan.discordkm.internal.serialization.serializers
 
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Permission
-import io.github.jan.discordkm.api.entities.guild.RoleCacheEntry
-import io.github.jan.discordkm.api.entities.guild.RoleCacheEntryImpl
+import io.github.jan.discordkm.api.entities.guild.role.RoleCacheEntry
+import io.github.jan.discordkm.api.entities.guild.role.RoleCacheEntryImpl
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.serialization.GuildEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean

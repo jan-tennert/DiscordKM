@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.http
 
-import com.soywiz.klogger.Logger
+import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.utils.LoggerConfig
@@ -18,12 +18,8 @@ import io.ktor.server.engine.embeddedServer
 class HttpInteractionClient internal constructor(config: HttpConfig) : Client(config) {
 
     private lateinit var server: ApplicationEngine
-    private val LOGGER = Logger("Http-Server")
-
-    init {
-        LOGGER.level = config.logging.level
-        LOGGER.output = config.logging.output
-    }
+    private val LOGGER = config.logging("Http-Server")
+    override var selfUser: UserCacheEntry = throw IllegalStateException("HttpInteractionClient does not support selfUser")
 
     override suspend fun disconnect() {
         server.stop(1000, 1000)

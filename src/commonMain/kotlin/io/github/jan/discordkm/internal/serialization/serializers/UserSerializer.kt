@@ -11,6 +11,7 @@ package io.github.jan.discordkm.internal.serialization.serializers
 
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.UserCacheEntry
+import io.github.jan.discordkm.api.entities.UserCacheEntryImpl
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.utils.boolean
@@ -24,7 +25,7 @@ import kotlinx.serialization.json.JsonObject
 
 object UserSerializer {
 
-    fun deserialize(data: JsonObject, value: Client) = UserCacheEntry(
+    fun deserialize(data: JsonObject, value: Client): UserCacheEntry = UserCacheEntryImpl(
         id = data["id"]!!.snowflake,
         name = data["username", true]?.string ?: "",
         discriminator = data["discriminator", true]?.string ?: "",

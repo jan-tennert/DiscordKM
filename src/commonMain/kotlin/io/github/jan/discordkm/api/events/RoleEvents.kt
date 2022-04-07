@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.RoleCacheEntry
+import io.github.jan.discordkm.api.entities.guild.role.RoleCacheEntry
 
 interface RoleEvent : GuildEvent {
 

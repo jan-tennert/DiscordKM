@@ -11,6 +11,7 @@ package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.events.MessageCreateEvent
 import io.github.jan.discordkm.internal.utils.snowflake
@@ -21,6 +22,7 @@ internal class MessageCreateEventHandler(val client: Client) : InternalEventHand
     override suspend fun handle(data: JsonObject): MessageCreateEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)
         val message = Message(data, client)
+        (client as DiscordWebSocketClient).lastMessages[channel.id] = message
         channel.cache?.cacheManager?.messageCache?.set(message.id, message)
         return MessageCreateEvent(client, message, channel)
     }

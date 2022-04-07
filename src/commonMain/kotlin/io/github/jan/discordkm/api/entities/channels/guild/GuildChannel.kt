@@ -34,6 +34,10 @@ internal class GuildChannelImpl(override val id: Snowflake, override val guild: 
     override val type: ChannelType
         get() = cache?.type ?: ChannelType.UNKNOWN
 
+    override fun toString(): String = "GuildChannel(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is GuildChannel && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
+
 }
 
 interface GuildChannelCacheEntry: GuildChannel, ChannelCacheEntry, Nameable {

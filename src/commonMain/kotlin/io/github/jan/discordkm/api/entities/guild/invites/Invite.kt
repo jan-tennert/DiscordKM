@@ -18,10 +18,12 @@ import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.serializers.ScheduledEventSerializer
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.ISO8601Serializer
@@ -46,6 +48,16 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
      * The code of the [Invite]
      */
     val code = data.getOrThrow<String>("code")
+
+    /**
+     * Approximate count of online members, returned from the GET /invites/<code> endpoint when with_counts is true
+     */
+    val approximatePresenceCount = data.getOrNull<Int>("approximate_presence_count")
+
+    /**
+     * Approximate count of total members, returned from the GET /invites/<code> endpoint when with_counts is true
+     */
+    val approximateMemberCount = data.getOrNull<Int>("approximate_member_count")
 
     /**
      * The invite link of the invite. Looks like this:
@@ -79,13 +91,17 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
      */
     val targetUser = data["target_user"]?.jsonObject?.let { User(it, client) }
 
-    //TODO: add remaining parameters
     val application = data["target_application"]?.jsonObject?.let { InviteApplication(client, it) }
 
     /**
      * The invite expiration date
      */
     val expiresAt = ISO8601.DATETIME_UTC_COMPLETE.tryParse(data.getOrNull<String>("expires_at") ?: "")
+
+    /**
+     * The guild scheduled event when linked to an [ScheduledEvent]
+     */
+    val guildScheduledEvent = data["guild_scheduled_event"]?.jsonObject?.let { ScheduledEventSerializer.deserialize(it, client) }
 
     /**
      * [Metadata] for this invite. It is always null except when you retrieve it
@@ -101,9 +117,9 @@ class Invite(override val client: Client, override val data: JsonObject) : Seria
         route = Route.Invite.DELETE_INVITE(code).delete()
     }
 
-    //stage instance object
-
-    //approximate counts etc.
+    override fun toString(): String = "Invite(code=$code, type=$type)"
+    override fun equals(other: Any?): Boolean = other is Invite && other.code == code && other.guild?.id == guild?.id
+    override fun hashCode(): Int = code.hashCode()
 
     @Serializable
     data class Metadata(

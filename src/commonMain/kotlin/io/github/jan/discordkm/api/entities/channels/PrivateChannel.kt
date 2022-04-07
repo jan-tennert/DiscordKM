@@ -25,4 +25,8 @@ sealed interface PrivateChannel : MessageChannel {
 
 internal class PrivateChannelImpl(override val id: Snowflake, override val client: Client) : PrivateChannel {
     override val cache: Nothing? = null
+
+    override fun toString(): String = "PrivateChannel(id=$id)"
+    override fun hashCode(): Int = id.hashCode()
+    override fun equals(other: Any?): Boolean = other is PrivateChannel && other.id == id
 }

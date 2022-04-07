@@ -4,7 +4,7 @@ import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.ISO8601
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
-import io.github.jan.discordkm.api.entities.guild.Role
+import io.github.jan.discordkm.api.entities.guild.role.Role
 import io.github.jan.discordkm.api.entities.modifiers.JsonModifier
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.buildJsonObject

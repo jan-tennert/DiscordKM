@@ -10,6 +10,7 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.channels.ChannelType
+import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
@@ -17,6 +18,7 @@ import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.ThreadCreateEvent
 import io.github.jan.discordkm.api.events.ThreadDeleteEvent
+import io.github.jan.discordkm.api.events.ThreadListSyncEvent
 import io.github.jan.discordkm.api.events.ThreadMembersUpdateEvent
 import io.github.jan.discordkm.api.events.ThreadUpdateEvent
 import io.github.jan.discordkm.internal.utils.int
@@ -71,6 +73,18 @@ internal class ThreadMembersUpdateEventHandler(val client: Client) : InternalEve
         val removedMembers = data["removed_member_ids"]!!.jsonArray.map { it.snowflake }
         //cache members
         return ThreadMembersUpdateEvent(thread, memberCount, addedMembers, removedMembers)
+    }
+
+}
+
+internal class ThreadListSyncEventHandler(val client: Client) : InternalEventHandler<ThreadListSyncEvent> {
+
+    override suspend fun handle(data: JsonObject): ThreadListSyncEvent {
+        val guild = Guild(data["guild_id"]!!.snowflake, client)
+        val threads = data["threads"]!!.jsonArray.map { Thread(it.jsonObject, guild) }
+        val members = data["members"]!!.jsonArray.map { Thread.ThreadMember(it.jsonObject, guild) }
+        val channels = data["channels"]!!.jsonArray.map { GuildTextChannel(it.jsonObject["id"]!!.snowflake, guild) }
+        return ThreadListSyncEvent(guild, threads, members, channels)
     }
 
 }

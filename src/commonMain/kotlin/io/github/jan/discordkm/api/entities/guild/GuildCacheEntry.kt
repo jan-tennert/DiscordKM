@@ -20,6 +20,11 @@ import io.github.jan.discordkm.api.entities.containers.CacheGuildThreadContainer
 import io.github.jan.discordkm.api.entities.containers.CacheScheduledEventContainer
 import io.github.jan.discordkm.api.entities.containers.CacheStickerContainer
 import io.github.jan.discordkm.api.entities.containers.StickerContainer
+import io.github.jan.discordkm.api.entities.guild.member.Member
+import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
+import io.github.jan.discordkm.api.entities.guild.role.Role
+import io.github.jan.discordkm.api.entities.guild.role.RoleCacheEntry
+import io.github.jan.discordkm.api.entities.guild.stage.StageInstanceCacheEntry
 import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreen
 import io.github.jan.discordkm.api.events.GuildMembersChunkEvent
 import io.github.jan.discordkm.internal.caching.CacheEntry
@@ -29,22 +34,14 @@ import io.github.jan.discordkm.internal.serialization.RequestGuildMemberPayload
 import io.github.jan.discordkm.internal.utils.safeValues
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * A guild cache entry contains all information given by the Discord API
 **/
 interface GuildCacheEntry : Guild, Nameable, CacheEntry {
-
-    /**
-     * The icon hash of the guild
-     */
-    val iconHash: String?
-
-    /**
-     * The splash hash of the guild
-     */
-    val splashHash: String?
 
     /**
      * The channel where members get moved to when they are longer afk than [afkTimeout]
@@ -142,11 +139,6 @@ interface GuildCacheEntry : Guild, Nameable, CacheEntry {
     val description: String?
 
     /**
-     * The banner hash of the guild
-     */
-    val bannerHash: String?
-
-    /**
      * The boost level of the guild
      */
     val premiumTier: Guild.PremiumTier
@@ -175,11 +167,6 @@ interface GuildCacheEntry : Guild, Nameable, CacheEntry {
      * The screen shown when a new member joins the guild
      */
     val welcomeScreen: WelcomeScreen?
-
-    /**
-     * The discovery hash of the guild
-     */
-    val discoveryHash: String?
 
     /**
      * Whether the guild enabled premium progress bar
@@ -211,22 +198,22 @@ interface GuildCacheEntry : Guild, Nameable, CacheEntry {
     /**
      * The discovery image shown on the discovery tab
      */
-    val discoveryImageUrl get() = discoveryHash?.let { DiscordImage.guildDiscoverySplash(id, it) }
+    val discoveryImageUrl: String?
 
     /**
      * The icon of this guild
      */
-    val iconUrl get() = iconHash?.let { DiscordImage.guildIcon(id, it) }
+    val iconUrl: String?
 
     /**
      * The banner of this guild
      */
-    val bannerUrl get()  = bannerHash?.let { DiscordImage.guildBanner(id, it) }
+    val bannerUrl: String?
 
     /**
      * The splash of this guild
      */
-    val splashUrl get() = splashHash?.let { DiscordImage.guildSplash(id, it) }
+    val splashUrl: String?
 
     val shardId get() = (if (client.config.totalShards != -1) (id.long shr 22) % client.config.totalShards else 0).toInt()
 
@@ -261,8 +248,8 @@ internal class GuildCacheEntryImpl(
     override val id: Snowflake,
     override val client: Client,
     override val name: String,
-    override val iconHash: String?,
-    override val splashHash: String?,
+    iconHash: String?,
+    splashHash: String?,
     afkChannelId: Snowflake?,
     override val afkTimeout: TimeSpan,
     override val verificationLevel: Guild.VerificationLevel,
@@ -279,22 +266,23 @@ internal class GuildCacheEntryImpl(
     override val joinedAt: DateTimeTz?,
     override val isLarge: Boolean,
     override val isUnavailable: Boolean,
-    override val memberCount: Int,
+    override var memberCount: Int,
     override val vanityUrlCode: String?,
     override val description: String?,
-    override val bannerHash: String?,
+    bannerHash: String?,
     override val premiumTier: Guild.PremiumTier,
     override val premiumSubscriptionCount: Int,
     override val preferredLocale: DiscordLocale,
     publicUpdatesChannelId: Snowflake?,
     ownerId: Snowflake,
     override val welcomeScreen: WelcomeScreen?,
-    override val discoveryHash: String?,
+    discoveryHash: String?,
     override val hasPremiumProgressBarEnabled: Boolean,
     override val nsfwLevel: Guild.NSFWLevel
 ) : GuildCacheEntry {
 
     val cacheManager = GuildCacheManager(this.client)
+    private val mutex = Mutex()
 
     override val roles: CacheGuildRoleContainer
         get() = CacheGuildRoleContainer(this, cacheManager.roleCache.safeValues)
@@ -325,6 +313,26 @@ internal class GuildCacheEntryImpl(
     override val rulesChannel = rulesChannelId?.let { GuildTextChannel(it, this) }
 
     override val shardId get() = (if (client.config.totalShards != -1) (id.long shr 22) % client.config.totalShards else 0).toInt()
+
+    /**
+     * The discovery image shown on the discovery tab
+     */
+    override val discoveryImageUrl = discoveryHash?.let { DiscordImage.guildDiscoverySplash(id, it) }
+
+    /**
+     * The icon of this guild
+     */
+    override val iconUrl= iconHash?.let { DiscordImage.guildIcon(id, it) }
+
+    /**
+     * The banner of this guild
+     */
+    override val bannerUrl= bannerHash?.let { DiscordImage.guildBanner(id, it) }
+
+    /**
+     * The splash of this guild
+     */
+    override val splashUrl= splashHash?.let { DiscordImage.guildSplash(id, it) }
 
     /**
      * Requests the guild's members from the gateway and updates the guild's cache
@@ -378,6 +386,14 @@ internal class GuildCacheEntryImpl(
 
         return if (timeout != null) withTimeoutOrNull(timeout.millisecondsLong) { receiveMembers() }
             ?: emptyList() else receiveMembers()
+    }
+
+    suspend fun addMember() = mutex.withLock {
+        memberCount++
+    }
+
+    suspend fun removeMember() = mutex.withLock {
+        memberCount--
     }
 
     override fun equals(other: Any?) = other is Guild && other.id == id

@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * @param emoji The reaction emoji
  */
 @Serializable
-class MessageReaction(
+data class MessageReaction(
     val count: Int,
     val me: Boolean,
     val emoji: Emoji

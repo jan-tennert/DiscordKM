@@ -43,6 +43,11 @@ class LoggerConfig(var level: Logger.Level = Logger.Level.INFO, var output: Logg
         this.output = config.output
     }
 
+    operator fun invoke(name: String) = Logger(name).apply {
+        this.level = this@LoggerConfig.level
+        this.output = this@LoggerConfig.output
+    }
+
 }
 
 object ConsoleColors {

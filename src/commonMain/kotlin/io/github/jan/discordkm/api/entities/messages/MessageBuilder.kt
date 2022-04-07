@@ -15,8 +15,8 @@ import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.Role
-import io.github.jan.discordkm.api.entities.guild.Sticker
+import io.github.jan.discordkm.api.entities.guild.role.Role
+import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.Component

@@ -61,6 +61,7 @@ import io.github.jan.discordkm.internal.events.StageInstanceDeleteEventHandler
 import io.github.jan.discordkm.internal.events.StageInstanceUpdateEventHandler
 import io.github.jan.discordkm.internal.events.ThreadCreateEventHandler
 import io.github.jan.discordkm.internal.events.ThreadDeleteEventHandler
+import io.github.jan.discordkm.internal.events.ThreadListSyncEventHandler
 import io.github.jan.discordkm.internal.events.ThreadMembersUpdateEventHandler
 import io.github.jan.discordkm.internal.events.ThreadUpdateEventHandler
 import io.github.jan.discordkm.internal.events.TypingStartEventHandler
@@ -109,7 +110,7 @@ class DiscordGateway(
     val shardId: Int = 0,
 ) {
 
-    internal val LOGGER = Logger("Websocket")
+    internal val LOGGER = config.logging("Websocket")
     private var heartbeatInterval = 0L
     private var lastSequenceNumber: Int? = null
     var sessionId: String? = null
@@ -128,11 +129,6 @@ class DiscordGateway(
         private set
     private lateinit var heartbeatTask: Job
     private lateinit var heartbeatWatcher: Job
-
-    init {
-        LOGGER.level = config.logging.level
-        LOGGER.output = config.logging.output
-    }
 
     suspend fun start(delay: Boolean = false) {
         if(isConnected) return
@@ -383,6 +379,7 @@ suspend fun Client.handleRawEvent(payload: Payload, LOGGER: Logger) = coroutineS
             "THREAD_UPDATE" -> ThreadUpdateEventHandler(client).handle(data)
             "THREAD_DELETE" -> ThreadDeleteEventHandler(client).handle(data)
             "THREAD_MEMBERS_UPDATE" -> ThreadMembersUpdateEventHandler(client).handle(data)
+            "THREAD_LIST_SYNC" -> ThreadListSyncEventHandler(client).handle(data)
 
             //message events
             "MESSAGE_CREATE" -> MessageCreateEventHandler(client).handle(data)

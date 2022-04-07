@@ -41,5 +41,8 @@ data class InviteApplication(override val client: Client, override val data: Jso
     val verifyKey = data.getOrThrow<String>("verify_key")
 
     //TODO: add remaining parameters
+    override fun toString(): String = "InviteApplication(id=$id, name=$name)"
+    override fun equals(other: Any?): Boolean = other is InviteApplication && other.id == id
+    override fun hashCode(): Int = id.hashCode()
 
 }

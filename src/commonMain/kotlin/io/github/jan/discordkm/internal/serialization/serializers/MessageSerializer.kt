@@ -8,9 +8,9 @@ import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Role
-import io.github.jan.discordkm.api.entities.guild.Sticker
-import io.github.jan.discordkm.api.entities.guild.StickerItem
+import io.github.jan.discordkm.api.entities.guild.role.Role
+import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
+import io.github.jan.discordkm.api.entities.guild.sticker.StickerItem
 import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.Button

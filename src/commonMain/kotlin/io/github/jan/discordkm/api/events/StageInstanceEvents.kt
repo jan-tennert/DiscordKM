@@ -10,11 +10,12 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.StageInstance
+import io.github.jan.discordkm.api.entities.guild.stage.StageInstance
+import io.github.jan.discordkm.api.entities.guild.stage.StageInstanceCacheEntry
 
 interface StageInstanceEvent : Event {
 
-    val stageInstance: StageInstance
+    val stageInstance: StageInstanceCacheEntry
     override val client: Client
         get() = stageInstance.client
 
@@ -23,14 +24,24 @@ interface StageInstanceEvent : Event {
 /**
  * Sent when a stage instance was created
  */
-class StageInstanceCreateEvent(override val stageInstance: StageInstance) : StageInstanceEvent
+class StageInstanceCreateEvent(override val stageInstance: StageInstanceCacheEntry) : StageInstanceEvent, StageInstanceCacheEntry by stageInstance {
+
+    override val client: Client
+        get() = stageInstance.client
+
+}
 
 /**
  * Sent when a stage instance was updated
  */
-class StageInstanceDeleteEvent(override val stageInstance: StageInstance) : StageInstanceEvent
+class StageInstanceDeleteEvent(override val stageInstance: StageInstanceCacheEntry) : StageInstanceEvent, StageInstanceCacheEntry by stageInstance {
+
+    override val client: Client
+        get() = stageInstance.client
+
+}
 
 /**
  * Sent when a stage instance was deleted
  */
-class StageInstanceUpdateEvent(override val stageInstance: StageInstance, val oldStageInstance: StageInstance?) : StageInstanceEvent
+class StageInstanceUpdateEvent(override val stageInstance: StageInstanceCacheEntry, val oldStageInstance: StageInstance?) : StageInstanceEvent

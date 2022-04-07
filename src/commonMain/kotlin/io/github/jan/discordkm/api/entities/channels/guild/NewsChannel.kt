@@ -6,7 +6,6 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.cacheManager
-import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.modifiers.guild.TextChannelModifier
 import io.github.jan.discordkm.internal.Route
@@ -48,7 +47,13 @@ sealed interface NewsChannel: GuildTextChannel {
 
 }
 
-internal class NewsChannelImpl(override val id: Snowflake, override val guild: Guild) : NewsChannel
+internal class NewsChannelImpl(override val id: Snowflake, override val guild: Guild) : NewsChannel {
+
+    override fun toString(): String = "NewsChannel(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is NewsChannel && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
+
+}
 
 class NewsChannelCacheEntry(
     override val guild: Guild,
@@ -60,10 +65,13 @@ class NewsChannelCacheEntry(
     override val defaultAutoArchiveDuration: Thread.ThreadDuration,
     override val parent: Category?,
     override val id: Snowflake,
-    override val lastMessage: Message?,
     override val name: String
 ) : NewsChannel, GuildTextChannelCacheEntry {
 
     override val cacheManager = MessageCacheManager(client)
+
+    override fun toString(): String = "NewsChannelCacheEntry(id=$id, type=$type, name=$name)"
+    override fun equals(other: Any?): Boolean = other is NewsChannelCacheEntry && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
 
 }

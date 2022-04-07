@@ -2,7 +2,7 @@ package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Sticker
+import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
 import io.github.jan.discordkm.api.entities.modifiers.guild.StickerModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get

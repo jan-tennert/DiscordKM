@@ -3,7 +3,7 @@ package io.github.jan.discordkm.internal.serialization.serializers
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Member
+import io.github.jan.discordkm.api.entities.guild.member.Member
 import io.github.jan.discordkm.api.entities.guild.VoiceStateCacheEntry
 import io.github.jan.discordkm.internal.serialization.GuildEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean

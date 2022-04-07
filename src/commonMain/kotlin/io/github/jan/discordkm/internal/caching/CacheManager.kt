@@ -8,13 +8,13 @@ import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
-import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
-import io.github.jan.discordkm.api.entities.guild.Role
-import io.github.jan.discordkm.api.entities.guild.RoleCacheEntry
-import io.github.jan.discordkm.api.entities.guild.StageInstanceCacheEntry
-import io.github.jan.discordkm.api.entities.guild.Sticker
 import io.github.jan.discordkm.api.entities.guild.VoiceStateCacheEntry
+import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
+import io.github.jan.discordkm.api.entities.guild.role.Role
+import io.github.jan.discordkm.api.entities.guild.role.RoleCacheEntry
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntry
+import io.github.jan.discordkm.api.entities.guild.stage.StageInstanceCacheEntry
+import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
 import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 import io.github.jan.discordkm.api.entities.messages.MessageReaction
 

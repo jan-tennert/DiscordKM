@@ -12,7 +12,7 @@ package io.github.jan.discordkm.internal.events
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Role
+import io.github.jan.discordkm.api.entities.guild.role.Role
 import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.RoleCreateEvent
 import io.github.jan.discordkm.api.events.RoleDeleteEvent

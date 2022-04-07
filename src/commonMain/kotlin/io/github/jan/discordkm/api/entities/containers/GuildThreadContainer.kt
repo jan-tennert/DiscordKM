@@ -3,7 +3,7 @@ package io.github.jan.discordkm.api.entities.containers
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Member
+import io.github.jan.discordkm.api.entities.guild.member.Member
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.get

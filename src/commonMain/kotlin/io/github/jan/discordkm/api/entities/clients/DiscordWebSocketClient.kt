@@ -9,9 +9,13 @@
  */
 package io.github.jan.discordkm.api.entities.clients
 
+import co.touchlab.stately.collections.IsoMutableMap
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
+import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
+import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
@@ -36,6 +40,10 @@ class DiscordWebSocketClient internal constructor(
 
     val shardConnections = mutableListOf<DiscordGateway>()
     val shardById: Map<Int, DiscordGateway> get() = shardConnections.associateBy { it.shardId }
+
+    @PublishedApi
+    internal val lastMessages = IsoMutableMap<Snowflake, Message>()
+    override lateinit var selfUser: UserCacheEntry
 
     init {
         if (config.shards.isEmpty()) shardConnections.add(DiscordGateway(config, this, 0)) else config.shards.forEach {

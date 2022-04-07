@@ -12,11 +12,12 @@ import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntryImpl
-import io.github.jan.discordkm.api.entities.guild.Member
-import io.github.jan.discordkm.api.entities.guild.Role
-import io.github.jan.discordkm.api.entities.guild.Sticker
-import io.github.jan.discordkm.api.entities.guild.StickerCacheEntry
-import io.github.jan.discordkm.api.entities.guild.StickerType
+import io.github.jan.discordkm.api.entities.guild.member.Member
+import io.github.jan.discordkm.api.entities.guild.role.Role
+import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
+import io.github.jan.discordkm.api.entities.guild.sticker.StickerCacheEntry
+import io.github.jan.discordkm.api.entities.guild.sticker.StickerCacheEntryImpl
+import io.github.jan.discordkm.api.entities.guild.sticker.StickerType
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreen
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
@@ -110,12 +111,12 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
         guild = guild
     )
 
-    fun deserializeSticker(data: JsonObject, guild: Guild) = StickerCacheEntry(
+    fun deserializeSticker(data: JsonObject, guild: Guild): StickerCacheEntry = StickerCacheEntryImpl(
         id = data["id"]!!.snowflake,
         packId = data["pack_id", true]?.snowflake,
         name = data["name"]!!.string,
         description = data["description", true]?.string,
-        tags = data["tags", true]?.string?.split(", ") ?: emptyList(),
+        tags = data["tags", true]?.string?.split(", ")?.toSet() ?: emptySet(),
         type = StickerType[data["type"]!!.int],
         formatType = Sticker.FormatType[data["format_type"]!!.int],
         isAvailable = data["available", true]?.boolean ?: false,

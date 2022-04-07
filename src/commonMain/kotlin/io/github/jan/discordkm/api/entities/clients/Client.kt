@@ -23,7 +23,7 @@ import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
 import io.github.jan.discordkm.api.entities.containers.CacheThreadContainer
 import io.github.jan.discordkm.api.entities.containers.CommandContainer
 import io.github.jan.discordkm.api.entities.containers.UserContainer
-import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
+import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
@@ -66,7 +66,7 @@ abstract class Client(
 
     val mutex = Mutex()
 
-    lateinit var selfUser: UserCacheEntry
+    abstract var selfUser: UserCacheEntry
         internal set
 
     override val commands: CommandContainer
@@ -78,7 +78,7 @@ abstract class Client(
     val members: CacheMemberContainer
         get() = CacheMemberContainer(cacheManager.guildCache.safeValues.map { it.members.values }.flatten())
     val users: UserContainer
-        get() = UserContainer(this, members.map(MemberCacheEntry::user).distinctBy { it.id.long })
+        get() = UserContainer(this, members.map(MemberCacheEntry::user).map { it.cache!! }.distinctBy { it.id.long })
     val threads: CacheThreadContainer
         get() = CacheThreadContainer(cacheManager.guildCache.safeValues.map { it.threads.values }.flatten())
 

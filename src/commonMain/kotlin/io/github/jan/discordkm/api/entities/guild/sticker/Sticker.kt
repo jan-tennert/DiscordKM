@@ -7,12 +7,14 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.guild
+package io.github.jan.discordkm.api.entities.guild.sticker
 
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.GuildEntity
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.api.entities.modifiers.guild.StickerModifier
 import io.github.jan.discordkm.internal.Route
@@ -67,42 +69,6 @@ internal class StickerImpl(override val id: Snowflake, override val guild: Guild
     override fun toString(): String = "Sticker(id=$id, guildId=${guild.id})"
     override fun hashCode() = id.hashCode()
     override fun equals(other: Any?): Boolean = other is Sticker && other.id == id && other.guild.id == guild.id
-
-}
-
-/**
- * Represents a Sticker. Can be a default sticker or a guild sticker
- * @param packId The id of the pack this sticker belongs to
- * @param id The id of the sticker
- * @param name The name of the sticker
- * @param description The description of the sticker
- * @param tags The tags of the sticker
- * @param formatType The format type of the sticker (PNG, APNG, LOTTIE)
- * @param sortValue The standard sticker's sort order within its pack
- * @param isAvailable Whether the sticker is available. Can be false if the guild server boost tier changed
- * @param type The type of the sticker (DEFAULT, GUILD)
- */
-class StickerCacheEntry(
-    val packId: Snowflake?,
-    override val name: String,
-    val description: String?,
-    val tags : List<String>,
-    val type: StickerType,
-    val formatType: Sticker.FormatType,
-    val isAvailable: Boolean,
-    override val guild: Guild,
-    val sortValue: Int?,
-    val creator: User?,
-    override val id: Snowflake
-) : Sticker, Nameable {
-
-    val url = DiscordImage.sticker(id, formatType)
-
-    override val client = guild.client
-
-    override fun toString(): String = "StickerCacheEntry(id=$id, guildId=${guild.id}, name=$name, description=$description)"
-    override fun hashCode() = id.hashCode()
-    override fun equals(other: Any?): Boolean = other is ScheduledEvent && other.id == id && other.guild.id == guild.id
 
 }
 

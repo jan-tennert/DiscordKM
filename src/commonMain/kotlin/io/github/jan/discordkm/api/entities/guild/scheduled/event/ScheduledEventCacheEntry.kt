@@ -7,7 +7,7 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
-import io.github.jan.discordkm.api.entities.guild.StageInstance
+import io.github.jan.discordkm.api.entities.guild.stage.StageInstance
 import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.entities.DiscordImage
 import kotlinx.coroutines.sync.Mutex
@@ -74,14 +74,9 @@ interface ScheduledEventCacheEntry : ScheduledEvent, Nameable, CacheEntry {
     val metadata: ScheduledEvent.EventMetadata?
 
     /**
-     * The cover image hash of the event
-     */
-    val coverImageHash: String?
-
-    /**
      * The cover image of the event
      */
-    val coverImageUrl: String? get() = coverImageHash?.let { DiscordImage.eventCoverImage(id, coverImageHash!!) }
+    val coverImageUrl: String?
 
 }
 
@@ -100,10 +95,12 @@ internal class ScheduledEventCacheEntryImpl(
     override val entity: StageInstance?,
     override var userCount: Int,
     override val metadata: ScheduledEvent.EventMetadata?,
-    override val coverImageHash: String?
+    coverImageHash: String?
 ) : ScheduledEventCacheEntry {
 
     private val mutex = Mutex()
+
+    override val coverImageUrl = coverImageHash?.let { DiscordImage.eventCoverImage(id, it) }
 
     internal suspend fun addUser() {
         mutex.withLock {

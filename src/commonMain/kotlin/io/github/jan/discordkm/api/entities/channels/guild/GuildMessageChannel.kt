@@ -27,14 +27,20 @@ interface GuildMessageChannel : GuildChannel, MessageChannel {
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? GuildMessageChannelCacheEntry ?: object : GuildMessageChannel {
-            override val guild = guild
-            override val cache: GuildMessageChannelCacheEntry?
-                get() = guild.cache?.channels?.get(id) as? GuildMessageChannelCacheEntry
-            override val type = cache?.type ?: ChannelType.UNKNOWN
-            override val id = id
-        }
+        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? GuildMessageChannelCacheEntry ?: GuildMessageChannelImpl(id, guild)
     }
+
+}
+
+internal class GuildMessageChannelImpl(override val id: Snowflake, override val guild: Guild) : GuildMessageChannel {
+
+    override val cache: GuildMessageChannelCacheEntry?
+        get() = guild.cache?.channels?.get(id) as? GuildMessageChannelCacheEntry
+    override val type = cache?.type ?: ChannelType.UNKNOWN
+
+    override fun toString(): String = "GuildMessageChannel(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is GuildMessageChannel && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
 
 }
 

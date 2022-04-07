@@ -2,6 +2,7 @@ package io.github.jan.discordkm.api.entities.channels
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
 import io.github.jan.discordkm.api.entities.containers.MessageContainer
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.EmbedBuilder
@@ -54,15 +55,23 @@ interface MessageChannel : Channel {
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client): MessageChannel = object : MessageChannel {
-            override val id: Snowflake = id
-            override val client: Client = client
-            override val type: ChannelType
-                get() = cache?.type ?: ChannelType.UNKNOWN
-            override val cache: MessageChannelCacheEntry?
-                get() = client.channels[id] as? MessageChannelCacheEntry
-        }
+        operator fun invoke(id: Snowflake, client: Client): MessageChannel = MessageChannelImpl(id, client)
     }
+
+}
+
+internal class MessageChannelImpl(
+    override val id: Snowflake,
+    override val client: Client,
+    override val type: ChannelType = ChannelType.UNKNOWN
+) : MessageChannel {
+
+    override val cache: MessageChannelCacheEntry?
+        get() = client.channels[id] as? MessageChannelCacheEntry
+
+    override fun toString(): String = "MessageChannel(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is MessageChannel && other.id == id
+    override fun hashCode(): Int = id.hashCode()
 
 }
 
@@ -70,6 +79,9 @@ interface MessageChannelCacheEntry : MessageChannel, ChannelCacheEntry {
 
     val cacheManager: MessageCacheManager
     val lastMessage: Message?
+        get() = if(client is DiscordWebSocketClient) {
+            (client as DiscordWebSocketClient).lastMessages[id]
+        } else null
     val messages: MessageContainer
         get() = MessageContainer(cacheManager.messageCache.values, this)
 

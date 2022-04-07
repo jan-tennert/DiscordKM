@@ -2,7 +2,7 @@ package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.MemberCacheEntry
+import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
 
 /**
  * This event is sent when the bot is requesting a chunk of members from the guild.

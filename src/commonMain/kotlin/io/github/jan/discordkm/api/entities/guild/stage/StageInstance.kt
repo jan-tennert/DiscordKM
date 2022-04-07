@@ -7,14 +7,14 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.guild
+package io.github.jan.discordkm.api.entities.guild.stage
 
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
+import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
@@ -64,25 +64,6 @@ interface StageInstance : SnowflakeEntity, BaseEntity {
 internal class StageInstanceImpl(override val id: Snowflake, override val stageChannel: StageChannel) : StageInstance {
 
     override fun toString(): String = "StageInstance(id=$id, guildId=${stageChannel.guild.id}, stageChannelId=${stageChannel.id})"
-    override fun hashCode() = id.hashCode()
-    override fun equals(other: Any?): Boolean = other is StageInstance && other.id == id && other.stageChannel.id == stageChannel.id
-
-}
-
-class StageInstanceCacheEntry(
-    override val guild: Guild,
-    override val id: Snowflake,
-    val topic: String,
-    override val stageChannel: StageChannel,
-    val privacyLevel: PrivacyLevel,
-    val isDiscoveryEnabled: Boolean,
-    val scheduledEvent: ScheduledEvent?
-) : StageInstance, GuildEntity {
-
-    override val client: Client
-        get() = stageChannel.client
-
-    override fun toString(): String = "StageInstanceCacheEntry(id=$id, guildId=${guild.id}, stageChannelId=${stageChannel.id}, topic=$topic)"
     override fun hashCode() = id.hashCode()
     override fun equals(other: Any?): Boolean = other is StageInstance && other.id == id && other.stageChannel.id == stageChannel.id
 

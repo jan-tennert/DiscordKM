@@ -9,7 +9,6 @@ import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifiable
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventVoiceChannel
-import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
 import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
@@ -72,6 +71,11 @@ internal class VoiceChannelImpl(override val id: Snowflake, override val guild: 
         } else {
             ChannelType.GUILD_VOICE
         }
+
+    override fun toString(): String = "VoiceChannel(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is VoiceChannel && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
+
 }
 
 open class VoiceChannelCacheEntry(
@@ -84,7 +88,6 @@ open class VoiceChannelCacheEntry(
     override val name: String,
     override val position: Int,
     override val permissionOverwrites: Set<PermissionOverwrite>,
-    override val lastMessage: Message?,
     override val parent: Category?
 ) : VoiceChannel, GuildChannelCacheEntry, IPositionable, GuildMessageChannelCacheEntry {
 
@@ -92,5 +95,9 @@ open class VoiceChannelCacheEntry(
 
     override val slowModeTime: TimeSpan
         get() = throw UnsupportedOperationException("A text channel in a voice chanel cannot have a slow mode enabled")
+
+    override fun toString(): String = "VoiceChannelCacheEntry(id=$id, type=$type, name=$name)"
+    override fun equals(other: Any?): Boolean = other is VoiceChannel && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
 
 }

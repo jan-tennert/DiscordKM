@@ -14,7 +14,6 @@ import co.touchlab.stately.collections.IsoMutableSet
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.klogger.Logger
 import com.soywiz.korio.async.async
 import com.soywiz.korio.async.delay
 import io.github.jan.discordkm.internal.utils.LoggerConfig
@@ -25,13 +24,8 @@ import kotlin.coroutines.coroutineContext
 class RateLimiter(logging: LoggerConfig) {
 
     private val buckets = IsoMutableMap<String, Bucket>()
-    private val LOGGER = Logger("RateLimiter")
+    private val LOGGER = logging("RateLimiter")
     private val jobs = IsoMutableSet<Job>()
-
-    init {
-        LOGGER.level = logging.level
-        LOGGER.output = logging.output
-    }
 
     suspend fun queue(request: Request): HttpResponse {
         while(jobs.isNotEmpty())

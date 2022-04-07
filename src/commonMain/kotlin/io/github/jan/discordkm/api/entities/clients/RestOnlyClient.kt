@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.clients
 
+import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.caching.CacheFlag
@@ -19,6 +20,8 @@ import io.ktor.client.HttpClientConfig
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
 class RestOnlyClient internal constructor (config: ClientConfig) : Client(config) {
+
+    override var selfUser: UserCacheEntry = throw IllegalStateException("RestOnlyClient does not support selfUser")
 
     override suspend fun disconnect() {
         requester.http.close()

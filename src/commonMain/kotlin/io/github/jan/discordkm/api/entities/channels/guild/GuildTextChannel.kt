@@ -106,15 +106,20 @@ interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? GuildTextChannelCacheEntry ?: object : GuildTextChannel {
-            override val cache: GuildMessageChannelCacheEntry?
-                get() = guild.cache?.channels?.get(id) as GuildMessageChannelCacheEntry?
-            override val guild: Guild = guild
-            override val type: ChannelType
-                get() = cache?.type ?: ChannelType.UNKNOWN
-            override val id: Snowflake = id
-        }
+        operator fun invoke(id: Snowflake, guild: Guild) = guild.client.channels[id] as? GuildTextChannelCacheEntry ?: GuildTextChannelImpl(id, guild)
     }
+
+}
+
+internal class GuildTextChannelImpl(override val id: Snowflake, override val guild: Guild) : GuildTextChannel {
+
+    override val cache: GuildTextChannelCacheEntry?
+        get() = guild.cache?.channels?.get(id) as GuildTextChannelCacheEntry?
+    override val type: ChannelType
+        get() = cache?.type ?: ChannelType.UNKNOWN
+    override fun toString(): String = "GuildTextChannel(id=$id, type=$type)"
+    override fun equals(other: Any?): Boolean = other is GuildTextChannel && other.id == id && other.guild.id == guild.id
+    override fun hashCode(): Int = id.hashCode()
 
 }
 

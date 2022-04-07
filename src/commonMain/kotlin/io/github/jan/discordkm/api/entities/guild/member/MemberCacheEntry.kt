@@ -1,129 +1,106 @@
-/**
- * DiscordKM is a kotlin multiplatform Discord API Wrapper
- * Copyright (C) 2021 Jan Tennert
- *
- * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
-
- */
-package io.github.jan.discordkm.api.entities.guild
+package io.github.jan.discordkm.api.entities.guild.member
 
 import com.soywiz.klock.DateTimeTz
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
-import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.containers.CacheMemberRoleContainer
-import io.github.jan.discordkm.api.entities.containers.MemberRoleContainer
-import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.MemberModifier
-import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.caching.CacheEntity
+import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.Permission
+import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
+import io.github.jan.discordkm.api.entities.guild.VoiceStateCacheEntry
 import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.caching.MemberCacheManager
 import io.github.jan.discordkm.internal.entities.DiscordImage
-import io.github.jan.discordkm.internal.invoke
-import io.github.jan.discordkm.internal.patch
-import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.rawValue
-import io.github.jan.discordkm.internal.serialization.serializers.MemberSerializer
-import io.github.jan.discordkm.internal.utils.toJsonObject
-import kotlinx.serialization.json.JsonObject
 import kotlin.jvm.JvmName
 
-
-interface Member : SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<MemberModifier, Member> {
-
-    override val cache: MemberCacheEntry?
-        get() = guild.cache?.members?.get(id)
-    val user: User
-        get() = User(id, client)
-    val roles: MemberRoleContainer
-        get() = MemberRoleContainer(this)
+interface MemberCacheEntry : Member, Nameable, PermissionHolder, CacheEntry {
 
     /**
-     * Modifies this user
+     * The time at which the member joined the guild
      */
-    override suspend fun modify(reason: String?, modifier: MemberModifier.() -> Unit) = client.buildRestAction<Member> {
-        route = Route.Member.MODIFY_MEMBER(guild.id, id).patch(MemberModifier().apply(modifier).data)
-        transform { Member(it.toJsonObject(), guild) }
-        this.reason = reason
-    }
+    val joinedAt: DateTimeTz
 
     /**
-     * Time-outs this member
-     * @param reason The reason which will be displayed in audit logs
-     * @param time The time when the time-out will remove
+     * The time at which the member started boosting the guild
      */
-    suspend fun timeoutUntil(time: DateTimeTz, reason: String? = null) = modify(reason) { timeoutUntil = time }
+    val premiumSince: DateTimeTz?
 
     /**
-     * Modifies the member's nickname
-     * @param reason The reason which will be displayed in audit logs
-     * @param nickname The new nickname, or null to reset
+     * Whether the member is deafened
      */
-    suspend fun modifyNickname(nickname: String?, reason: String? = null) = modify(reason) { this.nickname = nickname }
+    val isDeafened: Boolean
 
     /**
-     * Mutes this member server-wide
+     * Whether the member is muted
      */
-    suspend fun mute() = modify { this.mute = true }
+    val isMuted: Boolean
 
     /**
-     * Unmutes this member server-wide
+     * Whether this member is in the verification process
      */
-    suspend fun unmute() = modify { this.mute = false }
+    val isPending: Boolean
 
     /**
-     * Deafens this member server-wide
+     * The server specific nickname of the member
      */
-    suspend fun deafen() = modify { this.deaf = true }
+    val nickname: String?
 
     /**
-     * Undeafens this member server-wide
+     * The date where the timeout will be removed from the member. (Until then the member can't do anything in this guild)
      */
-    suspend fun undeafen() = modify { this.deaf = false }
+    val timeoutUntil: DateTimeTz?
 
     /**
-     * Moves this member to the specified voice channel. Only works if he is in a voice channel
+     * The voice state of the member containing the channel etc.
      */
-    suspend fun moveTo(voiceChannel: VoiceChannel) = modify { moveTo(voiceChannel) }
+    val voiceState: VoiceStateCacheEntry?
 
     /**
-     * Kicks the member from the guild.
-     *
-     * Requires the permission [Permission.KICK_MEMBERS]
+     * The status of the member or offline if the status couldn't be found
      */
-    suspend fun kick() = guild.members.kick(id)
+    val status: PresenceStatus
 
     /**
-     * Bans a member from the guild
-     *
-     * Requires the permission [Permission.BAN_MEMBERS]
+     * The activities of the member
      */
-    suspend fun ban(delDays: Int?) = guild.members.ban(id, null, delDays)
+    val activities: List<Activity>
 
-    companion object {
-        operator fun invoke(id: Snowflake, guild: Guild): Member = MemberImpl(id, guild)
-        operator fun invoke(data: JsonObject, guild: Guild) = MemberSerializer.deserialize(data, guild)
-    }
+    /**
+     * The roles of the member
+     */
+    override val roles: CacheMemberRoleContainer
 
-}
+    /**
+     * The nickname of the member or the name if [nickname] is null
+     */
+    override val name: String
+        get() = nickname ?: user.cache!!.name
 
-internal class MemberImpl(override val id: Snowflake, override val guild: Guild) : Member {
+    override val client: Client
+        get() = guild.client
 
-    override fun toString(): String = "Member(id=$id, guildId=${guild.id})"
-    override fun hashCode() = id.hashCode()
-    override fun equals(other: Any?): Boolean = other is Member && other.id == id && other.guild.id == guild.id
+    /**
+     * Whether the member is the owner of the guild
+     */
+    val isOwner: Boolean
+
+    /**
+     * The avatar url of the member
+     */
+    val avatarUrl: String?
+
+    /**
+     * Returns all permissions this user has
+     */
+    override val permissions: Set<Permission>
 
 }
 
@@ -139,36 +116,36 @@ internal class MemberImpl(override val id: Snowflake, override val guild: Guild)
  * @param isPending Whether this member is in the verification process
  * @param timeoutUntil The date where the timeout will be removed from the member. (Until then the member can't do anything in this guild)
  */
-data class MemberCacheEntry(
+internal class MemberCacheEntryImpl(
     override val guild: Guild,
     override val id: Snowflake,
     override val user: UserCacheEntry,
-    val joinedAt: DateTimeTz,
-    val premiumSince: DateTimeTz?,
-    val isDeafened: Boolean,
-    val isMuted: Boolean,
-    val isPending: Boolean,
-    val nickname: String?,
-    val avatarHash: String?,
-    val timeoutUntil: DateTimeTz?
-) : Member, Nameable, PermissionHolder, CacheEntry {
+    override val joinedAt: DateTimeTz,
+    override val premiumSince: DateTimeTz?,
+    override val isDeafened: Boolean,
+    override val isMuted: Boolean,
+    override val isPending: Boolean,
+    override val nickname: String?,
+    avatarHash: String?,
+    override val timeoutUntil: DateTimeTz?
+) : MemberCacheEntry {
 
     /**
      * The voice state of the member retrieved from cache
      */
-    val voiceState: VoiceStateCacheEntry?
+    override val voiceState: VoiceStateCacheEntry?
         get() = guild.cache?.voiceStates?.get(id)
 
     /**
      * The status of the member
      */
-    val status: PresenceStatus
+    override val status: PresenceStatus
         get() = guild.cache?.presences?.get(id)?.status ?: PresenceStatus.OFFLINE
 
     /**
      * A list of activities the user currently has
      */
-    val activities: List<Activity>
+    override val activities: List<Activity>
         get() = guild.cache?.presences?.get(id)?.activities ?: emptyList()
 
     val cacheManager = MemberCacheManager(client)
@@ -176,24 +153,17 @@ data class MemberCacheEntry(
     override val roles: CacheMemberRoleContainer
         get() = CacheMemberRoleContainer(this, cacheManager.roleCache.values)
 
-    override val name: String
-        get() = nickname ?: user.cache!!.name
-
-    override val client: Client
-        get() = guild.client
-
     /**
      * Whether the member is the owner of the guild
      */
-    val isOwner: Boolean
+    override val isOwner: Boolean
         @get:JvmName("isOwner")
         get() = guild.cache?.owner?.id == id
 
     /**
      * The avatar url of the member
      */
-    val avatarUrl: String?
-        get() = avatarHash?.let { DiscordImage.memberAvatar(id, guild.id, it) }
+    override val avatarUrl = avatarHash?.let { DiscordImage.memberAvatar(id, guild.id, it) }
 
     /**
      * Returns all permissions this user has
