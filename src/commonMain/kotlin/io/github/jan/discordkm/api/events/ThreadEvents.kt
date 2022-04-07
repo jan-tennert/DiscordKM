@@ -15,13 +15,13 @@ import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntry
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 
 interface ThreadEvent : Event {
 
     val thread: Thread
-    override val client: Client
+    override val client: DiscordClient
         get() = thread.client
 
 }
@@ -40,7 +40,7 @@ class ThreadUpdateEvent(override val thread: Thread, val oldThread: Thread?) : T
  * Sent when a thread was deleted
  */
 class ThreadDeleteEvent(
-    override val client: Client,
+    override val client: DiscordClient,
     val threadId: Snowflake,
     val guild: Guild,
     val stageChannel: StageChannel,
@@ -61,7 +61,7 @@ class ThreadListSyncEvent(
     val channels: List<GuildTextChannel>
 ) : Event {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = guild.client
 
 }

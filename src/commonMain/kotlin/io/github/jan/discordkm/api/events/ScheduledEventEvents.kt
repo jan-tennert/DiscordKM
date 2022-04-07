@@ -1,7 +1,7 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
@@ -61,7 +61,7 @@ class ScheduledEventCancelEvent(override val scheduledEvent: ScheduledEventCache
  */
 class ScheduledEventUserAddEvent(override val scheduledEvent: ScheduledEvent, val user: User, val guild: Guild) : ScheduledEventEvent {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = scheduledEvent.client
 
 }
@@ -73,7 +73,7 @@ class ScheduledEventUserAddEvent(override val scheduledEvent: ScheduledEvent, va
  */
 class ScheduledEventUserRemoveEvent(override val scheduledEvent: ScheduledEvent, val user: User, val guild: Guild) : ScheduledEventEvent {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = scheduledEvent.client
 
 }

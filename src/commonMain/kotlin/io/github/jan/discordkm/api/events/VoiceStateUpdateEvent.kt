@@ -9,10 +9,10 @@
  */
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.VoiceStateCacheEntry
 
 /**
  * Sent when a member joins, leaves or moves to a voice channel
  */
-class VoiceStateUpdateEvent(override val client: Client, val voiceState: VoiceStateCacheEntry, val oldVoiceState: VoiceStateCacheEntry?) : Event
+class VoiceStateUpdateEvent(override val client: DiscordClient, val voiceState: VoiceStateCacheEntry, val oldVoiceState: VoiceStateCacheEntry?) : Event

@@ -2,7 +2,7 @@ package io.github.jan.discordkm.internal.utils
 
 import com.google.common.reflect.ClassPath
 import com.soywiz.korio.async.invokeSuspend
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.events.CommandEvent
 import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.events.SlashCommandEvent
@@ -15,7 +15,7 @@ annotation class CommandExecutor(
     val subCommandGroup: String = "",
 )
 
-fun DiscordWebSocketClient.importCommands(packageName: String, subPackages: Boolean = false, args: Map<String, Any> = emptyMap()) {
+fun WSDiscordClient.importCommands(packageName: String, subPackages: Boolean = false, args: Map<String, Any> = emptyMap()) {
     ClassPath.from(ClassLoader.getSystemClassLoader()).allClasses.filter { it.packageName == packageName || (subPackages && it.packageName.startsWith(packageName)) }.map(
         ClassPath.ClassInfo::load).forEach {
         it.methods.filter { m -> Modifier.isStatic(m.modifiers) && m.isAnnotationPresent(CommandExecutor::class.java) && m.parameterCount >= 2 }.forEach { method ->

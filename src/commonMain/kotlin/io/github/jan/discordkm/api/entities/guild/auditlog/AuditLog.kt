@@ -12,8 +12,6 @@ package io.github.jan.discordkm.api.entities.guild.auditlog
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
-import io.github.jan.discordkm.api.entities.containers.CacheThreadContainer
-import io.github.jan.discordkm.api.entities.containers.UserContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
 import io.github.jan.discordkm.api.webhooks.Webhook
@@ -28,12 +26,12 @@ class AuditLog(override val data: JsonObject, override val guild: Guild) : Guild
     /**
      * A list of users in this audit log
      */
-    val users = UserContainer(client, data.getValue("users").jsonArray.map { User(it.jsonObject, client) })
+    val users = data.getValue("users").jsonArray.map { User(it.jsonObject, client) }
 
     /**
      * A list of threads in this audit log
      */
-    val threads = CacheThreadContainer(data.getValue("threads").jsonArray.map { Thread(it.jsonObject, guild) })
+    val threads = data.getValue("threads").jsonArray.map { Thread(it.jsonObject, guild) }
 
     /**
      * A list of webhooks in this audit log

@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.interactions
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.SlashCommandOptionBuilder
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
@@ -21,7 +21,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class AutoCompleteInteraction<T>(override val client: Client, override val data: JsonObject)  : Interaction {
+class AutoCompleteInteraction<T>(override val client: DiscordClient, override val data: JsonObject)  : Interaction {
 
     /**
      * Replies to the [AutoCompleteInteraction] with the given choices.

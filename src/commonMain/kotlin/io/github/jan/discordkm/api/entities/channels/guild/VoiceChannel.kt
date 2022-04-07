@@ -3,7 +3,7 @@ package io.github.jan.discordkm.api.entities.channels.guild
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.cacheManager
@@ -34,8 +34,8 @@ sealed interface VoiceChannel : GuildChannel, Modifiable<VoiceChannelModifier, V
     /**
      * Joins this voice channel over the websocket
      */
-    suspend fun join() = if(client is DiscordWebSocketClient) {
-        (client as DiscordWebSocketClient).shardConnections[0].send(UpdateVoiceStatePayload(guild.id, id, selfMute = false, selfDeaf = false))
+    suspend fun join() = if(client is WSDiscordClient) {
+        (client as WSDiscordClient).shardConnections[0]?.send(UpdateVoiceStatePayload(guild.id, id, selfMute = false, selfDeaf = false))
     } else {
         throw UnsupportedOperationException("You can't join a voice channel without having a gateway connection!")
     }

@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
@@ -25,7 +25,7 @@ import io.github.jan.discordkm.api.entities.messages.Message
  * Requires the intent [Intent.GUILD_MESSAGE_REACTIONS] or [Intent.DIRECT_MESSAGE_REACTIONS]
  */
 class MessageReactionRemoveEvent(
-    override val client: Client,
+    override val client: DiscordClient,
     override val channel: MessageChannel,
     val emoji: Emoji,
     val user: User,
@@ -38,7 +38,7 @@ class MessageReactionRemoveEvent(
  * Requires the intent [Intent.GUILD_MESSAGE_REACTIONS] or [Intent.DIRECT_MESSAGE_REACTIONS]
  */
 class MessageReactionRemoveAllEvent(
-    override val client: Client,
+    override val client: DiscordClient,
     override val channel: MessageChannel,
     val guild: Guild?,
     override val message: Message
@@ -50,7 +50,7 @@ class MessageReactionRemoveAllEvent(
  * Requires the intent [Intent.GUILD_MESSAGE_REACTIONS] or [Intent.DIRECT_MESSAGE_REACTIONS]
  */
 class MessageReactionEmojiRemoveEvent(
-    override val client: Client,
+    override val client: DiscordClient,
     override val channel: MessageChannel,
     val emoji: Emoji,
     val guild: Guild?,
@@ -62,7 +62,7 @@ class MessageReactionEmojiRemoveEvent(
  * Requires the intent [Intent.GUILD_MESSAGE_REACTIONS] or [Intent.DIRECT_MESSAGE_REACTIONS]
  */
 class MessageReactionAddEvent(
-    override val client: Client,
+    override val client: DiscordClient,
     override val channel: MessageChannel,
     val emoji: Emoji,
     val user: User,

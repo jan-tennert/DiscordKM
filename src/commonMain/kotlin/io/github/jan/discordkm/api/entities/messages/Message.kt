@@ -16,7 +16,7 @@ import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.containers.ReactionContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Permission
@@ -44,7 +44,7 @@ import kotlin.jvm.JvmName
 sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
 
     override val id: Snowflake
-    override val client: Client
+    override val client: DiscordClient
         get() = channel.client
     val guild: Guild?
         get() = null
@@ -174,7 +174,7 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
 
     companion object {
         operator fun invoke(id: Snowflake, channel: MessageChannel): Message = MessageImpl(id, channel)
-        operator fun invoke(data: JsonObject, client: Client) = MessageSerializer.deserialize(data, client)
+        operator fun invoke(data: JsonObject, client: DiscordClient) = MessageSerializer.deserialize(data, client)
     }
 }
 

@@ -13,7 +13,7 @@ import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
@@ -29,7 +29,7 @@ import kotlinx.serialization.json.buildJsonObject
 interface StageInstance : SnowflakeEntity, BaseEntity {
 
     val stageChannel: StageChannel
-    override val client: Client
+    override val client: DiscordClient
         get() = stageChannel.client
 
     /**
@@ -56,7 +56,7 @@ interface StageInstance : SnowflakeEntity, BaseEntity {
 
     companion object {
         operator fun invoke(id: Snowflake, channel: StageChannel): StageInstance = StageInstanceImpl(id, channel)
-        operator fun invoke(data: JsonObject, client: Client) = StageInstanceSerializer.deserialize(data, client)
+        operator fun invoke(data: JsonObject, client: DiscordClient) = StageInstanceSerializer.deserialize(data, client)
     }
 
 }

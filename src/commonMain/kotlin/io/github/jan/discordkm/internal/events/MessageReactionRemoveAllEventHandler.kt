@@ -9,18 +9,16 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.channels.Channel
-import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.events.MessageReactionRemoveAllEvent
+import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
-import io.github.jan.discordkm.internal.utils.get
 
-internal class MessageReactionRemoveAllEventHandler(val client: Client) : InternalEventHandler<MessageReactionRemoveAllEvent> {
+internal class MessageReactionRemoveAllEventHandler(val client: DiscordClient) : InternalEventHandler<MessageReactionRemoveAllEvent> {
 
     override suspend fun handle(data: JsonObject): MessageReactionRemoveAllEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)

@@ -1,8 +1,8 @@
 package io.github.jan.discordkm.lavalink
 
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 
-class NodeList(private val client: DiscordWebSocketClient) : Iterable<LavalinkNode> {
+class NodeList(private val client: WSDiscordClient) : Iterable<LavalinkNode> {
 
     private val nodes = mutableListOf<LavalinkNode>()
 

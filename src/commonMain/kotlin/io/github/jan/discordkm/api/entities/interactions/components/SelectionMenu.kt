@@ -9,7 +9,8 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.components
 
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.on
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.events.SelectionMenuEvent
 import kotlinx.serialization.Required
@@ -41,7 +42,7 @@ data class SelectionMenu(
 */
 inline fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisabled: Boolean = false, range: Pair<Int, Int> = 1 to 1, options: MutableList<SelectOption>.() -> Unit, crossinline onSelection: suspend SelectionMenuEvent.() -> Unit) {
     components += SelectionMenu(minValues = range.first, maxValues = range.second, options = mutableListOf<SelectOption>().apply(options), isDisabled = isDisabled, customId = customId)
-    if(client is DiscordWebSocketClient) {
+    if(client is WSDiscordClient) {
         client.on(predicate = { it.componentId == customId }, onSelection)
     }
 }

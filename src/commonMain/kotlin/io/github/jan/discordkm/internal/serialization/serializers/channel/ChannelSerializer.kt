@@ -17,7 +17,8 @@ import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannelCacheEntry
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.messages.Message
@@ -60,8 +61,8 @@ object ChannelSerializer : GuildEntitySerializer<Channel> {
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, guildX.client) } ?: guildX
         val topic = data["topic", true]?.string //guild
         val lastMessageId = data["last_message_id", true]?.snowflake?.let { Message(it, Channel(id, type, guild.client, guild) as MessageChannel) } //message channel
-        if(lastMessageId != null && guildX.client is DiscordWebSocketClient) {
-            (guildX.client as DiscordWebSocketClient).lastMessages[id] = lastMessageId
+        if(lastMessageId != null && guildX.client is WSDiscordClient) {
+            (guildX.client as WSDiscordClientImpl).lastMessages[id] = lastMessageId
         }
         val bitrate = data["bitrate", true]?.int //voice channel
         val userLimit = data["user_limit", true]?.int //voice channel

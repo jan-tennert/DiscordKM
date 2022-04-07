@@ -10,13 +10,12 @@
 package io.github.jan.discordkm.api.entities.guild
 
 import io.github.jan.discordkm.api.entities.BaseEntity
-import io.github.jan.discordkm.api.entities.SerializableEntity
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 
 interface GuildEntity : BaseEntity  {
 
     val guild: Guild
-    override val client: Client
+    override val client: DiscordClient
         get() = guild.client
 
 }

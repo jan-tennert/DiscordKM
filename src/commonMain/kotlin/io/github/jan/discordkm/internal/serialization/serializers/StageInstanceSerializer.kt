@@ -1,7 +1,7 @@
 package io.github.jan.discordkm.internal.serialization.serializers
 
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
@@ -16,7 +16,7 @@ import kotlinx.serialization.json.JsonObject
 
 object StageInstanceSerializer : BaseEntitySerializer<StageInstanceCacheEntry> {
 
-    override fun deserialize(data: JsonObject, value: Client): StageInstanceCacheEntry {
+    override fun deserialize(data: JsonObject, value: DiscordClient): StageInstanceCacheEntry {
         val guild = Guild(data["guild_id"]!!.snowflake, value)
         return StageInstanceCacheEntryImpl(
             id = data["id"]!!.snowflake,

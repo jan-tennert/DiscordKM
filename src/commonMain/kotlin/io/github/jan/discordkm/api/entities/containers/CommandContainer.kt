@@ -1,7 +1,7 @@
 package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
@@ -30,17 +30,17 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
     /**
      * Creates a new chat input command
      */
-    suspend fun createChatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) = create(chatInputCommand(holder.client as? DiscordWebSocketClient, builder))
+    suspend fun createChatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) = create(chatInputCommand(holder.client as? WSDiscordClient, builder))
 
     /**
      * Creates a new message command
      */
-    suspend fun createMessageCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(messageCommand(holder.client as? DiscordWebSocketClient, builder))
+    suspend fun createMessageCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(messageCommand(holder.client as? WSDiscordClient, builder))
 
     /**
      * Creates a new user command
      */
-    suspend fun createUserCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(userCommand(holder.client as? DiscordWebSocketClient, builder))
+    suspend fun createUserCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(userCommand(holder.client as? WSDiscordClient, builder))
 
     /**
      * Retrieves all application commands
@@ -77,13 +77,13 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      * Overrides all application commands with new ones
      */
     suspend fun override(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {
-        route = RestAction.put(baseURL, JsonArray(CommandBulkOverride(holder.client as? DiscordWebSocketClient).apply(commands).commands.map(ApplicationCommandBuilder::build)))
+        route = RestAction.put(baseURL, JsonArray(CommandBulkOverride(holder.client as? WSDiscordClient).apply(commands).commands.map(ApplicationCommandBuilder::build)))
         transform { it.toJsonArray().map { json -> ApplicationCommand(holder.client, json.jsonObject) } }
     }
 
 }
 
-class CommandBulkOverride(private val client: DiscordWebSocketClient?) {
+class CommandBulkOverride(private val client: WSDiscordClient?) {
 
     internal val commands = mutableListOf<ApplicationCommandBuilder>()
 

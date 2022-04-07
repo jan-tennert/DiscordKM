@@ -12,7 +12,7 @@ package io.github.jan.discordkm.api.events
 import com.soywiz.klock.DateTimeTz
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.member.Member
@@ -24,7 +24,7 @@ import io.github.jan.discordkm.api.entities.guild.member.Member
  */
 class TypingStartEvent(val channel: MessageChannel, val guild: Guild?, val user: User, val member: Member?, val timestamp: DateTimeTz) : Event {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = channel.client
 
 }

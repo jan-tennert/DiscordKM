@@ -1,7 +1,7 @@
 package io.github.jan.discordkm.api.entities
 
 import io.github.jan.discordkm.api.entities.channels.PrivateChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.post
@@ -71,13 +71,13 @@ sealed interface User : Mentionable, SnowflakeEntity, Reference<User>, BaseEntit
     override suspend fun retrieve() = client.users.retrieve(id)
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client): User = UserImpl(id, client)
-        operator fun invoke(data: JsonObject, client: Client) = UserSerializer.deserialize(data, client)
+        operator fun invoke(id: Snowflake, client: DiscordClient): User = UserImpl(id, client)
+        operator fun invoke(data: JsonObject, client: DiscordClient) = UserSerializer.deserialize(data, client)
     }
 
 }
 
-internal class UserImpl(override val id: Snowflake, override val client: Client) : User {
+internal class UserImpl(override val id: Snowflake, override val client: DiscordClient) : User {
 
     override fun toString() = "User(id=$id)"
     override fun hashCode() = id.hashCode()

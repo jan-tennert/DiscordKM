@@ -12,7 +12,7 @@ package io.github.jan.discordkm.internal.events
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.messages.Message
@@ -25,7 +25,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
-internal class MessageReactionRemoveEventHandler(val client: Client) : InternalEventHandler<MessageReactionRemoveEvent> {
+internal class MessageReactionRemoveEventHandler(val client: DiscordClient) : InternalEventHandler<MessageReactionRemoveEvent> {
 
     override suspend fun handle(data: JsonObject): MessageReactionRemoveEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)

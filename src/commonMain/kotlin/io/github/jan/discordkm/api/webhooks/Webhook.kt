@@ -13,7 +13,7 @@ import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
@@ -40,7 +40,7 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.JsonObject
 
-class Webhook(override val client: Client, override val data: JsonObject) : SerializableEntity, WebhookExecutor {
+class Webhook(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity, WebhookExecutor {
 
     /**
      * The id of the webhook

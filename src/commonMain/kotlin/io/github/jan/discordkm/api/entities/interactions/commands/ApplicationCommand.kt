@@ -13,7 +13,7 @@ import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
@@ -28,7 +28,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-open class ApplicationCommand(override val client: Client, override val data: JsonObject) : SerializableEntity, SnowflakeEntity, Nameable {
+open class ApplicationCommand(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity, SnowflakeEntity, Nameable {
 
     /**
      * The type of the application command
@@ -75,7 +75,7 @@ open class ApplicationCommand(override val client: Client, override val data: Js
 
 }
 
-class ChatInputCommand(client: Client, data: JsonObject) : ApplicationCommand(client, data) {
+class ChatInputCommand(client: DiscordClient, data: JsonObject) : ApplicationCommand(client, data) {
 
     /**
      * The options of the command

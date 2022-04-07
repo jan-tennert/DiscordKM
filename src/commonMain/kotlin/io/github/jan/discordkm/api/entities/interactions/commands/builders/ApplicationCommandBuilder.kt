@@ -9,7 +9,8 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.commands.builders
 
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.on
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
@@ -22,7 +23,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-open class ApplicationCommandBuilder(val type: ApplicationCommandType, val client: DiscordWebSocketClient? = null) {
+open class ApplicationCommandBuilder(val type: ApplicationCommandType, val client: WSDiscordClient? = null) {
 
     var defaultMemberPermissions: MutableSet<Permission> = mutableSetOf()
     var name: String = ""
@@ -77,7 +78,7 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, val clien
 
 }
 
-class MessageCommandBuilder(client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.MESSAGE, client) {
+class MessageCommandBuilder(client: WSDiscordClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.MESSAGE, client) {
 
     @CommandBuilder
     inline fun onCommand(crossinline action: MessageCommandEvent.() -> Unit) {
@@ -86,7 +87,7 @@ class MessageCommandBuilder(client: DiscordWebSocketClient? = null) : Applicatio
 
 }
 
-class UserCommandBuilder(client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.USER, client) {
+class UserCommandBuilder(client: WSDiscordClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.USER, client) {
 
     @CommandBuilder
     inline fun onCommand(crossinline action: UserCommandEvent.() -> Unit) {
@@ -95,13 +96,13 @@ class UserCommandBuilder(client: DiscordWebSocketClient? = null) : ApplicationCo
 
 }
 
-inline fun messageCommand(client: DiscordWebSocketClient? = null, builder: MessageCommandBuilder.() -> Unit) : MessageCommandBuilder {
+inline fun messageCommand(client: WSDiscordClient? = null, builder: MessageCommandBuilder.() -> Unit) : MessageCommandBuilder {
     val commandBuilder = MessageCommandBuilder(client)
     commandBuilder.builder()
     return commandBuilder
 }
 
-inline fun userCommand(client: DiscordWebSocketClient? = null, builder: UserCommandBuilder.() -> Unit) : UserCommandBuilder {
+inline fun userCommand(client: WSDiscordClient? = null, builder: UserCommandBuilder.() -> Unit) : UserCommandBuilder {
     val commandBuilder = UserCommandBuilder(client)
     commandBuilder.builder()
     return commandBuilder

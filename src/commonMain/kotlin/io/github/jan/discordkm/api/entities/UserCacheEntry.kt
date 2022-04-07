@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.api.entities
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.misc.Color
 import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.entities.DiscordImage
@@ -70,7 +70,7 @@ internal class UserCacheEntryImpl(
     override val publicFlags: Set<User.UserFlag>,
     bannerHash: String?,
     accentColor: Color?,
-    override val client: Client
+    override val client: DiscordClient
 ) : UserCacheEntry {
 
     /**

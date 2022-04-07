@@ -1,7 +1,7 @@
 package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
@@ -16,7 +16,7 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class CacheGuildContainer(val client: Client, override val values: Collection<GuildCacheEntry>) : NameableSnowflakeContainer<GuildCacheEntry> {
+open class GuildContainer(val client: DiscordClient) {
 
     /**
      * Retrieves a guild by its id.
@@ -41,3 +41,5 @@ class CacheGuildContainer(val client: Client, override val values: Collection<Gu
     suspend fun create(template: GuildTemplate, name: String, icon: Image? = null) = create(template.code, name, icon)
 
 }
+
+class CacheGuildContainer(client: DiscordClient, override val values: Collection<GuildCacheEntry>) : NameableSnowflakeContainer<GuildCacheEntry>, GuildContainer(client)

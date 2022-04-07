@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntryImpl
 import io.github.jan.discordkm.api.entities.guild.cacheManager
@@ -22,7 +22,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
-internal class GuildMemberAddEventHandler(val client: Client) : InternalEventHandler<GuildMemberAddEvent> {
+internal class GuildMemberAddEventHandler(val client: DiscordClient) : InternalEventHandler<GuildMemberAddEvent> {
 
     override suspend fun handle(data: JsonObject): GuildMemberAddEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -34,7 +34,7 @@ internal class GuildMemberAddEventHandler(val client: Client) : InternalEventHan
 
 }
 
-internal class GuildMemberUpdateEventHandler(val client: Client) : InternalEventHandler<GuildMemberUpdateEvent> {
+internal class GuildMemberUpdateEventHandler(val client: DiscordClient) : InternalEventHandler<GuildMemberUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildMemberUpdateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
@@ -45,7 +45,7 @@ internal class GuildMemberUpdateEventHandler(val client: Client) : InternalEvent
 
 }
 
-internal class GuildMemberRemoveEventHandler(val client: Client) : InternalEventHandler<GuildMemberRemoveEvent> {
+internal class GuildMemberRemoveEventHandler(val client: DiscordClient) : InternalEventHandler<GuildMemberRemoveEvent> {
 
     override suspend fun handle(data: JsonObject): GuildMemberRemoveEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

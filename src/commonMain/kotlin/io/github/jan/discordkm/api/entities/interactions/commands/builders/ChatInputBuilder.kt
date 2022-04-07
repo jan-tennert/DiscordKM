@@ -1,6 +1,7 @@
 package io.github.jan.discordkm.api.entities.interactions.commands.builders
 
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.on
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
@@ -12,7 +13,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 
-class ChatInputCommandBuilder(client: DiscordWebSocketClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT, client) {
+class ChatInputCommandBuilder(client: WSDiscordClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.CHAT_INPUT, client) {
 
     private val options: MutableList<CommandOption> = mutableListOf()
 
@@ -47,7 +48,7 @@ class ChatInputCommandBuilder(client: DiscordWebSocketClient? = null) : Applicat
 
 }
 
-inline fun chatInputCommand(client: DiscordWebSocketClient? = null, builder: ChatInputCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
+inline fun chatInputCommand(client: WSDiscordClient? = null, builder: ChatInputCommandBuilder.() -> Unit) : ApplicationCommandBuilder {
     val commandBuilder = ChatInputCommandBuilder(client)
     commandBuilder.builder()
     return commandBuilder

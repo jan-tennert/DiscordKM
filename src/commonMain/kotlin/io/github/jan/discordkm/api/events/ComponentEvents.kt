@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.interactions.ComponentInteraction
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 
@@ -23,7 +23,7 @@ interface ComponentEvent : InteractionCreateEvent {
  * Sent when someone clicks on a button, which the bot created
  */
 class ButtonClickEvent(
-    override val client: Client,
+    override val client: DiscordClient,
     override val interaction: ComponentInteraction,
     override val componentId: String,
 ) : ComponentEvent {
@@ -36,7 +36,7 @@ class ButtonClickEvent(
  * Sent when someone interacts with a selection menu, which the bot created
  */
 class SelectionMenuEvent(
-    override val client: Client,
+    override val client: DiscordClient,
     override val interaction: ComponentInteraction,
     val selectedOptions: List<String>,
     override val componentId: String,

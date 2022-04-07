@@ -10,17 +10,16 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
-import io.github.jan.discordkm.internal.entities.channels.Invitable
 
 /**
  * Sent when an invite was created
  */
 class InviteCreateEvent(val invite: Invite) : Event {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = invite.client
 
 }

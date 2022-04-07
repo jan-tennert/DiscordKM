@@ -9,9 +9,9 @@
  */
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 
 /**
  * Sent when a shard was created
  */
-class ShardCreateEvent(override val client: Client, val shardId: Int) : Event
+class ShardCreateEvent(override val client: DiscordClient, val shardId: Int) : Event

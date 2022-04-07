@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 
 /**
@@ -17,7 +17,7 @@ import io.github.jan.discordkm.api.entities.guild.Guild
  */
 class PresenceUpdateEvent(val presence: Guild.GuildPresenceCacheEntry, val oldPresence: Guild.GuildPresenceCacheEntry?) : Event {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = presence.client
 
 }

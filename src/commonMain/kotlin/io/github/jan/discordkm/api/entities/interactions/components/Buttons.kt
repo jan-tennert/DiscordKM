@@ -9,7 +9,8 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.components
 
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.on
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.events.ButtonClickEvent
 import io.github.jan.discordkm.internal.utils.EnumWithValue
@@ -48,7 +49,7 @@ enum class ButtonStyle : EnumWithValue<Int> {
 
 inline fun RowBuilder<MessageLayout>.actionButton(style: ButtonStyle, customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, crossinline onClick: suspend ButtonClickEvent.() -> Unit = {}) {
     components += Button(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = style)
-    if(client is DiscordWebSocketClient) {
+    if(client is WSDiscordClient) {
         client.on(predicate = { it.componentId == customId }, onClick)
     }
 }

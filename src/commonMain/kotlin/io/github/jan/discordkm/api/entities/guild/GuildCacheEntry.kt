@@ -10,8 +10,9 @@ import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelImpl
 import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
-import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.on
 import io.github.jan.discordkm.api.entities.containers.CacheEmoteContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildChannelContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildMemberContainer
@@ -246,7 +247,7 @@ interface GuildCacheEntry : Guild, Nameable, CacheEntry {
 
 internal class GuildCacheEntryImpl(
     override val id: Snowflake,
-    override val client: Client,
+    override val client: DiscordClient,
     override val name: String,
     iconHash: String?,
     splashHash: String?,
@@ -347,8 +348,8 @@ internal class GuildCacheEntryImpl(
         receivePresences: Boolean = false,
         users: Collection<Snowflake> = emptyList(),
     ) {
-        if (client is DiscordWebSocketClient) {
-            val shard = client.shardById[shardId] ?: return
+        if (client is WSDiscordClient) {
+            val shard = client.shardConnections[shardId] ?: return
             shard.send(RequestGuildMemberPayload(id, query, limit, receivePresences, users))
         }
     }
@@ -370,8 +371,8 @@ internal class GuildCacheEntryImpl(
         users: Collection<Snowflake>,
         timeout: TimeSpan?
     ): List<MemberCacheEntry> {
-        if (client !is DiscordWebSocketClient) return emptyList()
-        val shard = client.shardById[shardId] ?: return emptyList()
+        if (client !is WSDiscordClient) return emptyList()
+        val shard = client.shardConnections[shardId] ?: return emptyList()
         shard.send(RequestGuildMemberPayload(id, query, limit, receivePresences, users))
 
         suspend fun receiveMembers() = suspendCancellableCoroutine<List<MemberCacheEntry>> {

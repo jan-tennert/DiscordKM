@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 
@@ -20,7 +20,7 @@ import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
  * Requires the intent [Intent.GUILD_MESSAGES] or [Intent.DIRECT_MESSAGES]
  */
 class MessageUpdateEvent(
-    override val client: Client,
+    override val client: DiscordClient,
     override val message: MessageCacheEntry,
     override val channel: MessageChannel
 ) : MessageEvent, MessageCacheEntry by message

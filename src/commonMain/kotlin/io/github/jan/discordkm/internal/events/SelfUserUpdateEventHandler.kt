@@ -10,20 +10,19 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.UserCacheEntry
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.events.SelfUserUpdateEvent
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.JsonObject
 
-internal class SelfUserUpdateEventHandler(val client: Client) : InternalEventHandler<SelfUserUpdateEvent> {
+internal class SelfUserUpdateEventHandler(val client: DiscordClient) : InternalEventHandler<SelfUserUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): SelfUserUpdateEvent {
         val user = User(data, client)
         val oldUser = client.selfUser
-        client.mutex.withLock {
-            client.selfUser = user
-        }
-        return SelfUserUpdateEvent(user, oldUser)
+        (client as WSDiscordClientImpl).updateSelfUser(user)
+        return SelfUserUpdateEvent(user, oldUser as UserCacheEntry)
     }
 
 }

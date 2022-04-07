@@ -12,9 +12,8 @@ package io.github.jan.discordkm.api.entities.guild.templates
 import com.soywiz.klock.DateTimeTz
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
@@ -49,7 +48,7 @@ data class GuildTemplate(
     val updatedAt: DateTimeTz,
     val sourceGuild: Guild,
     val isDirty: Boolean,
-    override val client: Client
+    override val client: DiscordClient
 ) : BaseEntity {
 
 

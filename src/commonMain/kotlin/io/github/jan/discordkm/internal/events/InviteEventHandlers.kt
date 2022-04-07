@@ -9,20 +9,18 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.events.InviteCreateEvent
 import io.github.jan.discordkm.api.events.InviteDeleteEvent
-import io.github.jan.discordkm.internal.entities.channels.Invitable
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-internal class InviteCreateEventHandler(val client: Client) : InternalEventHandler<InviteCreateEvent> {
+internal class InviteCreateEventHandler(val client: DiscordClient) : InternalEventHandler<InviteCreateEvent> {
 
     override suspend fun handle(data: JsonObject): InviteCreateEvent {
         val invite = Invite(client, data)
@@ -31,7 +29,7 @@ internal class InviteCreateEventHandler(val client: Client) : InternalEventHandl
 
 }
 
-internal class InviteDeleteEventHandler(val client: Client) : InternalEventHandler<InviteDeleteEvent> {
+internal class InviteDeleteEventHandler(val client: DiscordClient) : InternalEventHandler<InviteDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): InviteDeleteEvent {
         val channel = Channel(data["channel"]!!.snowflake, ChannelType.UNKNOWN, client)

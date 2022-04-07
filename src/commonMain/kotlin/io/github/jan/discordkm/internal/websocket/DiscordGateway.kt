@@ -12,9 +12,10 @@ package io.github.jan.discordkm.internal.websocket
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
-import io.github.jan.discordkm.api.entities.clients.Client
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
 import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
 import io.github.jan.discordkm.api.events.RawEvent
@@ -106,7 +107,7 @@ import kotlin.coroutines.coroutineContext
 
 class DiscordGateway(
     private val config: ClientConfig,
-    val client: DiscordWebSocketClient,
+    val client: WSDiscordClient,
     val shardId: Int = 0,
 ) {
 
@@ -314,8 +315,8 @@ class DiscordGateway(
 
 }
 
-suspend fun Client.handleRawEvent(payload: Payload, LOGGER: Logger) = coroutineScope {
-    handleEvent(RawEvent(client, payload))
+suspend fun DiscordClient.handleRawEvent(payload: Payload, LOGGER: Logger) = coroutineScope {
+    (client as WSDiscordClientImpl).handleEvent(RawEvent(client, payload))
     val data = payload.eventData!!.jsonObject
     launch {
         val event = when (payload.eventName!!) {
@@ -396,7 +397,7 @@ suspend fun Client.handleRawEvent(payload: Payload, LOGGER: Logger) = coroutineS
             else -> return@launch
         }
         runCatching {
-            client.handleEvent(event)
+            (client as WSDiscordClientImpl).handleEvent(event)
         }.onFailure {
             LOGGER.error { "Error while handling event ${event::class.simpleName}: ${it::class.simpleName} ${it.message}" }
         }

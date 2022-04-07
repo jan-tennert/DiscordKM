@@ -9,14 +9,14 @@
  */
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.stage.StageInstance
 import io.github.jan.discordkm.api.entities.guild.stage.StageInstanceCacheEntry
 
 interface StageInstanceEvent : Event {
 
     val stageInstance: StageInstanceCacheEntry
-    override val client: Client
+    override val client: DiscordClient
         get() = stageInstance.client
 
 }
@@ -26,7 +26,7 @@ interface StageInstanceEvent : Event {
  */
 class StageInstanceCreateEvent(override val stageInstance: StageInstanceCacheEntry) : StageInstanceEvent, StageInstanceCacheEntry by stageInstance {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = stageInstance.client
 
 }
@@ -36,7 +36,7 @@ class StageInstanceCreateEvent(override val stageInstance: StageInstanceCacheEnt
  */
 class StageInstanceDeleteEvent(override val stageInstance: StageInstanceCacheEntry) : StageInstanceEvent, StageInstanceCacheEntry by stageInstance {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = stageInstance.client
 
 }

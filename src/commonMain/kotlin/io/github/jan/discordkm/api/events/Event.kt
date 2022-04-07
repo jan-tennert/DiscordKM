@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.interactions.Interaction
 import io.github.jan.discordkm.api.entities.messages.Message
@@ -35,7 +35,7 @@ sealed interface InteractionCreateEvent : Event {
 sealed interface GuildEvent : Event {
 
     val guild: Guild
-    override val client: Client
+    override val client: DiscordClient
         get() = guild.client
 
 }

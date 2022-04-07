@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.role.RoleCacheEntry
 
 interface RoleEvent : GuildEvent {
@@ -24,7 +24,7 @@ interface RoleEvent : GuildEvent {
  */
 class RoleCreateEvent(override val role: RoleCacheEntry) : RoleEvent, RoleCacheEntry by role {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = role.client
 
 }
@@ -34,7 +34,7 @@ class RoleCreateEvent(override val role: RoleCacheEntry) : RoleEvent, RoleCacheE
  */
 class RoleUpdateEvent(override val role: RoleCacheEntry, val oldRole: RoleCacheEntry?) : RoleEvent, RoleCacheEntry by role {
 
-    override val client: Client
+    override val client: DiscordClient
         get() = role.client
 
 }
@@ -42,4 +42,4 @@ class RoleUpdateEvent(override val role: RoleCacheEntry, val oldRole: RoleCacheE
 /**
  * Sent when a role was deleted
  */
-class RoleDeleteEvent(override val client: Client, val roleId: Snowflake) : Event
+class RoleDeleteEvent(override val client: DiscordClient, val roleId: Snowflake) : Event

@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.BanEvent
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
@@ -19,7 +19,7 @@ import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
-internal class BanEventHandler(val client: Client) {
+internal class BanEventHandler(val client: DiscordClient) {
 
     inline fun <reified C : BanEvent> handle(data: JsonObject): C {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

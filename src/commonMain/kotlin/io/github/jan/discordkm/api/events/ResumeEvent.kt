@@ -1,5 +1,5 @@
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 
-class ResumeEvent(override val client: Client) : Event
+class ResumeEvent(override val client: DiscordClient) : Event

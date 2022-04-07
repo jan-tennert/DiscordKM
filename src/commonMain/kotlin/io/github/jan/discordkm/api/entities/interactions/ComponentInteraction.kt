@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.interactions
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
@@ -24,7 +24,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 
-class ComponentInteraction(client: Client, data: JsonObject) : StandardInteraction(client, data), ModalInteraction {
+class ComponentInteraction(client: DiscordClient, data: JsonObject) : StandardInteraction(client, data), ModalInteraction {
 
     /**
      * The message which contains this component

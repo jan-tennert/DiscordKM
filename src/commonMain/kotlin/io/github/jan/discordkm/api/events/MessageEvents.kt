@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
@@ -22,7 +22,7 @@ import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
  * Requires the intent [Intent.GUILD_MESSAGES] or [Intent.DIRECT_MESSAGES]
  */
 class MessageCreateEvent(
-    override val client: Client,
+    override val client: DiscordClient,
     override val message: MessageCacheEntry,
     override val channel: MessageChannel
 ) : MessageEvent, MessageCacheEntry by message
@@ -32,11 +32,11 @@ class MessageCreateEvent(
  *
  * Requires the intent [Intent.GUILD_MESSAGES] or [Intent.DIRECT_MESSAGES]
  */
-class MessageDeleteEvent(override val client: Client, val id: Snowflake, val channel: MessageChannel) : Event
+class MessageDeleteEvent(override val client: DiscordClient, val id: Snowflake, val channel: MessageChannel) : Event
 
 /**
  * Sent when someone deletes multiple messages at once
  *
  * Requires the intent [Intent.GUILD_MESSAGES] or [Intent.DIRECT_MESSAGES]
  */
-class MessageBulkDeleteEvent(override val client: Client, val ids: List<Snowflake>, val channel: MessageChannel, val guild: Guild?) : Event
+class MessageBulkDeleteEvent(override val client: DiscordClient, val ids: List<Snowflake>, val channel: MessageChannel, val guild: Guild?) : Event

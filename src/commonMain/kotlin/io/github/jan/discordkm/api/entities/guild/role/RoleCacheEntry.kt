@@ -4,7 +4,7 @@ import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
@@ -85,7 +85,7 @@ internal class RoleCacheEntryImpl(
     override val tags: RoleCacheEntry.Tag?,
 ) : RoleCacheEntry {
 
-    override val client: Client = guild.client
+    override val client: DiscordClient = guild.client
 
     override val iconUrl = iconHash?.let { DiscordImage.roleIcon(id, iconHash) }
 

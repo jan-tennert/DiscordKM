@@ -9,17 +9,18 @@
  */
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.events.GuildCreateEvent
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import kotlinx.serialization.json.JsonObject
 
-internal class GuildCreateEventHandler(val client: Client) :
+internal class GuildCreateEventHandler(val client: DiscordClient) :
     InternalEventHandler<GuildCreateEvent> {
 
     override suspend fun handle(data: JsonObject): GuildCreateEvent {
         val guild = GuildSerializer.deserialize(data, client)
-        client.cacheManager.guildCache[guild.id] = guild
+        (client as WSDiscordClientImpl).cacheManager.guildCache[guild.id] = guild
         return GuildCreateEvent(guild, client)
     }
 

@@ -10,40 +10,24 @@
 package io.github.jan.discordkm.api.entities.guild.member
 
 import com.soywiz.klock.DateTimeTz
-import io.github.jan.discordkm.api.entities.Nameable
-import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.UserCacheEntry
-import io.github.jan.discordkm.api.entities.activity.Activity
-import io.github.jan.discordkm.api.entities.activity.PresenceStatus
-import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
-import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
-import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.containers.CacheMemberRoleContainer
 import io.github.jan.discordkm.api.entities.containers.MemberRoleContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
 import io.github.jan.discordkm.api.entities.guild.Permission
-import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
-import io.github.jan.discordkm.api.entities.guild.VoiceStateCacheEntry
 import io.github.jan.discordkm.api.entities.modifiers.Modifiable
 import io.github.jan.discordkm.api.entities.modifiers.guild.MemberModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
-import io.github.jan.discordkm.internal.caching.CacheEntry
-import io.github.jan.discordkm.internal.caching.MemberCacheManager
-import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
-import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.serialization.serializers.MemberSerializer
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonObject
-import kotlin.jvm.JvmName
 
 
 interface Member : SnowflakeEntity, GuildEntity, CacheEntity, Modifiable<MemberModifier, Member> {

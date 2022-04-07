@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.entities.channels
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 
 sealed interface PrivateChannel : MessageChannel {
 
@@ -18,12 +18,12 @@ sealed interface PrivateChannel : MessageChannel {
         get() = ChannelType.DM
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client): PrivateChannel = PrivateChannelImpl(id, client)
+        operator fun invoke(id: Snowflake, client: DiscordClient): PrivateChannel = PrivateChannelImpl(id, client)
     }
 
 }
 
-internal class PrivateChannelImpl(override val id: Snowflake, override val client: Client) : PrivateChannel {
+internal class PrivateChannelImpl(override val id: Snowflake, override val client: DiscordClient) : PrivateChannel {
     override val cache: Nothing? = null
 
     override fun toString(): String = "PrivateChannel(id=$id)"

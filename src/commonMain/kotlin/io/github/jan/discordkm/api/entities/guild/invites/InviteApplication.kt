@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.entities.guild.invites
 
 import io.github.jan.discordkm.api.entities.SerializableEntity
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
@@ -18,7 +18,7 @@ import io.github.jan.discordkm.internal.utils.getOrThrow
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 
-data class InviteApplication(override val client: Client, override val data: JsonObject) : SerializableEntity {
+data class InviteApplication(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity {
 
     val id = data.getId()
 

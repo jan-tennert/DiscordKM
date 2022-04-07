@@ -16,7 +16,7 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
 import io.github.jan.discordkm.internal.Route
@@ -42,7 +42,7 @@ import kotlin.jvm.JvmName
 /**
  * An invite is used to easily let a user join a guild, voice channel, stage instance, event etc.
  */
-class Invite(override val client: Client, override val data: JsonObject) : SerializableEntity {
+class Invite(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity {
 
     /**
      * The code of the [Invite]

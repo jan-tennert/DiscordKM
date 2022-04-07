@@ -3,7 +3,7 @@ package io.github.jan.discordkm.internal.serialization.serializers
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
@@ -20,7 +20,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
 object ScheduledEventSerializer : BaseEntitySerializer<ScheduledEventCacheEntry> {
-    override fun deserialize(data: JsonObject, value: Client): ScheduledEventCacheEntry {
+    override fun deserialize(data: JsonObject, value: DiscordClient): ScheduledEventCacheEntry {
         val guild = Guild(data["guild_id"]!!.snowflake, value)
         val channel = data["channel_id", true]?.snowflake?.let { VoiceChannel(it, guild) }
         return ScheduledEventCacheEntryImpl(

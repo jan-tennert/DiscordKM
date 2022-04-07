@@ -9,7 +9,7 @@ import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.containers.CacheMemberRoleContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Permission
@@ -84,7 +84,7 @@ interface MemberCacheEntry : Member, Nameable, PermissionHolder, CacheEntry {
     override val name: String
         get() = nickname ?: user.cache!!.name
 
-    override val client: Client
+    override val client: DiscordClient
         get() = guild.client
 
     /**

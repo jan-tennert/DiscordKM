@@ -11,13 +11,13 @@ package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.events.MessageDeleteEvent
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-internal class MessageDeleteEventHandler(val client: Client) : InternalEventHandler<MessageDeleteEvent> {
+internal class MessageDeleteEventHandler(val client: DiscordClient) : InternalEventHandler<MessageDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): MessageDeleteEvent {
         val channel = MessageChannel(data["channel_id"]!!.snowflake, client)

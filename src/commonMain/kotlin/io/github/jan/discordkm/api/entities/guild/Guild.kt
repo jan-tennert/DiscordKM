@@ -18,8 +18,9 @@ import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.activity.Activity
 import io.github.jan.discordkm.api.entities.activity.ClientStatus
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
-import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.entities.containers.CommandContainer
 import io.github.jan.discordkm.api.entities.containers.EmoteContainer
 import io.github.jan.discordkm.api.entities.containers.GuildChannelContainer
@@ -67,7 +68,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
     Modifiable<GuildModifier, Unit> {
 
     override val cache: GuildCacheEntry?
-        get() = client.cacheManager.guildCache[id]
+        get() = (client as WSDiscordClientImpl).cacheManager.guildCache[id]
     val roles: GuildRoleContainer
         get() = GuildRoleContainer(this)
     val members: GuildMemberContainer
@@ -125,8 +126,8 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
      *
      * Requires a websocket connection.
      */
-    suspend fun leaveVoiceChannel() = if (client is DiscordWebSocketClient) {
-        (client as DiscordWebSocketClient).shardConnections[0].send(
+    suspend fun leaveVoiceChannel() = if (client is WSDiscordClient) {
+        (client as WSDiscordClient).shardConnections[0]?.send(
             UpdateVoiceStatePayload(
                 id,
                 null,
@@ -403,13 +404,13 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         val activities: List<Activity>
     ) : BaseEntity {
 
-        override val client: Client
+        override val client: DiscordClient
             get() = user.client
 
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client): Guild = GuildImpl(id, client)
+        operator fun invoke(id: Snowflake, client: DiscordClient): Guild = GuildImpl(id, client)
     }
 
     override fun getValue(ref: Any?, property: KProperty<*>) = client.guilds[id]!!
@@ -417,7 +418,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
     override suspend fun retrieve() = client.guilds.retrieve(id)
 }
 
-internal class GuildImpl(override val id: Snowflake, override val client: Client) : Guild {
+internal class GuildImpl(override val id: Snowflake, override val client: DiscordClient) : Guild {
 
     override fun equals(other: Any?) = other is Guild && other.id == id
     override fun toString() = "IndependentGuild(id=$id)"

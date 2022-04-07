@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.api.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.Snowflake
 
 /**
@@ -17,4 +17,4 @@ import io.github.jan.discordkm.api.entities.Snowflake
  *
  * Requires the intent [Intent.GUILDS]
  */
-class GuildDeleteEvent(override val client: Client, val id: Snowflake) : Event
+class GuildDeleteEvent(override val client: DiscordClient, val id: Snowflake) : Event

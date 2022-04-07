@@ -12,7 +12,7 @@ package io.github.jan.discordkm.internal.events
 import com.soywiz.klock.DateTimeTz
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.member.Member
 import io.github.jan.discordkm.api.events.TypingStartEvent
@@ -22,7 +22,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import io.github.jan.discordkm.internal.utils.get
 
-internal class TypingStartEventHandler(val client: Client) : InternalEventHandler<TypingStartEvent> {
+internal class TypingStartEventHandler(val client: DiscordClient) : InternalEventHandler<TypingStartEvent> {
 
     override suspend fun handle(data: JsonObject): TypingStartEvent {
         val user = User(data["user_id"]!!.snowflake, client)

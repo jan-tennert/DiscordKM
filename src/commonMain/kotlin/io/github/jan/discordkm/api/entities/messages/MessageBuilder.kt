@@ -14,7 +14,7 @@ import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.Mentionable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.role.Role
 import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
@@ -54,7 +54,7 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 
-class MessageBuilder internal constructor(private val client: Client? = null) {
+class MessageBuilder internal constructor(private val client: DiscordClient? = null) {
 
     var content = ""
     var embeds = mutableListOf<MessageEmbed>()
@@ -235,5 +235,5 @@ class DataMessage @DiscordKMInternal constructor(
 
 }
 
-fun buildMessage(client: Client? = null, builder: MessageBuilder.() -> Unit) = MessageBuilder(client).apply(builder).build()
+fun buildMessage(client: DiscordClient? = null, builder: MessageBuilder.() -> Unit) = MessageBuilder(client).apply(builder).build()
 fun BaseEntity.buildMessage(builder: MessageBuilder.() -> Unit) = buildMessage(client, builder)

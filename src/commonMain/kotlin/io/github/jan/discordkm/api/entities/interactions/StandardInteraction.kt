@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.entities.interactions
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
@@ -29,7 +29,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-open class StandardInteraction(override val client: Client, override val data: JsonObject) : Interaction {
+open class StandardInteraction(override val client: DiscordClient, override val data: JsonObject) : Interaction {
 
     /**
      * Replies to this interaction without a message

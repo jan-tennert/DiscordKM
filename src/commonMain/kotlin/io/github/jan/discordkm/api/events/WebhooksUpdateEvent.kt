@@ -10,13 +10,13 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.channels.guild.GuildMessageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 
 /**
  * Sent when a webhook gets created, updated or deleted
  */
 class WebhooksUpdateEvent(val guild: Guild, val channel: GuildMessageChannel) : Event  {
-    override val client: Client
+    override val client: DiscordClient
         get() = guild.client
 }

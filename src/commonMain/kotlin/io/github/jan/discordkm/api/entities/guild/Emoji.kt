@@ -15,9 +15,8 @@ import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Emoji.Emote
-import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -45,7 +44,7 @@ class Emoji private constructor(
      * @param isManagedByAnIntegration Whether this emoji is managed by an integration
      */
     class Emote internal constructor(
-        override val client: Client,
+        override val client: DiscordClient,
         override val id: Snowflake,
         override val name: String,
         val creator: User?,

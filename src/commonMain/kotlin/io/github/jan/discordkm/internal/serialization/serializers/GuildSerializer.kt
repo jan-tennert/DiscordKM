@@ -7,7 +7,7 @@ import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
@@ -39,7 +39,7 @@ import kotlinx.serialization.json.jsonObject
 
 object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
 
-    override fun deserialize(data: JsonObject, value: Client): GuildCacheEntry {
+    override fun deserialize(data: JsonObject, value: DiscordClient): GuildCacheEntry {
         val basicGuild = Guild(data["id"]!!.snowflake, value)
         return GuildCacheEntryImpl(
             id = data["id"]!!.snowflake,
@@ -125,14 +125,14 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
         sortValue = data["sort_value", true]?.int,
     )
 
-    fun deserializeGuildPresence(data: JsonObject, client: Client) = Guild.GuildPresenceCacheEntry(
+    fun deserializeGuildPresence(data: JsonObject, client: DiscordClient) = Guild.GuildPresenceCacheEntry(
         status = PresenceStatus[data["status"]!!.string],
         activities = data["activities"]!!.jsonArray.map { Json { ignoreUnknownKeys = true }.decodeFromJsonElement(it.jsonObject) },
         clientStatus = Json.decodeFromJsonElement<ClientStatus>(data["client_status"]!!.jsonObject),
         user = User(data["user"]!!.jsonObject, client)
     )
 
-    fun deserializeGuildEmote(data: JsonObject, client: Client) = Emoji.Emote(
+    fun deserializeGuildEmote(data: JsonObject, client: DiscordClient) = Emoji.Emote(
         id = data["id"]!!.snowflake,
         name = data["name"]!!.string,
         roles = data["roles"]?.jsonArray?.map { it.snowflake } ?: emptyList(),
@@ -144,7 +144,7 @@ object GuildSerializer : BaseEntitySerializer<GuildCacheEntry> {
         client = client
     )
 
-    fun deserializeGuildTemplate(data: JsonObject, client: Client) = GuildTemplate(
+    fun deserializeGuildTemplate(data: JsonObject, client: DiscordClient) = GuildTemplate(
         name = data["name"]!!.string,
         description = data["description", true]?.string,
         creator = User(data["user"]!!.jsonObject, client),

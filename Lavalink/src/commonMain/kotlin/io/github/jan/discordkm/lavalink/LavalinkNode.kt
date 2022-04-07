@@ -6,7 +6,7 @@ import com.soywiz.klock.milliseconds
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.events.VoiceServerUpdate
 import io.github.jan.discordkm.api.events.VoiceStateUpdateEvent
 import io.github.jan.discordkm.internal.invoke
@@ -43,7 +43,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 
-class LavalinkNode internal constructor(private val ip: String, private val port: Int, private val password: String, val shardId: Int = 0, val client: DiscordWebSocketClient) {
+class LavalinkNode internal constructor(private val ip: String, private val port: Int, private val password: String, val shardId: Int = 0, val client: WSDiscordClient) {
 
     internal lateinit var ws: DefaultClientWebSocketSession
     private val http = HttpClient() {

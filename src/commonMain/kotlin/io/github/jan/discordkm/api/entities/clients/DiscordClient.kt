@@ -14,6 +14,7 @@ import com.soywiz.klock.seconds
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.DiscordLocale
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
@@ -21,18 +22,14 @@ import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildContainer
 import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
 import io.github.jan.discordkm.api.entities.containers.CacheThreadContainer
+import io.github.jan.discordkm.api.entities.containers.CacheUserContainer
 import io.github.jan.discordkm.api.entities.containers.CommandContainer
-import io.github.jan.discordkm.api.entities.containers.UserContainer
-import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
-import io.github.jan.discordkm.api.events.Event
-import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheFlag
-import io.github.jan.discordkm.internal.caching.ClientCacheManager
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
@@ -44,83 +41,51 @@ import io.github.jan.discordkm.internal.serialization.serializers.GuildSerialize
 import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
 import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.utils.putOptional
-import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.Encoding
 import io.ktor.client.HttpClientConfig
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.buildJsonObject
 
-abstract class Client(
-    val config: ClientConfig
-) : CommandHolder, BaseEntity {
+interface DiscordClient : CommandHolder, BaseEntity {
 
-    val requester = Requester(config)
-    override val client: Client get() = this
-    val cacheManager = ClientCacheManager(this)
-    val eventListeners = mutableListOf<EventListener>()
-
-    val mutex = Mutex()
-
-    abstract var selfUser: UserCacheEntry
-        internal set
-
+    override val client get() = this
     override val commands: CommandContainer
         get() = CommandContainer(this, "/applications/${selfUser.id}/commands")
+    val config: ClientConfig
+    val selfUser: User
     val guilds: CacheGuildContainer
-        get() = CacheGuildContainer(this, cacheManager.guildCache.safeValues)
+    val users: CacheUserContainer
     val channels: CacheChannelContainer
-        get() = CacheChannelContainer(cacheManager.guildCache.safeValues.map { it.channels.values }.flatten())
     val members: CacheMemberContainer
-        get() = CacheMemberContainer(cacheManager.guildCache.safeValues.map { it.members.values }.flatten())
-    val users: UserContainer
-        get() = UserContainer(this, members.map(MemberCacheEntry::user).map { it.cache!! }.distinctBy { it.id.long })
     val threads: CacheThreadContainer
-        get() = CacheThreadContainer(cacheManager.guildCache.safeValues.map { it.threads.values }.flatten())
+    val requester: Requester
+
 
     /**
      * Retrieves a guild template
      */
     suspend fun retrieveGuildTemplate(id: Snowflake) = buildRestAction<GuildTemplate> {
         route = Route.Template.GET_GUILD_TEMPLATE(id).get()
-        transform { GuildSerializer.deserializeGuildTemplate(it.toJsonObject(), this@Client) }
+        transform { GuildSerializer.deserializeGuildTemplate(it.toJsonObject(), this@DiscordClient) }
     }
 
     /**
      * Edits the bot's user
      */
-    suspend fun modifySelfUser(username: String, image: Image? = null) = buildRestAction<UserCacheEntry> {
+    suspend fun modifySelfUser(username: String, image: Image?) = buildRestAction<UserCacheEntry> {
         route = Route.User.MODIFY_SELF_USER.patch(buildJsonObject {
             putOptional("username", username)
             putOptional("image", image?.encodedData)
         })
-        transform { UserSerializer.deserialize(it.toJsonObject(), this@Client) }
-        onFinish {
-            client.mutex.withLock {
-                client.selfUser = it
-            }
-        }
+        transform { UserSerializer.deserialize(it.toJsonObject(), this@DiscordClient) }
     }
 
     fun textFor(locale: DiscordLocale, key: String, vararg args: Any) = config.translationManager.get(locale, key, *args)
 
-    suspend fun handleEvent(event: Event) = coroutineScope {
-        eventListeners.toList().forEach { launch { it(event) } }
-    }
+    suspend fun login()
 
-    /**
-     * Disconnects the bot from the rest api and the websocket
-     */
-    abstract suspend fun disconnect()
-
-    /**
-     * Starts the requester
-     */
-    abstract suspend fun login()
+    suspend fun disconnect()
 
 }
 

@@ -11,7 +11,7 @@ package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.containers.ComponentContainer
 import io.github.jan.discordkm.api.entities.containers.OptionContainer
 import io.github.jan.discordkm.api.entities.guild.role.Role
@@ -53,7 +53,7 @@ import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-internal class InteractionCreateEventHandler(val client: Client) : InternalEventHandler<InteractionCreateEvent> {
+internal class InteractionCreateEventHandler(val client: DiscordClient) : InternalEventHandler<InteractionCreateEvent> {
 
     override suspend fun handle(data: JsonObject) = when(InteractionType[data["type"]!!.int]) {
         InteractionType.PING -> TODO()

@@ -1,8 +1,14 @@
 package io.github.jan.discordkm.http
 
 import io.github.jan.discordkm.api.entities.UserCacheEntry
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
+import io.github.jan.discordkm.api.entities.containers.CacheGuildContainer
+import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
+import io.github.jan.discordkm.api.entities.containers.CacheThreadContainer
+import io.github.jan.discordkm.api.entities.containers.CacheUserContainer
 import io.github.jan.discordkm.internal.DiscordKMInternal
+import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.websocket.handleRawEvent
 import io.ktor.application.call
@@ -15,11 +21,17 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 
 
-class HttpInteractionClient internal constructor(config: HttpConfig) : Client(config) {
+class HttpInteractionClient internal constructor(override val config: HttpConfig) : DiscordClient {
 
     private lateinit var server: ApplicationEngine
     private val LOGGER = config.logging("Http-Server")
     override var selfUser: UserCacheEntry = throw IllegalStateException("HttpInteractionClient does not support selfUser")
+    override val guilds = CacheGuildContainer(this, emptyList())
+    override val users = CacheUserContainer(this, emptyList())
+    override val channels = CacheChannelContainer(emptyList())
+    override val members = CacheMemberContainer(emptyList())
+    override val threads = CacheThreadContainer(emptyList())
+    override val requester = Requester(config)
 
     override suspend fun disconnect() {
         server.stop(1000, 1000)

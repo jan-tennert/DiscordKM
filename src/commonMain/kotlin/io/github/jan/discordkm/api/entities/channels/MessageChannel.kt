@@ -1,8 +1,9 @@
 package io.github.jan.discordkm.api.entities.channels
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.entities.containers.MessageContainer
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.EmbedBuilder
@@ -55,14 +56,14 @@ interface MessageChannel : Channel {
     }
 
     companion object {
-        operator fun invoke(id: Snowflake, client: Client): MessageChannel = MessageChannelImpl(id, client)
+        operator fun invoke(id: Snowflake, client: DiscordClient): MessageChannel = MessageChannelImpl(id, client)
     }
 
 }
 
 internal class MessageChannelImpl(
     override val id: Snowflake,
-    override val client: Client,
+    override val client: DiscordClient,
     override val type: ChannelType = ChannelType.UNKNOWN
 ) : MessageChannel {
 
@@ -79,8 +80,8 @@ interface MessageChannelCacheEntry : MessageChannel, ChannelCacheEntry {
 
     val cacheManager: MessageCacheManager
     val lastMessage: Message?
-        get() = if(client is DiscordWebSocketClient) {
-            (client as DiscordWebSocketClient).lastMessages[id]
+        get() = if(client is WSDiscordClient) {
+            (client as WSDiscordClientImpl).lastMessages[id]
         } else null
     val messages: MessageContainer
         get() = MessageContainer(cacheManager.messageCache.values, this)

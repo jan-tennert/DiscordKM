@@ -14,7 +14,7 @@ import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.guild.GuildMessageChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.ChannelCreateEvent
@@ -26,7 +26,7 @@ import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-internal class ChannelCreateEventHandler(val client: Client) :
+internal class ChannelCreateEventHandler(val client: DiscordClient) :
     InternalEventHandler<ChannelCreateEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelCreateEvent {
@@ -38,7 +38,7 @@ internal class ChannelCreateEventHandler(val client: Client) :
 
 }
 
-internal class ChannelDeleteEventHandler(val client: Client) :
+internal class ChannelDeleteEventHandler(val client: DiscordClient) :
     InternalEventHandler<ChannelDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelDeleteEvent {
@@ -50,7 +50,7 @@ internal class ChannelDeleteEventHandler(val client: Client) :
 
 }
 
-internal class ChannelUpdateEventHandler(val client: Client) :
+internal class ChannelUpdateEventHandler(val client: DiscordClient) :
     InternalEventHandler<ChannelUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelUpdateEvent {
@@ -66,7 +66,7 @@ internal class ChannelUpdateEventHandler(val client: Client) :
 
 }
 
-internal class ChannelPinUpdateEventHandler(val client: Client) :
+internal class ChannelPinUpdateEventHandler(val client: DiscordClient) :
     InternalEventHandler<ChannelPinUpdateEvent> {
 
     override suspend fun handle(data: JsonObject): ChannelPinUpdateEvent {

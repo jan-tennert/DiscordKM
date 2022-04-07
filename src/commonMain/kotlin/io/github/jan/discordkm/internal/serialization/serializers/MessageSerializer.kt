@@ -6,7 +6,7 @@ import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.role.Role
 import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
@@ -36,7 +36,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
 object MessageSerializer : BaseEntitySerializer<MessageCacheEntry> {
-    override fun deserialize(data: JsonObject, value: Client): MessageCacheEntry {
+    override fun deserialize(data: JsonObject, value: DiscordClient): MessageCacheEntry {
         val guild = data["guild_id", true]?.snowflake?.let { Guild(it, value) }
         val author = data["author"]?.jsonObject?.let { User(it, value) }
         return MessageCacheEntryImpl(
@@ -99,7 +99,7 @@ object MessageSerializer : BaseEntitySerializer<MessageCacheEntry> {
         }
     }
 
-    private fun deserializeMessageInteraction(data: JsonObject, client: Client) = Message.MessageInteraction(
+    private fun deserializeMessageInteraction(data: JsonObject, client: DiscordClient) = Message.MessageInteraction(
         data["id"]!!.snowflake,
         InteractionType[data["type"]!!.int],
         data["name"]!!.string,

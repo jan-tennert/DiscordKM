@@ -4,7 +4,7 @@ import co.touchlab.stately.collections.IsoMutableMap
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntry
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildCacheEntry
@@ -20,7 +20,7 @@ import io.github.jan.discordkm.api.entities.messages.MessageReaction
 
 sealed class CacheManager <T : CacheManager<T>>{
     private val caches = mutableListOf<IsoMutableMap<*, *>>()
-    abstract val client: Client
+    abstract val client: DiscordClient
 
     fun <K, V> createCache(flag: CacheFlag) : Cache<V> {
         val cache = Cache<V>(flag, client)
@@ -32,14 +32,14 @@ sealed class CacheManager <T : CacheManager<T>>{
     abstract fun fillCache(cache: T)
 }
 
-class ClientCacheManager internal constructor(override val client: Client) : CacheManager<ClientCacheManager>() {
+class ClientCacheManager internal constructor(override val client: DiscordClient) : CacheManager<ClientCacheManager>() {
 
     val guildCache = createCache<Snowflake, GuildCacheEntry>(CacheFlag.GUILDS)
 
     override fun fillCache(cache: ClientCacheManager) = cache.guildCache.putAll(guildCache)
 }
 
-class GuildCacheManager internal constructor(override val client: Client) : CacheManager<GuildCacheManager>() {
+class GuildCacheManager internal constructor(override val client: DiscordClient) : CacheManager<GuildCacheManager>() {
     val memberCache = createCache<Snowflake, MemberCacheEntry>(CacheFlag.MEMBERS)
     val presences = createCache<Snowflake, Guild.GuildPresenceCacheEntry>(CacheFlag.PRESENCES)
     val voiceStates = createCache<Snowflake, VoiceStateCacheEntry>(CacheFlag.VOICE_STATES)
@@ -63,19 +63,19 @@ class GuildCacheManager internal constructor(override val client: Client) : Cach
     }
 }
 
-class MemberCacheManager(override val client: Client) : CacheManager<MemberCacheManager>() {
+class MemberCacheManager(override val client: DiscordClient) : CacheManager<MemberCacheManager>() {
     val roleCache = createCache<Snowflake, Role>(CacheFlag.ROLES)
 
     override fun fillCache(cache: MemberCacheManager) = cache.roleCache.putAll(roleCache)
 }
 
-class MessageCacheManager(override val client: Client) : CacheManager<MessageCacheManager>() {
+class MessageCacheManager(override val client: DiscordClient) : CacheManager<MessageCacheManager>() {
     val messageCache = createCache<Snowflake, MessageCacheEntry>(CacheFlag.MESSAGES)
 
     override fun fillCache(cache: MessageCacheManager) = cache.messageCache.putAll(messageCache)
 }
 
-class ReactionCacheManager(override val client: Client) : CacheManager<ReactionCacheManager>() {
+class ReactionCacheManager(override val client: DiscordClient) : CacheManager<ReactionCacheManager>() {
     val reactionCache = createCache<Snowflake, MessageReaction>(CacheFlag.REACTIONS)
 
     override fun fillCache(cache: ReactionCacheManager) = cache.reactionCache.putAll(reactionCache)

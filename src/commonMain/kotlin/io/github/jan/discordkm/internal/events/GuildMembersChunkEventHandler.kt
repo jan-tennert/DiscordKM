@@ -1,6 +1,6 @@
 package io.github.jan.discordkm.internal.events
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.member.Member
 import io.github.jan.discordkm.api.entities.guild.cacheManager
@@ -13,7 +13,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-internal class GuildMembersChunkEventHandler(private val client: Client) : InternalEventHandler<GuildMembersChunkEvent> {
+internal class GuildMembersChunkEventHandler(private val client: DiscordClient) : InternalEventHandler<GuildMembersChunkEvent> {
 
     override suspend fun handle(data: JsonObject): GuildMembersChunkEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)

@@ -10,14 +10,13 @@
 package io.github.jan.discordkm.internal.events
 
 import com.soywiz.klogger.Logger
-import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.events.GuildDeleteEvent
-import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject
 
-internal class GuildDeleteEventHandler(val client: Client, private val LOGGER: Logger) :
+internal class GuildDeleteEventHandler(val client: DiscordClient, private val LOGGER: Logger) :
     InternalEventHandler<GuildDeleteEvent> {
 
     override suspend fun handle(data: JsonObject): GuildDeleteEvent {
@@ -25,7 +24,7 @@ internal class GuildDeleteEventHandler(val client: Client, private val LOGGER: L
         if(data.contains("unavailable")) {
             LOGGER.warn { "The guild \"$id\" is unavailable due to an outage" }
         }
-        client.cacheManager.guildCache.remove(id)
+        (client as WSDiscordClientImpl).cacheManager.guildCache.remove(id)
         return GuildDeleteEvent(client, id)
     }
 

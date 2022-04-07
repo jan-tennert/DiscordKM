@@ -2,7 +2,7 @@ package io.github.jan.discordkm.api.entities.guild.stage
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
@@ -25,7 +25,7 @@ interface StageInstanceCacheEntry : StageInstance, GuildEntity {
      */
     val scheduledEvent: ScheduledEvent?
 
-    override val client: Client
+    override val client: DiscordClient
         get() = stageChannel.client
 
 }

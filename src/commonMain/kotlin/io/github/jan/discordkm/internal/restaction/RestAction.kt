@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.internal.restaction
 
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.ktor.client.call.receive
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -125,4 +125,4 @@ class RestAction<T>(val requester: Requester) {
 
 }
 
-suspend inline fun <T> Client.buildRestAction(init: RestAction<T>.() -> Unit) = RestAction<T>(client.requester).apply(init).queue()
+suspend inline fun <T> DiscordClient.buildRestAction(init: RestAction<T>.() -> Unit) = RestAction<T>(requester).apply(init).queue()

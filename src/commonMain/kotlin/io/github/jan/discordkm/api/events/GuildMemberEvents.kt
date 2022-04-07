@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.member.Member
@@ -19,7 +19,7 @@ import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
 interface MemberEvent : Event {
 
     val member: Member
-    override val client: Client
+    override val client: DiscordClient
         get() = member.client
 
 }

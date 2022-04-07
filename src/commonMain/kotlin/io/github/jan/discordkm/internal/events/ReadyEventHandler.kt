@@ -11,8 +11,8 @@ package io.github.jan.discordkm.internal.events
 
 import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.User
-import io.github.jan.discordkm.api.entities.clients.Client
-import io.github.jan.discordkm.api.entities.clients.DiscordWebSocketClient
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.events.ReadyEvent
 import io.github.jan.discordkm.internal.utils.log
@@ -24,28 +24,26 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
-internal class ReadyEventHandler(val client: Client) : InternalEventHandler<ReadyEvent> {
+internal class ReadyEventHandler(val client: DiscordClient) : InternalEventHandler<ReadyEvent> {
     override suspend fun handle(data: JsonObject): ReadyEvent {
-        if(client !is DiscordWebSocketClient) throw IllegalStateException("Client is not a DiscordWebSocketClient")
+        if(client !is WSDiscordClientImpl) throw IllegalStateException("Client is not a DiscordWebSocketClient")
         val shardId = data["shard"]?.jsonArray?.get(1)?.jsonPrimitive?.intOrNull
         val selfUser = User(data["user"]!!.jsonObject, client)
         if(shardId != null) {
-            client.shardById[shardId]?.let {
+            client.shardConnections[shardId]?.let {
                 it.mutex.withLock {
                     it.sessionId = data.getValue("session_id").jsonPrimitive.content
                 }
             }
         } else {
-            client.shardConnections[0].mutex.withLock {
-                client.shardConnections[0].sessionId = data.getValue("session_id").jsonPrimitive.content
+            client.shardConnections[0]?.mutex?.withLock {
+                client.shardConnections[0]?.sessionId = data.getValue("session_id").jsonPrimitive.content
             }
         }
         val guilds = mutableListOf<Guild.Unavailable>()
         data.getValue("guilds").jsonArray.map { Guild.Unavailable(it.jsonObject.getValue("id").jsonPrimitive.long) }.forEach { guilds += it }
-        client.mutex.withLock {
-            client.selfUser = selfUser
-        }
-        val LOGGER = client.shardById[shardId ?: 0]?.LOGGER
+        client.updateSelfUser(selfUser)
+        val LOGGER = client.shardConnections[shardId ?: 0]?.LOGGER
         LOGGER?.log(true, Logger.Level.INFO) { "Finished authentication!" }
         LOGGER?.log(true, Logger.Level.INFO) { "Logged in as ${selfUser.name}#${selfUser.discriminator}" }
         return ReadyEvent(guilds, client, shardId)

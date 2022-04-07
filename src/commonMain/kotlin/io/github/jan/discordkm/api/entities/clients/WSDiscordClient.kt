@@ -15,6 +15,12 @@ import com.soywiz.klock.seconds
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
+import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
+import io.github.jan.discordkm.api.entities.containers.CacheGuildContainer
+import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
+import io.github.jan.discordkm.api.entities.containers.CacheThreadContainer
+import io.github.jan.discordkm.api.entities.containers.CacheUserContainer
+import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.messages.Message
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.api.events.Event
@@ -22,71 +28,79 @@ import io.github.jan.discordkm.api.events.EventListener
 import io.github.jan.discordkm.api.events.ShardCreateEvent
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.caching.CacheFlag
+import io.github.jan.discordkm.internal.caching.ClientCacheManager
+import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
 import io.github.jan.discordkm.internal.utils.LoggerConfig
+import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
 import io.github.jan.discordkm.internal.websocket.Encoding
 import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+sealed interface WSDiscordClient : DiscordClient {
+
+    val eventListeners: MutableList<EventListener>
+    val shardConnections: Map<Int, DiscordGateway>
+    override val channels: CacheChannelContainer
+    override val members: CacheMemberContainer
+    override val threads: CacheThreadContainer
+    override val guilds: CacheGuildContainer
+    override val users: CacheUserContainer
+    override val selfUser: UserCacheEntry
+
+    suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit)
+
+}
 
 /**
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
-class DiscordWebSocketClient internal constructor(
-    config: ClientConfig
-) : Client(config) {
+@PublishedApi
+internal class WSDiscordClientImpl internal constructor(
+    override val config: ClientConfig
+) : WSDiscordClient {
+    override val shardConnections = mutableMapOf<Int, DiscordGateway>()
 
-    val shardConnections = mutableListOf<DiscordGateway>()
-    val shardById: Map<Int, DiscordGateway> get() = shardConnections.associateBy { it.shardId }
-
-    @PublishedApi
-    internal val lastMessages = IsoMutableMap<Snowflake, Message>()
+    private val mutex = Mutex()
+    val lastMessages = IsoMutableMap<Snowflake, Message>()
+    val cacheManager = ClientCacheManager(this)
+    override val requester = Requester(config)
+    override val eventListeners = mutableListOf<EventListener>()
+    override val guilds: CacheGuildContainer
+        get() = CacheGuildContainer(this, cacheManager.guildCache.safeValues)
+    override val channels: CacheChannelContainer
+        get() = CacheChannelContainer(cacheManager.guildCache.safeValues.map { it.channels.values }.flatten())
+    override val members: CacheMemberContainer
+        get() = CacheMemberContainer(cacheManager.guildCache.safeValues.map { it.members.values }.flatten())
+    override val users: CacheUserContainer
+        get() = CacheUserContainer(this, members.map(MemberCacheEntry::user).map { it.cache!! }.distinctBy { it.id.long })
+    override val threads: CacheThreadContainer
+        get() = CacheThreadContainer(cacheManager.guildCache.safeValues.map { it.threads.values }.flatten())
     override lateinit var selfUser: UserCacheEntry
 
     init {
-        if (config.shards.isEmpty()) shardConnections.add(DiscordGateway(config, this, 0)) else config.shards.forEach {
-            shardConnections.add(DiscordGateway(config, this, it))
+        if (config.shards.isEmpty()) shardConnections[0] = DiscordGateway(config, this, 0) else config.shards.forEach {
+            shardConnections[it] = DiscordGateway(config, this, it)
         }
     }
 
-    inline fun <reified E : Event> on(
-        crossinline predicate: (E) -> Boolean = { true },
-        crossinline onEvent: suspend E.() -> Unit
-    ) {
-        eventListeners += EventListener {
-            if (it is E && predicate(it)) {
-                onEvent(it)
-            }
-        }
+    override suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) {
+        shardConnections[0]?.send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
     }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    suspend inline fun <reified E : Event> awaitEvent(crossinline predicate: (E) -> Boolean = { true }) =
-        suspendCancellableCoroutine<E> {
-            val listener = object : EventListener {
-                override suspend fun onEvent(event: Event) {
-                    if (event is E && predicate(event)) {
-                        it.resume(event) { err -> throw err }
-                        eventListeners -= this
-                    }
-                }
-            }
-            eventListeners += listener
-            it.invokeOnCancellation {
-                eventListeners -= listener
-            }
-        }
-
-    suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit) = shardConnections[0].send(UpdatePresencePayload(PresenceModifier().apply(modifier)))
 
     override suspend fun login() {
-        shardConnections.forEach {
-            it.start(false); if (config.totalShards != -1) handleEvent(
+        shardConnections.forEach { (shard, gateway) ->
+            gateway.start(false); if (config.totalShards != -1) handleEvent(
             ShardCreateEvent(
-                this@DiscordWebSocketClient,
-                it.shardId
+                this,
+                shard
             )
         )
         }
@@ -94,16 +108,24 @@ class DiscordWebSocketClient internal constructor(
 
     override suspend fun disconnect() {
         requester.http.close()
-        shardConnections.forEach { it.close() }
+        shardConnections.forEach { it.value.close() }
+    }
+
+    suspend fun handleEvent(event: Event) = coroutineScope {
+        eventListeners.toList().forEach { launch { it(event) } }
+    }
+
+    suspend fun updateSelfUser(user: UserCacheEntry) = mutex.withLock {
+        selfUser = user
     }
 
 }
+
 
 /**
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
 class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: String) {
-
     /**
      * The encoding used for the websocket. Currently, only [Encoding.JSON] is supported
      */
@@ -147,8 +169,8 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
     var logging = LoggerConfig()
 
     private val shards = mutableSetOf<Int>()
-    private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
+    private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
     /**
      * Specifies the total amount of shards. [Sharding](https://discord.com/developers/docs/topics/gateway#sharding)
      */
@@ -180,7 +202,7 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
         httpClientConfig = builder
     }
 
-    fun build() = DiscordWebSocketClient(
+    fun build(): WSDiscordClient = WSDiscordClientImpl(
         ClientConfig(
             token,
             intents,
@@ -208,3 +230,32 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
 @OptIn(DiscordKMInternal::class)
 inline fun buildClient(token: String, builder: DiscordWebSocketClientBuilder.() -> Unit = {}) =
     DiscordWebSocketClientBuilder(token).apply(builder).build()
+
+
+inline fun <reified E : Event> WSDiscordClient.on(
+    crossinline predicate: (E) -> Boolean = { true },
+    crossinline onEvent: suspend E.() -> Unit
+) {
+    eventListeners += EventListener {
+        if (it is E && predicate(it)) {
+            onEvent(it)
+        }
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+suspend inline fun <reified E : Event> WSDiscordClient.awaitEvent(crossinline predicate: (E) -> Boolean = { true }) =
+    suspendCancellableCoroutine<E> {
+        val listener = object : EventListener {
+            override suspend fun onEvent(event: Event) {
+                if (event is E && predicate(event)) {
+                    it.resume(event) { err -> throw err }
+                    eventListeners -= this
+                }
+            }
+        }
+        eventListeners += listener
+        it.invokeOnCancellation {
+            eventListeners -= listener
+        }
+    }

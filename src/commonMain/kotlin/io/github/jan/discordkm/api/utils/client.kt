@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.utils
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import io.github.jan.discordkm.api.entities.clients.Client
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 import io.github.jan.discordkm.api.webhooks.Webhook
 import io.github.jan.discordkm.internal.Route
@@ -22,7 +22,7 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 /**
  * Retrieves a webhook from its [id]
  */
-suspend fun Client.retrieveWebhook(id: Snowflake) = buildRestAction<Webhook> {
+suspend fun DiscordClient.retrieveWebhook(id: Snowflake) = buildRestAction<Webhook> {
     route = Route.Webhook.GET_WEBHOOK(id).get()
     transform { Webhook(this@retrieveWebhook, it.toJsonObject()) }
 }
@@ -30,7 +30,7 @@ suspend fun Client.retrieveWebhook(id: Snowflake) = buildRestAction<Webhook> {
 /**
  * Retrieves a webhook from its [id] and [token]
  */
-suspend fun Client.retrieveWebhook(id: Snowflake, token: String) = buildRestAction<Webhook> {
+suspend fun DiscordClient.retrieveWebhook(id: Snowflake, token: String) = buildRestAction<Webhook> {
     route = Route.Webhook.GET_WEBHOOK_WITH_TOKEN(id, token).get()
     transform { Webhook(this@retrieveWebhook, it.toJsonObject()) }
 }
@@ -38,14 +38,14 @@ suspend fun Client.retrieveWebhook(id: Snowflake, token: String) = buildRestActi
 /**
  * Retrieves a webhook from an [url]
  */
-suspend fun Client.retrieveWebhook(url: String) = Webhook.WEBHOOK_PATTERN.matchEntire(url)?.let {
+suspend fun DiscordClient.retrieveWebhook(url: String) = Webhook.WEBHOOK_PATTERN.matchEntire(url)?.let {
     retrieveWebhook(Snowflake(it.groups[1]!!.value), it.groups[2]!!.value)
 } ?: throw IllegalArgumentException("Invalid webhook url: $url")
 
 /**
  * Retrieves all rtc regions
  */
-suspend fun Client.retrieveRTCRegions() = buildRestAction<String> {
+suspend fun DiscordClient.retrieveRTCRegions() = buildRestAction<String> {
     route = Route.Voice.GET_VOICE_REGIONS.get()
     transform { it }
 }
@@ -53,7 +53,7 @@ suspend fun Client.retrieveRTCRegions() = buildRestAction<String> {
 /**
  * Retrieves an invite from its [code]
  */
-suspend fun Client.retrieveInvite(code: String) = client.buildRestAction<Invite> {
+suspend fun DiscordClient.retrieveInvite(code: String) = client.buildRestAction<Invite> {
     route = Route.Invite.GET_INVITE(code).get()
     transform { Invite(client, it.toJsonObject()) }
 }
