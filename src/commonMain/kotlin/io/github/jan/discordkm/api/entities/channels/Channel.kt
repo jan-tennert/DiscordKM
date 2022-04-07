@@ -18,6 +18,7 @@ import io.github.jan.discordkm.internal.caching.CacheEntry
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.Serializable
@@ -72,7 +73,12 @@ enum class ChannelType(override val value: Int) : EnumWithValue<Int>{
     GUILD_PUBLIC_THREAD(11),
     GUILD_PRIVATE_THREAD(12),
     GUILD_STAGE_VOICE(13),
-    GUILD_DIRECTORY(14);
+    GUILD_DIRECTORY(14),
+    GUILD_FORUM(15);
 
     companion object : EnumWithValueGetter<ChannelType, Int>(values())
+}
+
+enum class ChannelFlag(override val offset: Int): SerializableEnum<ChannelFlag> {
+    PINNED(1);
 }

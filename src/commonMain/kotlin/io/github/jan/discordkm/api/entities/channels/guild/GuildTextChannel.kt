@@ -48,13 +48,14 @@ interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier
      */
     suspend fun createPrivateThread(name: String, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY, slowModeTime: TimeSpan? = null, reason: String? = null, invitable: Boolean? = null) = createThread(name, ChannelType.GUILD_PRIVATE_THREAD, autoArchiveDuration, slowModeTime, reason, invitable)
 
-    suspend fun createThread(name: String, type: ChannelType, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY, slowModeTime: TimeSpan? = null, reason: String? = null, invitable: Boolean? = null) = client.buildRestAction<Unit> {
+    private suspend fun createThread(name: String, type: ChannelType, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY, slowModeTime: TimeSpan? = null, reason: String? = null, invitable: Boolean? = null) = client.buildRestAction<Unit> {
         transform { Thread(it.toJsonObject(), guild) }
         route = Route.Thread.START_THREAD(id).post(buildJsonObject {
             put("name", name)
             putOptional("rate_limit_per_user", slowModeTime?.seconds)
             put("auto_archive_duration", autoArchiveDuration.duration.minutes.toInt())
             put("invitable", invitable)
+            put("type", type.name)
         })
         this.reason = reason
     }
