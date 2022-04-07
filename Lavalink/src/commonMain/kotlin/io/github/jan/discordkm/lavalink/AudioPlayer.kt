@@ -1,13 +1,13 @@
 package io.github.jan.discordkm.lavalink
 
 import io.github.jan.discordkm.api.entities.Snowflake
+import io.github.jan.discordkm.api.entities.clients.on
 import io.github.jan.discordkm.internal.restaction.RestAction.Companion.put
 import io.github.jan.discordkm.lavalink.events.TrackEndEvent
 import io.github.jan.discordkm.lavalink.tracks.AudioTrack
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
 class AudioPlayer(val guildId: Snowflake, private val node: LavalinkNode) {

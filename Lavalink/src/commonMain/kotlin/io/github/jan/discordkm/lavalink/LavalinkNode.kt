@@ -7,9 +7,12 @@ import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
+import io.github.jan.discordkm.api.entities.clients.awaitEvent
+import io.github.jan.discordkm.api.entities.clients.on
 import io.github.jan.discordkm.api.events.VoiceServerUpdate
 import io.github.jan.discordkm.api.events.VoiceStateUpdateEvent
 import io.github.jan.discordkm.internal.invoke
+import io.github.jan.discordkm.internal.restaction.RestAction.Companion.put
 import io.github.jan.discordkm.internal.utils.LoggerOutput
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
@@ -41,7 +44,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.put
 
 class LavalinkNode internal constructor(private val ip: String, private val port: Int, private val password: String, val shardId: Int = 0, val client: WSDiscordClient) {
 
@@ -64,7 +66,7 @@ class LavalinkNode internal constructor(private val ip: String, private val port
         LOGGER.output = LoggerOutput
         client.on<VoiceServerUpdate> {
             ws.send("voiceUpdate", data.getOrThrow("guild_id")) {
-                put("sessionId", this@LavalinkNode.client.shardConnections.first { it.shardId == shardId }.sessionId)
+                put("sessionId", this@LavalinkNode.client.shardConnections[shardId]!!.sessionId)
                 put("event", data)
             }
         }
@@ -160,7 +162,7 @@ class LavalinkNode internal constructor(private val ip: String, private val port
         val type = data.getOrThrow<String>("type")
         val track = EncodedTrack(data.getOrNull<String>("track") ?: return, this)
         val player = players[data.getOrThrow<Snowflake>("guildId")]!!
-        client.handleEvent(
+        (client).handleEvent(
             when(type) {
                 "TrackStartEvent" -> TrackStartEvent(client, track, player)
                 "TrackEndEvent" -> TrackEndEvent(client, track, player, data.getOrThrow("reason"))

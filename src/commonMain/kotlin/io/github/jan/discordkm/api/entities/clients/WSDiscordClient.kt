@@ -57,6 +57,10 @@ sealed interface WSDiscordClient : DiscordClient {
 
     suspend fun modifyActivity(modifier: PresenceModifier.() -> Unit)
 
+    suspend fun handleEvent(event: Event) = coroutineScope {
+        eventListeners.toList().forEach { launch { it(event) } }
+    }
+
 }
 
 /**
@@ -109,10 +113,6 @@ internal class WSDiscordClientImpl internal constructor(
     override suspend fun disconnect() {
         requester.http.close()
         shardConnections.forEach { it.value.close() }
-    }
-
-    suspend fun handleEvent(event: Event) = coroutineScope {
-        eventListeners.toList().forEach { launch { it(event) } }
     }
 
     suspend fun updateSelfUser(user: UserCacheEntry) = mutex.withLock {
