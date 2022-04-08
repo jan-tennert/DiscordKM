@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -19,7 +19,7 @@ import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.utils.toJsonObject
 
-/**
+/*
  * Retrieves a webhook from its [id]
  */
 suspend fun DiscordClient.retrieveWebhook(id: Snowflake) = buildRestAction<Webhook> {
@@ -27,7 +27,7 @@ suspend fun DiscordClient.retrieveWebhook(id: Snowflake) = buildRestAction<Webho
     transform { Webhook(this@retrieveWebhook, it.toJsonObject()) }
 }
 
-/**
+/*
  * Retrieves a webhook from its [id] and [token]
  */
 suspend fun DiscordClient.retrieveWebhook(id: Snowflake, token: String) = buildRestAction<Webhook> {
@@ -35,14 +35,14 @@ suspend fun DiscordClient.retrieveWebhook(id: Snowflake, token: String) = buildR
     transform { Webhook(this@retrieveWebhook, it.toJsonObject()) }
 }
 
-/**
+/*
  * Retrieves a webhook from an [url]
  */
 suspend fun DiscordClient.retrieveWebhook(url: String) = Webhook.WEBHOOK_PATTERN.matchEntire(url)?.let {
     retrieveWebhook(Snowflake(it.groups[1]!!.value), it.groups[2]!!.value)
 } ?: throw IllegalArgumentException("Invalid webhook url: $url")
 
-/**
+/*
  * Retrieves all rtc regions
  */
 suspend fun DiscordClient.retrieveRTCRegions() = buildRestAction<String> {
@@ -50,7 +50,7 @@ suspend fun DiscordClient.retrieveRTCRegions() = buildRestAction<String> {
     transform { it }
 }
 
-/**
+/*
  * Retrieves an invite from its [code]
  */
 suspend fun DiscordClient.retrieveInvite(code: String) = client.buildRestAction<Invite> {

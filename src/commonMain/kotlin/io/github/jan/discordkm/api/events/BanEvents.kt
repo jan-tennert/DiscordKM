@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -20,7 +20,7 @@ sealed interface BanEvent : GuildEvent {
 
 }
 
-/**
+/*
  * Sent when a guild member gets banned
  *
  * Requires the intent [Intent.GUILD_BANS]
@@ -28,7 +28,7 @@ sealed interface BanEvent : GuildEvent {
 class GuildBanAddEvent(override val guild: Guild, override val user: UserCacheEntry) :
     BanEvent
 
-/**
+/*
  * Sent when a user gets unbanned
  *
  * Requires the intent [Intent.GUILD_BANS]

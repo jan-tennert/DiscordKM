@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -23,7 +23,7 @@ import kotlinx.serialization.json.put
 
 class AutoCompleteInteraction<T>(override val client: DiscordClient, override val data: JsonObject)  : Interaction {
 
-    /**
+    /*
      * Replies to the [AutoCompleteInteraction] with the given choices.
      */
     suspend fun replyChoices(choices: SlashCommandOptionBuilder.ChoicesBuilder<T>.() -> Unit) = client.buildRestAction<Unit> {
@@ -38,12 +38,12 @@ class AutoCompleteInteraction<T>(override val client: DiscordClient, override va
         })
     }
 
-    /**
+    /*
      * Replies to the [AutoCompleteInteraction] with the given choices.
      */
     suspend fun replyChoices(choices: List<Pair<String, T>>) = replyChoices { choices.forEach { c -> choice(c.first, c.second) } }
 
-    /**
+    /*
      * Replies to the [AutoCompleteInteraction] with the given choices.
      */
     suspend fun replyChoices(vararg choices: Pair<String, T>) = replyChoices(choices.toList())

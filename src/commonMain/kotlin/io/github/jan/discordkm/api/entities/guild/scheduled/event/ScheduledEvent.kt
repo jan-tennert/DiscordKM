@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.guild.scheduled.event
 
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -28,14 +37,14 @@ sealed interface ScheduledEvent : SnowflakeEntity, GuildEntity, CacheEntity {
     override val cache: ScheduledEventCacheEntry?
         get() = guild.cache?.scheduledEvents?.get(id)
 
-    /**
+    /*
      * Deletes this scheduled event
      */
     suspend fun delete() = client.buildRestAction<Unit> {
         route = Route.ScheduledEvent.DELETE_EVENT(guild.id, id).delete()
     }
 
-    /**
+    /*
      * Retrieves the users who are interested in this scheduled event
      * @param limit The maximum amount of users to retrieve. 1-100
      */
@@ -54,7 +63,7 @@ sealed interface ScheduledEvent : SnowflakeEntity, GuildEntity, CacheEntity {
     }
 
     suspend fun <M : ScheduledEventModifier, T : ScheduledEventModifiable<M>>modify(type: T, status: EventStatus? = null, reason: String? = null, modifier: M.() -> Unit) = client.buildRestAction<ScheduledEventCacheEntry> {
-        route = Route.ScheduledEvent.MODIFY_EVENT(guild.id, id).patch(type.build(modifier).modify { putOptional("status", status?.value) })
+        route = Route.ScheduledEvent.MODIFY_EVENT(guild.id, id).patch(type.createScheduledEvent(modifier).modify { putOptional("status", status?.value) })
         transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), client) }
         this.reason = reason
     }
@@ -64,12 +73,12 @@ sealed interface ScheduledEvent : SnowflakeEntity, GuildEntity, CacheEntity {
         transform { ScheduledEventSerializer.deserialize(it.toJsonObject(), client) }
     }
 
-    /**
+    /*
      * Starts this event
      */
     suspend fun start() = setStatus(EventStatus.ACTIVE)
 
-    /**
+    /*
      * Cancels this event
      */
     suspend fun cancel() = setStatus(EventStatus.CANCELED)

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -30,7 +30,7 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 
 sealed interface Sticker : GuildEntity, SnowflakeEntity {
 
-    /**
+    /*
      * Modifies this sticker
      */
     suspend fun modify(builder: StickerModifier.() -> Unit) = client.buildRestAction<Sticker> {
@@ -38,7 +38,7 @@ sealed interface Sticker : GuildEntity, SnowflakeEntity {
         transform { GuildSerializer.deserializeSticker(it.toJsonObject(), guild) }
     }
 
-    /**
+    /*
      * Deletes this sticker
      */
     suspend fun delete() = client.buildRestAction<Unit> {

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -20,7 +20,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
-/**
+/*
  * An activity is shown for a discord user e.g. when they play a game or have a custom status
  */
 @Serializable
@@ -44,13 +44,13 @@ data class Activity(
     val buttons: List<ActivityButton> = emptyList()
 ) {
 
-    /**
+    /*
      * An activity can have up to 2 buttons, which open an url when you click on them
      */
     @Serializable
     data class ActivityButton(val label: String, val url: String)
 
-    /**
+    /*
      * An activity can have a large image and a small image. There can be also a largeText and a smallText which is shown when you hover over the specific image
      */
     @Serializable
@@ -65,7 +65,7 @@ data class Activity(
         val smallText: String? = null
     )
 
-    /**
+    /*
      * If the activity supports it, here you can see the current and max party size
      */
     @Serializable
@@ -80,7 +80,7 @@ data class Activity(
 
     }
 
-    /**
+    /*
      * If the activity supports it, here you can see the current timestamp from the activity
      */
     @Serializable
@@ -115,32 +115,32 @@ class PresenceModifier(var status: PresenceStatus = PresenceStatus.ONLINE, var a
         }
     }
 
-    /**
+    /*
      * Sets the activity to "Playing [name]"
      * @param name The new activity name
      */
     fun playing(name: String) = Presence(ActivityType.PLAYING, name)
 
-    /**
+    /*
      * Sets the activity to "Streaming [name]"
      * @param name The new activity name
      * @param url A youtube or twitch url
      */
     fun streaming(name: String, url: String) = Presence(ActivityType.STREAMING, name, url)
 
-    /**
+    /*
      * Sets the activity to "Listening to [name]"
      * @param name The new activity name
      */
     fun listening(name: String) = Presence(ActivityType.LISTENING, name)
 
-    /**
+    /*
      * Sets the activity to "Watching [name]"
      * @param name The new activity name
      */
     fun watching(name: String) = Presence(ActivityType.WATCHING, name)
 
-    /**
+    /*
      * Sets the activity to "Competing in [name]"
      * @param name The new activity name
      */

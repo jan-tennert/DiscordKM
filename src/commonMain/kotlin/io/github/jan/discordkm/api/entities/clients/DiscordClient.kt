@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -9,15 +9,11 @@
  */
 package io.github.jan.discordkm.api.entities.clients
 
-import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.seconds
 import io.github.jan.discordkm.api.entities.BaseEntity
 import io.github.jan.discordkm.api.entities.DiscordLocale
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.UserCacheEntry
-import io.github.jan.discordkm.api.entities.activity.Presence
-import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildContainer
 import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
@@ -29,22 +25,17 @@ import io.github.jan.discordkm.api.entities.interactions.CommandHolder
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.FlagEnum
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
-import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.serialization.serializers.UserSerializer
-import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
-import io.github.jan.discordkm.internal.websocket.Compression
-import io.github.jan.discordkm.internal.websocket.Encoding
-import io.ktor.client.HttpClientConfig
 import kotlinx.serialization.json.buildJsonObject
 
 interface DiscordClient : CommandHolder, BaseEntity {
@@ -62,7 +53,7 @@ interface DiscordClient : CommandHolder, BaseEntity {
     val requester: Requester
 
 
-    /**
+    /*
      * Retrieves a guild template
      */
     suspend fun retrieveGuildTemplate(id: Snowflake) = buildRestAction<GuildTemplate> {
@@ -70,7 +61,7 @@ interface DiscordClient : CommandHolder, BaseEntity {
         transform { GuildSerializer.deserializeGuildTemplate(it.toJsonObject(), this@DiscordClient) }
     }
 
-    /**
+    /*
      * Edits the bot's user
      */
     suspend fun modifySelfUser(username: String, image: Image?) = buildRestAction<UserCacheEntry> {
@@ -81,7 +72,7 @@ interface DiscordClient : CommandHolder, BaseEntity {
         transform { UserSerializer.deserialize(it.toJsonObject(), this@DiscordClient) }
     }
 
-    fun textFor(locale: DiscordLocale, key: String, vararg args: Any) = config.translationManager.get(locale, key, *args)
+    fun textFor(locale: DiscordLocale, key: String, vararg args: Any) = config.map<TranslationManager>("translationManager").get(locale, key, *args)
 
     suspend fun login()
 
@@ -89,10 +80,10 @@ interface DiscordClient : CommandHolder, BaseEntity {
 
 }
 
-/**
+/*
  * The intents specify which events you should receive. For example if you don't use VoiceStates remove the [Intent.GUILD_VOICE_STATES] intent
  */
-enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
+enum class Intent(override val offset: Int) : FlagEnum<Intent> {
 
     GUILDS(0),
     GUILD_MEMBERS(1),
@@ -116,22 +107,13 @@ enum class Intent(override val offset: Int) : SerializableEnum<Intent> {
 
 }
 
-open class ClientConfig(
-    val token: String,
-    val intents: Set<Intent> = emptySet(),
-    val logging: LoggerConfig,
-    val enabledCache: Set<CacheFlag> = emptySet(),
-    val httpClientConfig: HttpClientConfig<*>.() -> Unit,
-    val totalShards: Int = -1,
-    val shards: Set<Int> = emptySet(),
-    val reconnectDelay: TimeSpan = 5.seconds,
-    val activity: Presence? = null,
-    val status: PresenceStatus = PresenceStatus.ONLINE,
-    val encoding: Encoding = Encoding.JSON,
-    val compression: Compression = Compression.NONE,
-    val maxResumeTries: Int = 3,
-    val translationManager: TranslationManager = TranslationManager.empty(),
-)
+class ClientConfig(
+    map: Map<String, Any?>
+): Map<String, Any?> by map {
+
+    inline fun <reified T> map(key: String) = get(key) as T
+
+}
 
 
 

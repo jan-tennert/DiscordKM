@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -19,7 +19,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/**
+/*
  * A permission override is used for channels, roles and members. They say what a role/member can do in a specific channel
  * @param holder Can be a [Role] or a [Member]
  * @param allow A list of Permissions the permission override will allow the [holder]

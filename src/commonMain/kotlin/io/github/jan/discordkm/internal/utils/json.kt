@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kot  lin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *

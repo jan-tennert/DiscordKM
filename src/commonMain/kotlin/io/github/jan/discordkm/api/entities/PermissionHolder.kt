@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -13,7 +13,7 @@ import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntr
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 
-/**
+/*
  * All objects inheriting this interface can have permissions
  */
 interface PermissionHolder : SnowflakeEntity {

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -23,7 +23,7 @@ import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.ktor.client.HttpClientConfig
 
-/**
+/*
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
 class RestDiscordClient internal constructor(override val config: ClientConfig, botId: Snowflake) : DiscordClient {
@@ -53,13 +53,23 @@ class RestOnlyClientBuilder @DiscordKMInternal constructor(var token: String, va
     var translationManager = TranslationManager.empty()
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
-    fun build(): RestDiscordClient = RestDiscordClient(ClientConfig(token = token, logging = logging, enabledCache = enabledCache, httpClientConfig = httpClientConfig, translationManager = translationManager), botId)
+    fun build(): RestDiscordClient = RestDiscordClient(
+        ClientConfig(
+            mapOf(
+                "token" to token,
+                "logging" to logging,
+                "enabledCache" to enabledCache,
+                "translationManager" to translationManager,
+                "httpClientConfig" to httpClientConfig
+            )
+        ), botId
+    )
 
     fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
 
 }
 
-/**
+/*
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
 @OptIn(DiscordKMInternal::class)

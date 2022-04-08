@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -12,7 +12,7 @@ package io.github.jan.discordkm.api.events
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 
-/**
+/*
  * Sent when the bot was updated
  */
 class SelfUserUpdateEvent(val user: UserCacheEntry, val oldUser: UserCacheEntry?) : Event {

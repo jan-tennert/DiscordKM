@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.messages
 
 import com.soywiz.klock.DateTimeTz
@@ -23,124 +32,124 @@ import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 
 interface MessageCacheEntry : CacheEntry, Message {
 
-    /**
+    /*
      * The user who sent this message
      */
     val author: User?
 
-    /**
+    /*
      * The [Member] object for the [author], if the message was sent in a guild
      */
     val member: Member?
 
-    /**
+    /*
      * Contents of the message
      */
     val content: String
 
-    /**
+    /*
      * The time this message was created
      */
     val timestamp: DateTimeTz
 
-    /**
+    /*
      * The time this message was edited
      */
     val editedTimestamp: DateTimeTz?
 
-    /**
+    /*
      * Whether this message is a tts (=text to speech) message
      */
     val isTTSMessage: Boolean
 
-    /**
+    /*
      * Whether this message mentions everyone
      */
     val mentionsEveryone: Boolean
 
-    /**
+    /*
      * The users that were mentioned in this message
      */
     val mentions: List<User>
 
-    /**
+    /*
      * The roles that were mentioned in this message
      */
     val mentionedRoles: List<Role>
 
-    /**
+    /*
      * The channels that were mentioned in this message
      */
     val mentionedChannels: List<GuildChannel>
 
-    /**
+    /*
      * The attachments in this message
      */
     val attachments: List<MessageAttachment>
 
-    /**
+    /*
      * The embeds in this message
      */
     val embeds: List<MessageEmbed>
 
     val nonce: String?
 
-    /**
+    /*
      * Whether this message is pinned
      */
     val isPinned: Boolean
 
-    /**
+    /*
      * The [MessageType] of this message
      */
     val type: MessageType
 
-    /**
+    /*
      * Sent with Rich-Presence related chat embeds
      */
     val activity: Activity?
 
-    /**
+    /*
      * The messages flags like crosspost etc.
      */
     val flags: Set<Message.Flag>
 
-    /**
+    /*
      * Stickers sent with this message
      */
     val stickers: List<StickerItem>
 
-    /**
+    /*
      * The message components of this message
      */
     val components: List<ActionRow>
 
-    /**
+    /*
      * If the message was sent in a thread this will be the [Thread] object
      */
     val thread: Thread?
 
-    /**
+    /*
      * Contains information about the interaction, if this is a interaction response
      */
     val interaction: Message.MessageInteraction?
 
-    /**
+    /*
      * Data showing the source of a crosspost, channel follow add, pin, or reply message
      */
     val reference: Message.Reference?
 
-    /**
+    /*
      * The message associated with the [reference]
      */
     val referencedMessage: MessageCacheEntry?
 
-    /**
+    /*
      * If this message was sent by a webhook, this is the id
      */
     val webhookId: Snowflake?
 
-    /**
+    /*
      * If this message was sent in a voice channel, this is the [VoiceChannel] object
      */
     @DiscordKMUnstable

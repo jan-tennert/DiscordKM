@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -13,7 +13,7 @@ import io.github.jan.discordkm.api.entities.channels.guild.GuildMessageChannel
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 
-/**
+/*
  * Sent when a webhook gets created, updated or deleted
  */
 class WebhooksUpdateEvent(val guild: Guild, val channel: GuildMessageChannel) : Event  {

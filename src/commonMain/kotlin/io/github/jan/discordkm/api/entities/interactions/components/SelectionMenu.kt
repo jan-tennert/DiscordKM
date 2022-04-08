@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -32,7 +32,7 @@ data class SelectionMenu(
     val options: MutableList<SelectOption>
 ) : MessageComponent, ComponentWithId
 
-/**
+/*
  * A selection menu
  * @param customId The id of the selection menu. Used for the [SelectionMenuEvent]
  * @param minValues The minimum amount of values the user has to select
@@ -50,7 +50,7 @@ inline fun RowBuilder<MessageLayout>.selectionMenu(customId: String = "", isDisa
 fun MutableList<SelectOption>.option(label: String = "", value: String = "", description: String? = null, emoji: Emoji? = null, default: Boolean = false) { this += SelectOption(label, value, description, emoji, default)}
 
 
-/**
+/*
  * @param label The label of the selection menu option
  * @param value The value of the selection menu option (used for identifying the selected option in [SelectionMenuEvent])
  * @param emoji The emoji of the selection menu option

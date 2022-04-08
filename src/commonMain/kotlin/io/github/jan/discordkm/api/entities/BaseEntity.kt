@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.entities
 
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 
-/**
+/*
  * The base entity for all entities
  */
 interface BaseEntity {

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -24,21 +24,21 @@ interface MemberEvent : Event {
 
 }
 
-/**
+/*
  * Sent when a user joins a guild
  *
  * Requires the intent [Intent.GUILD_MEMBERS]
  */
 class GuildMemberAddEvent(override val member: MemberCacheEntry) : MemberEvent
 
-/**
+/*
  * Sent when a member gets updated
  *
  * Requires the intent [Intent.GUILD_MEMBERS]
  */
 class GuildMemberUpdateEvent(override val member: MemberCacheEntry) : MemberEvent
 
-/**
+/*
  * Sent when a member leaves his guild
  *
  * Requires the intent [Intent.GUILD_MEMBERS]

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -20,23 +20,23 @@ interface ChannelEvent : Event {
 
 }
 
-/**
+/*
  * Sent when a (guild) channel was created
  *
  */
 class ChannelCreateEvent(override val channel: GuildChannelCacheEntry) : ChannelEvent, GuildChannelCacheEntry by channel
 
-/**
+/*
  * Sent when a (guild) channel was updated
  */
 class ChannelUpdateEvent(override val channel: GuildChannelCacheEntry, val oldChannel: GuildChannelCacheEntry?) : ChannelEvent, GuildChannelCacheEntry by channel
 
-/**
+/*
  * Sent when a (guild) channel was deleted
  */
 class ChannelDeleteEvent(override val channel: GuildChannelCacheEntry) : ChannelEvent, GuildChannelCacheEntry by channel
 
-/**
+/*
  * Sent when the pins of a message channel get updated
  */
 class ChannelPinUpdateEvent(override val channel: GuildTextChannel, val lastPinTimestamp: DateTimeTz?) : ChannelEvent, GuildTextChannel by channel

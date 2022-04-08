@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -36,37 +36,37 @@ import kotlinx.serialization.json.jsonObject
 
 sealed interface Interaction : SerializableEntity {
 
-    /**
+    /*
      * The interaction token
      */
     val token: String get() = data["token"]!!.string
 
-    /**
+    /*
      * The [InteractionType]
      */
     val type: InteractionType get() = InteractionType[data["type"]!!.int]
 
-    /**
+    /*
      * The interaction id
      */
     val id: Snowflake get() = data["id"]!!.snowflake
 
-    /**
+    /*
      * The application id
      */
     val applicationId: Snowflake get() = data["application_id"]!!.snowflake
 
-    /**
+    /*
      * The guild id, if this was sent in a guild
      */
     val guild: Guild? get() = data["guild_id", true]?.snowflake?.let { Guild(it, client) }
 
-    /**
+    /*
      * The member, if a guild member was involved in this interaction
      */
     val member: MemberCacheEntry? get() = data["member"]?.let { Member(it.jsonObject, guild!!) }
 
-    /**
+    /*
      * The channel id, if this interaction was sent in a channel
      */
     val channel: MessageChannel?
@@ -79,17 +79,17 @@ sealed interface Interaction : SerializableEntity {
             )
         } as? MessageChannel
 
-    /**
+    /*
      * The user, if this interaction was sent in a private channel
      */
     val user: User get() = data["user"]?.let { User(it.jsonObject, client) } ?: member!!.user
 
-    /**
+    /*
      * The selected language of the user who invoked this interaction
      */
     val locale: DiscordLocale? get() = data["locale", true]?.locale
 
-    /**
+    /*
      * The preferred locale of the guild, if invoked in a guild
      */
     val guildLocale: DiscordLocale? get() = data["guild_locale", true]?.locale

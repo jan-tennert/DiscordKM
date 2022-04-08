@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -13,7 +13,7 @@ import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.Serializable
 
-/**
+/*
  * The type for the [Activity]
  */
 @Serializable(with = ActivityType.Companion::class)
@@ -22,7 +22,7 @@ enum class ActivityType : EnumWithValue<Int> {
     STREAMING,
     LISTENING,
     WATCHING,
-    /**
+    /*
      * This activity type is user-only. Bots can't set them
      */
     CUSTOM,

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -30,7 +30,7 @@ import kotlinx.serialization.json.jsonObject
 
 open class ApplicationCommand(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity, SnowflakeEntity, Nameable {
 
-    /**
+    /*
      * The type of the application command
      */
     val type: ApplicationCommandType
@@ -39,13 +39,13 @@ open class ApplicationCommand(override val client: DiscordClient, override val d
     override val id: Snowflake
         get() = data.getId()
 
-    /**
+    /*
      * The id of the application which created this application command
      */
     val applicationId: Snowflake
         get() = data.getOrThrow("application_id")
 
-    /**
+    /*
      * The id of the guild where this command was created in. Can be null if it's a global command
      */
     val guildId: Snowflake?
@@ -57,13 +57,13 @@ open class ApplicationCommand(override val client: DiscordClient, override val d
     override val name: String
         get() = data.getOrThrow<String>("name")
 
-    /**
+    /*
      * The description of the command
      */
     val description: String
         get() = data.getOrThrow<String>("description")
 
-    /**
+    /*
      * The version of the command
      */
     val version: Snowflake
@@ -77,7 +77,7 @@ open class ApplicationCommand(override val client: DiscordClient, override val d
 
 class ChatInputCommand(client: DiscordClient, data: JsonObject) : ApplicationCommand(client, data) {
 
-    /**
+    /*
      * The options of the command
      */
     val options = data["options"]?.jsonArray?.map { Json { ignoreUnknownKeys = true }.decodeFromJsonElement<CommandOption>(it.jsonObject) } ?: emptyList()
@@ -85,17 +85,17 @@ class ChatInputCommand(client: DiscordClient, data: JsonObject) : ApplicationCom
 }
 
 enum class ApplicationCommandType : EnumWithValue<Int>{
-    /**
+    /*
      * These are the "slash commands"
      */
     CHAT_INPUT,
 
-    /**
+    /*
      * These pop out when you right-click a user
      */
     USER,
 
-    /**
+    /*
      * These pop out when you right-click a message
      */
     MESSAGE;

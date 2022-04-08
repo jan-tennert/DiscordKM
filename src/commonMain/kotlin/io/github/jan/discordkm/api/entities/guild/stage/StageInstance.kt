@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -32,7 +32,7 @@ interface StageInstance : SnowflakeEntity, BaseEntity {
     override val client: DiscordClient
         get() = stageChannel.client
 
-    /**
+    /*
      * Deletes this stage instance
      */
     suspend fun delete(reason: String? = null) = client.buildRestAction<Unit> {
@@ -40,7 +40,7 @@ interface StageInstance : SnowflakeEntity, BaseEntity {
         this.reason = reason
     }
 
-    /**
+    /*
      * Modifies this stage instance. All fields are optional
      * @param topic The new topic for this stage instance
      * @param privacyLevel The new privacy level for this stage instance

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -63,7 +63,7 @@ sealed interface WSDiscordClient : DiscordClient {
 
 }
 
-/**
+/*
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
 @PublishedApi
@@ -90,7 +90,7 @@ internal class WSDiscordClientImpl internal constructor(
     override lateinit var selfUser: UserCacheEntry
 
     init {
-        if (config.shards.isEmpty()) shardConnections[0] = DiscordGateway(config, this, 0) else config.shards.forEach {
+        if (config.map<Set<Int>>("shards").isEmpty()) shardConnections[0] = DiscordGateway(config, this, 0) else config.map<Set<Int>>("shards").forEach {
             shardConnections[it] = DiscordGateway(config, this, it)
         }
     }
@@ -101,7 +101,7 @@ internal class WSDiscordClientImpl internal constructor(
 
     override suspend fun login() {
         shardConnections.forEach { (shard, gateway) ->
-            gateway.start(false); if (config.totalShards != -1) handleEvent(
+            gateway.start(false); if (config.map<Int>("totalShards") != -1) handleEvent(
             ShardCreateEvent(
                 this,
                 shard
@@ -122,48 +122,48 @@ internal class WSDiscordClientImpl internal constructor(
 }
 
 
-/**
+/*
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
 class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: String) {
-    /**
+    /*
      * The encoding used for the websocket. Currently, only [Encoding.JSON] is supported
      */
     var encoding = Encoding.JSON
 
-    /**
+    /*
      * The compression used for the websocket. Currently, no compression is supported
      */
     var compression = Compression.NONE
 
-    /**
+    /*
      * The maximum amount of tries to reconnect (and resume) to the websocket.
      */
     var maxResumeTries = 3
 
-    /**
+    /*
      * The intents specify which events you should receive. For example if you don't use VoiceStates remove the [Intent.GUILD_VOICE_STATES] intent
      */
     var intents = mutableSetOf<Intent>()
 
     private var activity = PresenceModifier()
 
-    /**
+    /*
      * How much the client should wait before reconnecting to a disconnected websocket session
      */
     var reconnectDelay: TimeSpan = 5.seconds
 
-    /**
+    /*
      * The cache specifies which entities should be cached.
      */
     var enabledCache = CacheFlag.ALL.toMutableSet()
 
-    /**
+    /*
      * The translation manager can be used to multi-language bots
      */
     var translationManager: TranslationManager = TranslationManager.empty()
 
-    /**
+    /*
      * Configures the logger
      */
     var logging = LoggerConfig()
@@ -171,27 +171,40 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
     private val shards = mutableSetOf<Int>()
 
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
-    /**
+    /*
      * Specifies the total amount of shards. [Sharding](https://discord.com/developers/docs/topics/gateway#sharding)
      */
     var totalShards = -1
 
-    /**
+    /*
      * Use only specific shards. For more information see [Sharding](https://discord.com/developers/docs/topics/gateway#sharding)
      */
     fun useShards(vararg shards: Int) {
         this.shards.addAll(shards.toList())
     }
 
+    /*
+     * Adds all intents except [intents]
+     */
+    fun intentsWithout(vararg intents: Intent) {
+        this.intents.addAll(Intent.values().subtract(intents.toSet()))
+    }
+
+    /*
+     * Adds [intents] to the discord client
+     */
     fun intents(vararg intents: Intent) {
         this.intents.addAll(intents.toList())
     }
 
+    /*
+    * Adds [intents] to the discord client
+    */
     fun intents(intents: Set<Intent>) {
         this.intents.addAll(intents)
     }
 
-    /**
+    /*
      * Sets the default activity which is set after connecting to the websocket.
      */
     fun activity(builder: PresenceModifier.() -> Unit) {
@@ -203,28 +216,28 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
     }
 
     fun build(): WSDiscordClient = WSDiscordClientImpl(
-        ClientConfig(
-            token,
-            intents,
-            logging,
-            enabledCache,
-            httpClientConfig,
-            totalShards,
-            shards,
-            reconnectDelay,
-            activity.activity,
-            activity.status,
-            encoding,
-            compression,
-            maxResumeTries,
-            translationManager
-        )
+        ClientConfig(mapOf(
+            "token" to token,
+            "intents" to intents,
+            "logging" to logging,
+            "enabledCache" to enabledCache,
+            "httpClientConfig" to httpClientConfig,
+            "totalShards" to totalShards,
+            "shards" to shards,
+            "reconnectDelay" to reconnectDelay,
+            "activity" to activity.activity,
+            "status" to activity.status,
+            "encoding" to encoding,
+            "compression" to compression,
+            "mexResumeTries" to maxResumeTries,
+            "translationManager" to translationManager
+        ))
     )
 
 }
 
 
-/**
+/*
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
 @OptIn(DiscordKMInternal::class)

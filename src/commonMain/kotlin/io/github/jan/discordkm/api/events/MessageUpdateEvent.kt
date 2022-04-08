@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -14,7 +14,7 @@ import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 
-/**
+/*
  * Sent when someone updates his message
  *
  * Requires the intent [Intent.GUILD_MESSAGES] or [Intent.DIRECT_MESSAGES]

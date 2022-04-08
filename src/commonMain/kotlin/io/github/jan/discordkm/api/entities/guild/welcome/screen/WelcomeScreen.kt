@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.guild.welcome.screen
 
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -13,7 +22,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/**
+/*
  * The welcome screen which is shown, when a new user joins the guild
  * @param description The description of the welcome screen
  * @param channels The channels shown in the welcome screen
@@ -24,7 +33,7 @@ data class WelcomeScreen(
     val channels: List<WelcomeScreenChannel> = emptyList()
 ) {
 
-    /**
+    /*
      * This is a welcome screen channels which is shown in the welcome screen to explain what this channel does
      * @param channelId The id of the channel
      * @param description The description shown on the welcome screen

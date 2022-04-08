@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -9,11 +9,15 @@
  */
 package io.github.jan.discordkm.internal.websocket
 
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
+import io.github.jan.discordkm.api.entities.activity.Presence
+import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.events.GuildBanAddEvent
@@ -73,6 +77,7 @@ import io.github.jan.discordkm.internal.serialization.IdentifyPayload
 import io.github.jan.discordkm.internal.serialization.Payload
 import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.serialization.send
+import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.utils.generateWebsocketURL
 import io.github.jan.discordkm.internal.utils.log
 import io.ktor.client.HttpClient
@@ -111,7 +116,7 @@ class DiscordGateway(
     val shardId: Int = 0,
 ) {
 
-    internal val LOGGER = config.logging("Websocket")
+    internal val LOGGER = config.map<LoggerConfig>("logging")("Websocket")
     private var heartbeatInterval = 0L
     private var lastSequenceNumber: Int? = null
     var sessionId: String? = null
@@ -133,13 +138,13 @@ class DiscordGateway(
 
     suspend fun start(delay: Boolean = false) {
         if(isConnected) return
-        if (delay) com.soywiz.korio.async.delay(config.reconnectDelay)
+        if (delay) com.soywiz.korio.async.delay(config.map<TimeSpan>("reconnectDelay"))
         LOGGER.log(true, Logger.Level.INFO) { "Connecting to gateway..." }
         try {
             socket = http.webSocketSession {
                 url.takeFrom(generateWebsocketURL(
-                    config.encoding,
-                    config.compression
+                    config.map("encoding"),
+                    config.map("compression")
                 ))
                 timeout { this.connectTimeoutMillis = 5000; this.socketTimeoutMillis = 2 * 60 * 1000 }
             }
@@ -153,7 +158,7 @@ class DiscordGateway(
                     } catch (e: Exception) {
                         mutex.withLock { isConnected = false }
                         val reason = closeReason.await()!!
-                        ErrorHandler.handle(reason, LOGGER, config.reconnectDelay)
+                        ErrorHandler.handle(reason, LOGGER, config.map("reconnectDelay"))
                         launch(kotlin.coroutines.coroutineContext) { start(delay = true) }
                     }
                     com.soywiz.korio.async.delay(100.milliseconds)
@@ -161,7 +166,7 @@ class DiscordGateway(
             }
         } catch (e: Exception) {
             mutex.withLock { isConnected = false }
-            LOGGER.log(true, Logger.Level.ERROR) { "Failed to connect to the gateway!. Retrying in ${config.reconnectDelay}..." }
+            LOGGER.log(true, Logger.Level.ERROR) { "Failed to connect to the gateway!. Retrying in ${config.map<Any>("reconnectDelay")}..." }
             com.soywiz.korio.async.launch(coroutineContext) { start(delay = true) }
         }
         mutex.withLock{ isConnected = false }
@@ -224,13 +229,13 @@ class DiscordGateway(
                         startHeartbeatWatcher()
                     }
                     launch {
-                        if (sessionId != null && resumeTries < config.maxResumeTries) {
+                        if (sessionId != null && resumeTries < config.map<Int>("maxResumeTries")) {
                             val tryMessage =
                                 if (resumeTries == 0) "First try" else if (resumeTries == 1) "Second try" else if (resumeTries == 2) "Third try" else "${resumeTries - 1}th try"
                             mutex.withLock { resumeTries++ }
                             LOGGER.info { "Trying to resume... ($tryMessage)" }
                             send(Payload(6, buildJsonObject {
-                                put("token", config.token)
+                                put("token", config.map<String>("token"))
                                 put("session_id", sessionId)
                                 put("seq", lastSequenceNumber)
                             }))
@@ -241,12 +246,12 @@ class DiscordGateway(
                             LOGGER.debug { "Authenticate..." }
                             send(
                                 IdentifyPayload(
-                                    config.token,
-                                    config.intents.rawValue(),
-                                    config.status,
-                                    config.activity,
+                                    config.map<String>("token"),
+                                    config.map<Set<Intent>>("intents").rawValue(),
+                                    config.map<PresenceStatus>("status"),
+                                    config.map<Presence>("activity"),
                                     shardId,
-                                    config.totalShards
+                                    config.map<Int>("totalShards")
                                 )
                             )
                         }
@@ -266,7 +271,7 @@ class DiscordGateway(
             if(heartbeatSent > heartbeatReceived && isActive) {
                 com.soywiz.korio.async.delay(30.seconds)
                 if(heartbeatSent == heartbeatReceived || !isActive) continue
-                LOGGER.warn { "No heartbeat response received, reconnecting in ${config.reconnectDelay}..." }
+                LOGGER.warn { "No heartbeat response received, reconnecting in ${config.get("reconnectDelay")}..." }
                 close()
                 start(true)
                 break

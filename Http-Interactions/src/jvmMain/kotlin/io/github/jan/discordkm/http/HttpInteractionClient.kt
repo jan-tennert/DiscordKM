@@ -1,6 +1,16 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.http
 
 import io.github.jan.discordkm.api.entities.UserCacheEntry
+import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildContainer
@@ -21,10 +31,10 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 
 
-class HttpInteractionClient internal constructor(override val config: HttpConfig) : DiscordClient {
+class HttpInteractionClient internal constructor(override val config: ClientConfig) : DiscordClient {
 
     private lateinit var server: ApplicationEngine
-    private val LOGGER = config.logging("Http-Server")
+    private val LOGGER = config.map<LoggerConfig>("logging")("Http-Server")
     override var selfUser: UserCacheEntry = throw IllegalStateException("HttpInteractionClient does not support selfUser")
     override val guilds = CacheGuildContainer(this, emptyList())
     override val users = CacheUserContainer(this, emptyList())
@@ -38,10 +48,9 @@ class HttpInteractionClient internal constructor(override val config: HttpConfig
     }
 
     override suspend fun login() {
-        val config = config as HttpConfig
-        server = embeddedServer(CIO, port = config.port, host = config.host) {
+        server = embeddedServer(CIO, port = config.map<Int>("port"), host = config.map<String>("host")) {
             routing {
-                post(config.route) {
+                post(config.map<String>("route")) {
                     handleRawEvent(this.call.receive(), LOGGER)
                 }
             }
@@ -58,14 +67,20 @@ class HttpInteractionClientBuilder @DiscordKMInternal constructor(var token: Str
     var route = "/interactions"
     private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
-    @OptIn(DiscordKMInternal::class)
-    fun build() = HttpInteractionClient(HttpConfig(token = token, logging = logging, httpClientConfig = httpClientConfig, port = port, host = host, route = route))
+    fun build() = HttpInteractionClient(ClientConfig(mapOf(
+        "token" to token,
+        "logging" to logging,
+        "httpClientConfig" to httpClientConfig,
+        "port" to port,
+        "host" to host,
+        "route" to route
+    )))
 
     fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
 
 }
 
-/**
+/*
  * The HttpInteractionClient is used when you want to receive interactions over a post request rather than connecting to a websocket
  */
 @OptIn(DiscordKMInternal::class)

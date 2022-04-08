@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.internal.serialization
 
-open class FlagSerializer<T : SerializableEnum<T>>(val values: Collection<T>) {
+open class FlagSerializer<T : FlagEnum<T>>(val values: Collection<T>) {
 
     constructor(values: Array<T>) : this(values.toList())
 
@@ -26,12 +26,12 @@ open class FlagSerializer<T : SerializableEnum<T>>(val values: Collection<T>) {
 
 }
 
-inline fun <reified S, reified E>S.encode(serializer: S, values: Set<E>) : Long where S : FlagSerializer<E>, E : Enum<E>, E : SerializableEnum<E> {
+inline fun <reified S, reified E>S.encode(serializer: S, values: Set<E>) : Long where S : FlagSerializer<E>, E : Enum<E>, E : FlagEnum<E> {
     return serializer.encode(values)
 }
 
-inline fun <reified S, reified E>S.decode(serializer: S, raw: Long) : Set<E> where S : FlagSerializer<E>, E : Enum<E>, E : SerializableEnum<E> {
+inline fun <reified S, reified E>S.decode(serializer: S, raw: Long) : Set<E> where S : FlagSerializer<E>, E : Enum<E>, E : FlagEnum<E> {
     return serializer.decode(raw)
 }
 
-fun <E>Set<E>.rawValue() : Long where E : Enum<E>, E : SerializableEnum<E> = FlagSerializer(this).encode(this)
+fun <E>Set<E>.rawValue() : Long where E : Enum<E>, E : FlagEnum<E> = FlagSerializer(this).encode(this)

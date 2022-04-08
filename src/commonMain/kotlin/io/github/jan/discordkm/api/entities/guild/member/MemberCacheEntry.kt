@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.guild.member
 
 import com.soywiz.klock.DateTimeTz
@@ -23,62 +32,62 @@ import kotlin.jvm.JvmName
 
 interface MemberCacheEntry : Member, Nameable, PermissionHolder, CacheEntry {
 
-    /**
+    /*
      * The time at which the member joined the guild
      */
     val joinedAt: DateTimeTz
 
-    /**
+    /*
      * The time at which the member started boosting the guild
      */
     val premiumSince: DateTimeTz?
 
-    /**
+    /*
      * Whether the member is deafened
      */
     val isDeafened: Boolean
 
-    /**
+    /*
      * Whether the member is muted
      */
     val isMuted: Boolean
 
-    /**
+    /*
      * Whether this member is in the verification process
      */
     val isPending: Boolean
 
-    /**
+    /*
      * The server specific nickname of the member
      */
     val nickname: String?
 
-    /**
+    /*
      * The date where the timeout will be removed from the member. (Until then the member can't do anything in this guild)
      */
     val timeoutUntil: DateTimeTz?
 
-    /**
+    /*
      * The voice state of the member containing the channel etc.
      */
     val voiceState: VoiceStateCacheEntry?
 
-    /**
+    /*
      * The status of the member or offline if the status couldn't be found
      */
     val status: PresenceStatus
 
-    /**
+    /*
      * The activities of the member
      */
     val activities: List<Activity>
 
-    /**
+    /*
      * The roles of the member
      */
     override val roles: CacheMemberRoleContainer
 
-    /**
+    /*
      * The nickname of the member or the name if [nickname] is null
      */
     override val name: String
@@ -87,24 +96,24 @@ interface MemberCacheEntry : Member, Nameable, PermissionHolder, CacheEntry {
     override val client: DiscordClient
         get() = guild.client
 
-    /**
+    /*
      * Whether the member is the owner of the guild
      */
     val isOwner: Boolean
 
-    /**
+    /*
      * The avatar url of the member
      */
     val avatarUrl: String?
 
-    /**
+    /*
      * Returns all permissions this user has
      */
     override val permissions: Set<Permission>
 
 }
 
-/**
+/*
  * Represents a member of a guild
  * @param id The id of the member
  * @param guild The guild this member belongs to
@@ -130,19 +139,19 @@ internal class MemberCacheEntryImpl(
     override val timeoutUntil: DateTimeTz?
 ) : MemberCacheEntry {
 
-    /**
+    /*
      * The voice state of the member retrieved from cache
      */
     override val voiceState: VoiceStateCacheEntry?
         get() = guild.cache?.voiceStates?.get(id)
 
-    /**
+    /*
      * The status of the member
      */
     override val status: PresenceStatus
         get() = guild.cache?.presences?.get(id)?.status ?: PresenceStatus.OFFLINE
 
-    /**
+    /*
      * A list of activities the user currently has
      */
     override val activities: List<Activity>
@@ -153,19 +162,19 @@ internal class MemberCacheEntryImpl(
     override val roles: CacheMemberRoleContainer
         get() = CacheMemberRoleContainer(this, cacheManager.roleCache.values)
 
-    /**
+    /*
      * Whether the member is the owner of the guild
      */
     override val isOwner: Boolean
         @get:JvmName("isOwner")
         get() = guild.cache?.owner?.id == id
 
-    /**
+    /*
      * The avatar url of the member
      */
     override val avatarUrl = avatarHash?.let { DiscordImage.memberAvatar(id, guild.id, it) }
 
-    /**
+    /*
      * Returns all permissions this user has
      */
     override val permissions: Set<Permission>
@@ -185,7 +194,7 @@ internal class MemberCacheEntryImpl(
             return permissions
         }
 
-    /**
+    /*
      * Returns the permission for the member in a specific guild channel
      * @param channel The guild channel
      * @see GuildChannel

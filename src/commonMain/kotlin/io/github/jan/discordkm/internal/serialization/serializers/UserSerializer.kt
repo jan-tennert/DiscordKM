@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -23,7 +23,7 @@ import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.JsonObject
 
 
-object UserSerializer {
+internal object UserSerializer {
 
     fun deserialize(data: JsonObject, value: DiscordClient): UserCacheEntry = UserCacheEntryImpl(
         id = data["id"]!!.snowflake,

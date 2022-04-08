@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -26,12 +26,12 @@ import kotlinx.serialization.json.jsonObject
 
 class ComponentInteraction(client: DiscordClient, data: JsonObject) : StandardInteraction(client, data), ModalInteraction {
 
-    /**
+    /*
      * The message which contains this component
      */
     val message: Message get() = Message(data["message"]!!.jsonObject, client)
 
-    /**
+    /*
      * Responds to this interaction with no changes. Use this if you don't want to reply or anything
      */
     suspend fun deferEdit() = client.buildRestAction<Unit> {
@@ -40,7 +40,7 @@ class ComponentInteraction(client: DiscordClient, data: JsonObject) : StandardIn
         })
     }
 
-    /**
+    /*
      * Edits the original message as callback
      */
     suspend fun edit(message: DataMessage) = client.buildRestAction<Unit> {
@@ -50,7 +50,7 @@ class ComponentInteraction(client: DiscordClient, data: JsonObject) : StandardIn
         })
     }
 
-    /**
+    /*
      * Edits the original message as callback
      */
     suspend fun edit(message: MessageBuilder.() -> Unit) = edit(buildMessage(client, message))

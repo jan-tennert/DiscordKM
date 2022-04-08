@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -31,7 +31,7 @@ import kotlinx.serialization.json.put
 
 open class StandardInteraction(override val client: DiscordClient, override val data: JsonObject) : Interaction {
 
-    /**
+    /*
      * Replies to this interaction without a message
      */
     suspend fun deferReply(ephemeral: Boolean = false) = client.buildRestAction<Unit> {
@@ -45,26 +45,26 @@ open class StandardInteraction(override val client: DiscordClient, override val 
         })
     }
 
-    /**
+    /*
      * Replies to this interaction with a message
      */
     suspend fun reply(message: DataMessage, ephemeral: Boolean = false) = client.buildRestAction<Unit> {
         route = Route.Interaction.CALLBACK(id, token).post(message.buildCallback(InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE.value, ephemeral))
     }
 
-    /**
+    /*
      * Replies to this interaction with a message
      */
     suspend fun reply(ephemeral: Boolean = false, message: MessageBuilder.() -> Unit) =
         reply(buildMessage(client, message), ephemeral)
 
-    /**
+    /*
      * Replies to this interaction with a message
      */
     suspend fun reply(message: String, ephemeral: Boolean = false) =
         reply(buildMessage(client) { content = message }, ephemeral)
 
-    /**
+    /*
      * Edits the original reply message
      */
     suspend fun editOriginalMessage(message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
@@ -72,20 +72,20 @@ open class StandardInteraction(override val client: DiscordClient, override val 
         transform { Message(it.toJsonObject(), client) }
     }
 
-    /**
+    /*
      * Edits the original reply message
      */
     suspend fun editOriginalMessage(builder: MessageBuilder.() -> Unit) =
         editOriginalMessage(buildMessage(client, builder))
 
-    /**
+    /*
      * Deletes the original reply message
      */
     suspend fun deleteOriginalMessage() = client.buildRestAction<Unit> {
         route = Route.Interaction.DELETE_ORIGINAL(applicationId, token).delete()
     }
 
-    /**
+    /*
      * Sends a follow-up message
      */
     suspend fun sendFollowUpMessage(message: DataMessage, ephemeral: Boolean = false) =
@@ -94,19 +94,19 @@ open class StandardInteraction(override val client: DiscordClient, override val 
             transform { Message(it.toJsonObject(), client) }
         }
 
-    /**
+    /*
      * Sends a follow-up message
      */
     suspend fun sendFollowUpMessage(ephemeral: Boolean = false, message: MessageBuilder.() -> Unit) =
         sendFollowUpMessage(buildMessage(client, message), ephemeral)
 
-    /**
+    /*
      * Sends a follow-up message
      */
     suspend fun sendFollowUpMessage(message: String, ephemeral: Boolean = false) =
         sendFollowUpMessage(ephemeral) { content = message }
 
-    /**
+    /*
      * Edits a follow-up message
      */
     suspend fun editFollowUpMessage(id: Snowflake, message: DataMessage) = client.buildRestAction<Message> {
@@ -114,7 +114,7 @@ open class StandardInteraction(override val client: DiscordClient, override val 
         transform { Message(it.toJsonObject(), client) }
     }
 
-    /**
+    /*
      * Retrieves a follow-up message
      */
     suspend fun getFollowUpMessage(id: Snowflake) = client.buildRestAction<Message> {
@@ -122,7 +122,7 @@ open class StandardInteraction(override val client: DiscordClient, override val 
         transform { Message(it.toJsonObject(), client) }
     }
 
-    /**
+    /*
      * Deletes a follow-up message
      */
     suspend fun deleteFollowUpMessage(id: Snowflake) = client.buildRestAction<Unit> {

@@ -42,7 +42,7 @@ data class TextInputBuilder(
 
 }
 
-/**
+/*
  * @param customId The id used for identifying the text input value in the [ModalSubmitEvent]
  * @param label The label of the text input
  * @param placeholder The placeholder of the text input
@@ -75,7 +75,7 @@ fun RowBuilder<ModalLayout>.textInput(
     )
 }
 
-/**
+/*
  * A single line text input component
  *
  * @param customId The id used for identifying the text input value in the [ModalSubmitEvent]
@@ -108,7 +108,7 @@ fun RowBuilder<ModalLayout>.shortTextInput(
     )
 }
 
-/**
+/*
  * A multi-line text input component
  *
  * @param customId The id used for identifying the text input value in the [ModalSubmitEvent]

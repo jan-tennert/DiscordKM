@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -31,7 +31,7 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, val clien
     val translations = TranslationBuilder()
     internal var translationManager: TranslationManager? = null
 
-    /**
+    /*
      * Imports translations from the translation manager.
      *
      * The translation keys can be changed like this in the translation files:
@@ -62,7 +62,7 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, val clien
     }
 
     @DiscordKMUnstable
-    fun useDefaultTranslationManager() { client?.config?.translationManager?.let { useTranslationManager(it) } }
+    fun useDefaultTranslationManager() { client?.config?.map<TranslationManager>("translationManager")?.let { useTranslationManager(it) } }
 
     @DiscordKMUnstable
     fun defaultPermissions(vararg permissions: Permission) { defaultMemberPermissions.addAll(permissions) }

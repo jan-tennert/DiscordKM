@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -19,7 +19,7 @@ value class Color(val rgb: Int) {
 
     val hex: String
         get() {
-            val (r, g, b) = extract()
+            val (r, g, b) = Color(rgb)
             return "#%02x%02x%02x".format(r, g, b)
         }
 
@@ -51,6 +51,8 @@ value class Color(val rgb: Int) {
         }
     }
 
-    fun extract() = Triple(rgb shr 16 and 0xFF, rgb shr 8 and 0xFF, rgb shr 0 and 0xFF)
+    operator fun component1() = rgb shr 16 and 0xFF
+    operator fun component2() = rgb shr 8 and 0xFF
+    operator fun component3() = rgb shr 0 and 0xFF
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities
 
-/**
+/*
  * All objects inheriting this interface have a name
  */
 interface Nameable {

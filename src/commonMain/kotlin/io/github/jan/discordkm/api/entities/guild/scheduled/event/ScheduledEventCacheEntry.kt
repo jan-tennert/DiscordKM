@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.guild.scheduled.event
 
 import com.soywiz.klock.DateTimeTz
@@ -13,67 +22,67 @@ import io.github.jan.discordkm.internal.entities.DiscordImage
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/**
+/*
  * Represents a cached scheduled event
  */
 interface ScheduledEventCacheEntry : ScheduledEvent, Nameable, CacheEntry {
 
-    /**
+    /*
      * The channel the event is going to be executed in (if type is [ScheduledEvent.EntityType.VOICE])
      */
     val channel: VoiceChannel?
 
-    /**
+    /*
      * The creator of the event
      */
     val creator: User
 
-    /**
+    /*
      * The description of the event
      */
     val description: String?
 
-    /**
+    /*
      * The time the scheduled event is going to start
      */
     val startTime: DateTimeTz
 
-    /**
+    /*
      * The time the scheduled event is going to end (if type is [ScheduledEvent.EntityType.EXTERNAL])
      */
     val endTime: DateTimeTz?
 
-    /**
+    /*
      * The privacy level of the event
      */
     val privacyLevel: PrivacyLevel
 
-    /**
+    /*
      * The status of the event
      */
     val status: ScheduledEvent.EventStatus
 
-    /**
+    /*
      * The type of the scheduled event
      */
     val entityType: ScheduledEvent.EntityType
 
-    /**
+    /*
      * The associated stage instance (if type is [ScheduledEvent.EntityType.STAGE_INSTANCE]
      */
     val entity: StageInstance?
 
-    /**
+    /*
      * The amount of users participating in the event
      */
     val userCount: Int
 
-    /**
+    /*
      * The event metadata
      */
     val metadata: ScheduledEvent.EventMetadata?
 
-    /**
+    /*
      * The cover image of the event
      */
     val coverImageUrl: String?

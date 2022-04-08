@@ -1,20 +1,30 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.internal.restaction
 
 import io.github.jan.discordkm.DiscordKMInfo
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
 
 class Requester(private val config: ClientConfig) {
 
-    private val rateLimiter = RateLimiter(config.logging)
+    private val rateLimiter = RateLimiter(config.map("logging"))
 
     val http = HttpClient {
-        config.httpClientConfig(this)
+        config.map<HttpClientConfig<*>.() -> Unit>("httpClientConfig")
         defaultRequest {
-            header("Authorization", "Bot ${config.token}")
+            header("Authorization", "Bot ${config.map<String>("token")}")
             header("User-Agent", "Discord.KM (\$https://github.com/jan-tennert/Discord.KM, $0.3)")
         }
 

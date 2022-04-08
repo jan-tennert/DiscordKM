@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.lavalink.tracks
 
 import com.soywiz.klock.DateTime
@@ -8,6 +17,7 @@ import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import io.github.jan.discordkm.lavalink.LavalinkNode
+import io.github.jan.discordkm.lavalink.LavalinkNodeImpl
 import io.github.jan.discordkm.lavalink.LavalinkRoute
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.sync.Mutex
@@ -46,9 +56,9 @@ sealed interface AudioTrack {
 
 }
 
-class AudioPlaylist(val name: String, val selectedTrack: AudioTrack?)
+data class AudioPlaylist(val name: String, val selectedTrack: AudioTrack?)
 
-class AudioTrackData(data: JsonObject, override val node: LavalinkNode) : AudioTrack {
+internal class AudioTrackImpl(data: JsonObject, override val node: LavalinkNode) : AudioTrack {
 
     private val mutex = Mutex()
     private val info = data.getValue("info").jsonObject
@@ -82,13 +92,17 @@ class AudioTrackData(data: JsonObject, override val node: LavalinkNode) : AudioT
         mutex.withLock { this.startTime = startTime }
     }
 
+    suspend fun setPlaylist(playlist: AudioPlaylist) {
+        mutex.withLock { this.playlist = playlist }
+    }
+
 }
 
 data class EncodedTrack(val encodedTrack: String, private val node: LavalinkNode) {
 
     suspend fun decode(): AudioTrack {
-        val track = node.request(HttpMethod.Get, LavalinkRoute.DECODE_TRACK(encodedTrack))
-        return AudioTrackData(buildJsonObject {
+        val track = (node as LavalinkNodeImpl).request(HttpMethod.Get, LavalinkRoute.DECODE_TRACK(encodedTrack))
+        return AudioTrackImpl(buildJsonObject {
             put("track", encodedTrack)
             put("info", track.toJsonObject())
         }, node)

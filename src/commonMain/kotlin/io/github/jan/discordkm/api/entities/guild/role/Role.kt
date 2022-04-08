@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -48,7 +48,7 @@ sealed interface Role : Mentionable, SnowflakeEntity, GuildEntity, CacheEntity, 
         this.reason
     }
 
-    /**
+    /*
      * Sets the role's position
      */
     suspend fun setPosition(position: Int? = null, reason: String? = null) = client.buildRestAction<Unit> {
@@ -61,7 +61,7 @@ sealed interface Role : Mentionable, SnowflakeEntity, GuildEntity, CacheEntity, 
         this.reason = reason
     }
 
-    /**
+    /*
      * Deletes this role
      */
     suspend fun delete(reason: String? = null) = client.buildRestAction<Unit> {

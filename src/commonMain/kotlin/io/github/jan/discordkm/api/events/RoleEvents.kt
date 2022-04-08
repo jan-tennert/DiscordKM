@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -19,7 +19,7 @@ interface RoleEvent : GuildEvent {
 
 }
 
-/**
+/*
  * Sent when a role was created
  */
 class RoleCreateEvent(override val role: RoleCacheEntry) : RoleEvent, RoleCacheEntry by role {
@@ -29,7 +29,7 @@ class RoleCreateEvent(override val role: RoleCacheEntry) : RoleEvent, RoleCacheE
 
 }
 
-/**
+/*
  * Sent when a role was updated
  */
 class RoleUpdateEvent(override val role: RoleCacheEntry, val oldRole: RoleCacheEntry?) : RoleEvent, RoleCacheEntry by role {
@@ -39,7 +39,7 @@ class RoleUpdateEvent(override val role: RoleCacheEntry, val oldRole: RoleCacheE
 
 }
 
-/**
+/*
  * Sent when a role was deleted
  */
 class RoleDeleteEvent(override val client: DiscordClient, val roleId: Snowflake) : Event

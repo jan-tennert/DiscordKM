@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -54,7 +54,7 @@ inline fun RowBuilder<MessageLayout>.actionButton(style: ButtonStyle, customId: 
     }
 }
 
-/**
+/*
  * A blue button
  * @param customId The id used for identifying the button in the [ButtonClickEvent]
  * @param isDisabled Whether this button should be disabled
@@ -63,7 +63,7 @@ inline fun RowBuilder<MessageLayout>.actionButton(style: ButtonStyle, customId: 
  */
 inline fun RowBuilder<MessageLayout>.primaryButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, crossinline onClick: suspend ButtonClickEvent.() -> Unit = {}) = actionButton(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.PRIMARY, onClick = onClick)
 
-/**
+/*
  * A red button
  * @param customId The id used for identifying the button in the [ButtonClickEvent]
  * @param isDisabled Whether this button should be disabled
@@ -72,7 +72,7 @@ inline fun RowBuilder<MessageLayout>.primaryButton(customId: String = "", label:
  */
 inline fun RowBuilder<MessageLayout>.dangerButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, crossinline onClick: suspend ButtonClickEvent.() -> Unit = {}) = actionButton(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.DANGER, onClick = onClick)
 
-/**
+/*
  * A green button
  * @param customId The id used for identifying the button in the [ButtonClickEvent]
  * @param isDisabled Whether this button should be disabled
@@ -81,7 +81,7 @@ inline fun RowBuilder<MessageLayout>.dangerButton(customId: String = "", label: 
  */
 inline fun RowBuilder<MessageLayout>.successButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, crossinline onClick: suspend ButtonClickEvent.() -> Unit = {}) = actionButton(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.SUCCESS, onClick = onClick)
 
-/**
+/*
  * A grey button
  * @param customId The id used for identifying the button in the [ButtonClickEvent]
  * @param isDisabled Whether this button should be disabled
@@ -90,7 +90,7 @@ inline fun RowBuilder<MessageLayout>.successButton(customId: String = "", label:
  */
 inline fun RowBuilder<MessageLayout>.secondaryButton(customId: String = "", label: String? = null, emoji: Emoji? = null, isDisabled: Boolean = false, crossinline onClick: suspend ButtonClickEvent.() -> Unit = {}) = actionButton(customId = customId, label = label, emoji = emoji, isDisabled = isDisabled, style = ButtonStyle.SECONDARY, onClick = onClick)
 
-/**
+/*
  * A button used for opening urls
  * @param url The url of the button. Used for LinkButtons
  * @param isDisabled Whether this button should be disabled

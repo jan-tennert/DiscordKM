@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -19,7 +19,7 @@ import io.github.jan.discordkm.api.entities.guild.member.Member
 import io.github.jan.discordkm.api.entities.messages.Message
 
 
-/**
+/*
  * Sent when someone removes a reaction
  *
  * Requires the intent [Intent.GUILD_MESSAGE_REACTIONS] or [Intent.DIRECT_MESSAGE_REACTIONS]
@@ -32,7 +32,7 @@ class MessageReactionRemoveEvent(
     val guild: Guild?,
     override val message: Message
 ) : MessageEvent
-/**
+/*
  * Sent when someone removes all messages from a message
  *
  * Requires the intent [Intent.GUILD_MESSAGE_REACTIONS] or [Intent.DIRECT_MESSAGE_REACTIONS]
@@ -44,7 +44,7 @@ class MessageReactionRemoveAllEvent(
     override val message: Message
 ) : MessageEvent
 
-/**
+/*
  * Sent when every reaction with the same emojis are deleted
  *
  * Requires the intent [Intent.GUILD_MESSAGE_REACTIONS] or [Intent.DIRECT_MESSAGE_REACTIONS]
@@ -56,7 +56,7 @@ class MessageReactionEmojiRemoveEvent(
     val guild: Guild?,
     override val message: Message,
 ) : MessageEvent
-/**
+/*
  * Sent when reacts to a message
  *
  * Requires the intent [Intent.GUILD_MESSAGE_REACTIONS] or [Intent.DIRECT_MESSAGE_REACTIONS]

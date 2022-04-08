@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -19,7 +28,7 @@ import kotlinx.serialization.json.jsonObject
 
 open class CommandContainer(private val holder: CommandHolder, private val baseURL: String) {
 
-    /**
+    /*
      * Creates a new application command
      */
     suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
@@ -27,22 +36,22 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
         transform { println(it); ApplicationCommand(holder.client, it.toJsonObject()) }
     }
 
-    /**
+    /*
      * Creates a new chat input command
      */
     suspend fun createChatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) = create(chatInputCommand(holder.client as? WSDiscordClient, builder))
 
-    /**
+    /*
      * Creates a new message command
      */
     suspend fun createMessageCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(messageCommand(holder.client as? WSDiscordClient, builder))
 
-    /**
+    /*
      * Creates a new user command
      */
     suspend fun createUserCommand(builder: ApplicationCommandBuilder.() -> Unit) = create(userCommand(holder.client as? WSDiscordClient, builder))
 
-    /**
+    /*
      * Retrieves all application commands
      */
     suspend fun retrieveAll() = holder.client.buildRestAction<List<ApplicationCommand>> {
@@ -50,7 +59,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
         transform { it.toJsonArray().map { json -> ApplicationCommand(holder.client, json.jsonObject) } }
     }
 
-    /**
+    /*
      * Retrieves a specific application command
      */
     suspend fun retrieve(id: Snowflake) = holder.client.buildRestAction<ApplicationCommand> {
@@ -58,7 +67,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
         transform { ApplicationCommand(holder.client, it.toJsonObject()) }
     }
 
-    /**
+    /*
      * Modifies an application command
      */
     suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
@@ -66,14 +75,14 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
         transform { ApplicationCommand(holder.client, it.toJsonObject()) }
     }
 
-    /**
+    /*
      * Deletes an application command
      */
     suspend fun delete(id: Snowflake) = holder.client.buildRestAction<Unit> {
         route = RestAction.delete("$baseURL/$id")
     }
 
-    /**
+    /*
      * Overrides all application commands with new ones
      */
     suspend fun override(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {

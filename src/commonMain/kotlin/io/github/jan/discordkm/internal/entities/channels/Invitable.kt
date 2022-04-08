@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -25,7 +25,7 @@ import kotlinx.serialization.json.encodeToJsonElement
 
 interface Invitable : SnowflakeEntity, BaseEntity {
 
-    /**
+    /*
      * Retrieves all invites for this channel
      */
     suspend fun retrieveInvites() = client.buildRestAction<List<Invite>> {
@@ -33,7 +33,7 @@ interface Invitable : SnowflakeEntity, BaseEntity {
         transform { json -> json.toJsonArray().map { Invite(client, json.toJsonObject()) } }
     }
 
-    /**
+    /*
      * Creates a new invite for this channel
      * @param reason The reason which will be displayed in the audit logs
      */

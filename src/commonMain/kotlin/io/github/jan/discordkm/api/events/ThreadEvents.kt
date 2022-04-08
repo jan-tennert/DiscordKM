@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -26,17 +26,17 @@ interface ThreadEvent : Event {
 
 }
 
-/**
+/*
  * Sent when a thread was created
  */
 class ThreadCreateEvent(override val thread: Thread) : ThreadEvent
 
-/**
+/*
  * Sent when a thread was updated
  */
 class ThreadUpdateEvent(override val thread: Thread, val oldThread: Thread?) : ThreadEvent
 
-/**
+/*
  * Sent when a thread was deleted
  */
 class ThreadDeleteEvent(

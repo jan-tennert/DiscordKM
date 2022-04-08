@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -13,7 +13,7 @@ import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
 
-/**
+/*
  * Sent when the guild stickers get updated
  *
  * Requires the intent [Intent.GUILD_EMOJIS_AND_STICKERS]

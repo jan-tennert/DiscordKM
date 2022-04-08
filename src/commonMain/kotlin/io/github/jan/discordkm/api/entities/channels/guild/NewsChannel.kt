@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.channels.guild
 
 import com.soywiz.klock.TimeSpan
@@ -26,7 +35,7 @@ sealed interface NewsChannel: GuildTextChannel {
     override val cache: NewsChannelCacheEntry?
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? NewsChannelCacheEntry
 
-    /**
+    /*
      * Follows the news channel which means messages which are sent in this channel can be published to send the message to every channel which is following this channel.
      * @param targetId The id of the channel where the messages are going to be sent when a new message is published
      */
@@ -39,7 +48,7 @@ sealed interface NewsChannel: GuildTextChannel {
     suspend fun follow(target: GuildTextChannel) = follow(target.id)
 
     companion object : GuildChannelBuilder<TextChannelModifier, NewsChannel> {
-        override fun create(modifier: TextChannelModifier.() -> Unit) = TextChannelModifier().apply { convertToNewsChannel(); modifier(this) }
+        override fun createChannel(modifier: TextChannelModifier.() -> Unit) = TextChannelModifier().apply { convertToNewsChannel(); modifier(this) }
 
         operator fun invoke(id: Snowflake, guild: Guild): NewsChannel = NewsChannelImpl(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<NewsChannelCacheEntry>(data, guild)

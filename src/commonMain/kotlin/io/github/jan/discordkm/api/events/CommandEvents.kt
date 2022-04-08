@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -20,19 +20,19 @@ interface CommandEvent : InteractionCreateEvent {
     override val interaction: ApplicationCommandInteraction
 }
 
-/**
+/*
  * Sent when someone enters the slash command
  */
 class SlashCommandEvent(override val client: DiscordClient, override val interaction: ApplicationCommandInteraction, override val commandName: String, val options: OptionContainer, val subCommand: String? = null, val subCommandGroup: String? = null) :
     CommandEvent
 
-/**
+/*
  * Sent when someone clicks on a message context menu command
  */
 class MessageCommandEvent(override val client: DiscordClient, override val interaction: ApplicationCommandInteraction, override val commandName: String, val targetMessage: Message) :
     CommandEvent
 
-/**
+/*
  * Sent when someone clicks on a user context menu command
  */
 class UserCommandEvent(override val client: DiscordClient, override val interaction: ApplicationCommandInteraction, override val commandName: String, val targetUser: UserCacheEntry) :

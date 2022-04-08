@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.containers
 
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -22,7 +31,7 @@ import kotlinx.serialization.json.putJsonArray
 
 open class EmoteContainer(val guild: Guild) {
 
-    /**
+    /*
      * Retrieves a guild emote by its id
      */
     suspend fun retrieveEmote(id: Snowflake) = guild.client.buildRestAction<Emoji.Emote> {
@@ -30,7 +39,7 @@ open class EmoteContainer(val guild: Guild) {
         transform { GuildSerializer.deserializeGuildEmote(it.toJsonObject(), guild.client) }
     }
 
-    /**
+    /*
      * Retrieves all guild emotes
      */
     suspend fun retrieveEmotes() = guild.client.buildRestAction<List<Emoji.Emote>> {
@@ -38,7 +47,7 @@ open class EmoteContainer(val guild: Guild) {
         transform { it.toJsonArray().map { e -> GuildSerializer.deserializeGuildEmote(e.jsonObject, guild.client) } }
     }
 
-    /**
+    /*
      * Creates a new guild emote
      * @param name The name of the emote
      * @param image The image of the emote itself
@@ -53,7 +62,7 @@ open class EmoteContainer(val guild: Guild) {
         transform { GuildSerializer.deserializeGuildEmote(it.toJsonObject(), guild.client) }
     }
 
-    /**
+    /*
      * Modifies an existing guild emote
      * @param name The name of the emote
      * @param allowedRoleIds The roles that can use this emote
@@ -68,7 +77,7 @@ open class EmoteContainer(val guild: Guild) {
         this.reason = reason
     }
 
-    /**
+    /*
      * Deletes a guild emote by its id
      * @param reason The reason which will be displayed in the audit logs
      */

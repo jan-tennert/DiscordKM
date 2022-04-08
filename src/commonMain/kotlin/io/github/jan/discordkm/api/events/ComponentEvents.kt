@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -19,7 +19,7 @@ interface ComponentEvent : InteractionCreateEvent {
     val componentType: ComponentType
 }
 
-/**
+/*
  * Sent when someone clicks on a button, which the bot created
  */
 class ButtonClickEvent(
@@ -32,7 +32,7 @@ class ButtonClickEvent(
 
 }
 
-/**
+/*
  * Sent when someone interacts with a selection menu, which the bot created
  */
 class SelectionMenuEvent(

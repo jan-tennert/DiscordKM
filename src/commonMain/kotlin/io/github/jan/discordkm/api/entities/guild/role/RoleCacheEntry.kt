@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.guild.role
 
 import io.github.jan.discordkm.api.entities.Nameable
@@ -16,47 +25,47 @@ import kotlinx.serialization.Serializable
 
 interface RoleCacheEntry : Role, PermissionHolder, Nameable, CacheEntry {
 
-    /**
+    /*
      * The color of the role
      */
     val color: Color
 
-    /**
+    /*
      * Whether the role is pinned in the user list
      */
     val isHoist: Boolean
 
-    /**
+    /*
      * The emoji appearing next to the roles name in the chat & in the user list
      */
     val unicodeEmoji: String?
     
-    /**
+    /*
      * The position of the role in the guild
      */
     val position: Int
 
-    /**
+    /*
      * Whether the role is managed by an integration
      */
     val isManagedByAnIntegration: Boolean
 
-    /**
+    /*
      * Whether the role can be mentioned in chat
      */
     val isMentionable: Boolean
 
-    /**
+    /*
      * The tags of the role
      */
     val tags: Tag?
 
-    /**
+    /*
      * The icon of the role, shown in the user list and in the chat
      */
     val iconUrl: String?
 
-    /**
+    /*
      * @param botId The id of the bot the role belongs to
      * @param integrationId The id of the integration the role belongs to
      * @param isPremiumSubscriber Whether this is the guild's premium subscriber role

@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.channels.guild
 
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -23,7 +32,7 @@ sealed interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryC
     override val cache: CategoryCacheEntry?
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? CategoryCacheEntry
 
-    /**
+    /*
      * Returns a list of guild channel objects of cached channels who have this category as their parent
      */
     val children: List<GuildChannelCacheEntry>
@@ -36,7 +45,7 @@ sealed interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryC
     }
 
     companion object : GuildChannelBuilder<CategoryModifier, Category> {
-        override fun create(modifier: CategoryModifier.() -> Unit) = CategoryModifier().apply(modifier)
+        override fun createChannel(modifier: CategoryModifier.() -> Unit) = CategoryModifier().apply(modifier)
 
         operator fun invoke(id: Snowflake, guild: Guild): Category = CategoryImpl(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<CategoryCacheEntry>(data, guild)

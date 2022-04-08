@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.channels.guild
 
 import com.soywiz.klock.DateTimeTz
@@ -28,7 +37,7 @@ import kotlinx.serialization.json.put
 
 interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier, GuildTextChannelCacheEntry>, InvitableGuildChannel {
 
-    /**
+    /*
      * Creates a new public thread in this channel.
      * @param name The name of the thread.
      * @param autoArchiveDuration The time after which the thread will be automatically archived.
@@ -38,7 +47,7 @@ interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier
      */
     suspend fun createPublicThread(name: String, autoArchiveDuration: Thread.ThreadDuration = Thread.ThreadDuration.DAY, slowModeTime: TimeSpan? = null, reason: String? = null, invitable: Boolean? = null) = createThread(name, ChannelType.GUILD_PUBLIC_THREAD, autoArchiveDuration, slowModeTime, reason, invitable)
 
-    /**
+    /*
      * Creates a new private thread in this channel.
      * @param name The name of the thread.
      * @param autoArchiveDuration The time after which the thread will be automatically archived.
@@ -60,7 +69,7 @@ interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier
         this.reason = reason
     }
 
-    /**
+    /*
      * Retrieves all public achieved threads
      * @param limit How many threads will get retrieved
      * @param before Threads before this timestamp
@@ -73,7 +82,7 @@ interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier
         transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(thread.jsonObject, guild) }}
     }
 
-    /**
+    /*
      * Retrieves all private achieved threads
      * @param limit How many threads will get retrieved
      * @param before Threads before this timestamp
@@ -86,7 +95,7 @@ interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier
         transform { it.toJsonObject().getValue("threads").jsonArray.map { thread -> Thread(thread.jsonObject, guild) }}
     }
 
-    /**
+    /*
      * Retrieves all joined private archived threads
      * @param limit How many threads will get retrieved
      * @param before Threads before this id

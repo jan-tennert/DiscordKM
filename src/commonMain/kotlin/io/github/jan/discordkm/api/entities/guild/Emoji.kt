@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -20,7 +20,7 @@ import io.github.jan.discordkm.api.entities.guild.Emoji.Emote
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/**
+/*
  * An emoji can be a unicode emoji or an [Emote]
  */
 @Serializable
@@ -31,7 +31,7 @@ class Emoji private constructor(
     val isAnimated: Boolean = false
 ) : Mentionable {
 
-    /**
+    /*
      * An emote is an emoji which is only available on a specific guild
      *
      * @param id The id of the emote

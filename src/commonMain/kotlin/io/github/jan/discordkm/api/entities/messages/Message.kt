@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -29,8 +29,8 @@ import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.put
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.FlagEnum
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
-import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.serializers.MessageSerializer
 import io.github.jan.discordkm.internal.utils.putOptional
 import io.github.jan.discordkm.internal.utils.toJsonObject
@@ -54,14 +54,14 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
     override val cache: MessageCacheEntry?
         get() = channel.cache?.cacheManager?.messageCache?.get(id)
 
-    /**
+    /*
      * Crossposts this message if it was sent in a [NewsChannel]
      */
     suspend fun crosspost() = client.buildRestAction<Unit> {
         route = Route.Message.CROSSPOST_MESSAGE(channel.id.toString(), id).post()
     }
 
-    /**
+    /*
      * Deletes the message in the channel
      * Needs [Permission.MANAGE_MESSAGES] to delete other's messages
      * @param reason The reason which will be displayed in the audit logs
@@ -71,7 +71,7 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
         this.reason = reason
     }
 
-    /**
+    /*
      * Edits this message
      */
     suspend fun edit(overwrite: Boolean = false, message: DataMessage) = client.buildRestAction<MessageCacheEntry> {
@@ -81,17 +81,17 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
         transform { invoke(it.toJsonObject(), client) }
     }
 
-    /**
+    /*
      * Edits this message
      */
     suspend fun edit(overwrite: Boolean = false, message: MessageBuilder.() -> Unit) = edit(overwrite, buildMessage(client, message))
 
-    /**
+    /*
      * Edits this message
      */
     suspend fun edit(overwrite: Boolean = false, content: String) = edit(overwrite, buildMessage(client) { this.content = content })
 
-    /**
+    /*
      * Replies to this message
      */
     suspend fun reply(message: DataMessage) = channel.send {
@@ -99,17 +99,17 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
         reference(this@Message)
     }
 
-    /**
+    /*
      * Replies to this message
      */
     suspend fun reply(builder: MessageBuilder.() -> Unit) = reply(buildMessage(client, builder))
 
-    /**
+    /*
      * Replies to this message
      */
     suspend fun reply(content: String) = reply { this.content = content }
 
-    /**
+    /*
      * Creates a thread from this message
      * @param name The name this thread will get
      * @param autoArchiveDuration The [Thread.ThreadDuration] after the thread will be achieved
@@ -126,7 +126,7 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
         this.reason = reason
     }
 
-    /**
+    /*
      * Pins this message in this channel
      */
     suspend fun pin(reason: String? = null) = client.buildRestAction<Unit> {
@@ -134,7 +134,7 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
         this.reason = reason
     }
 
-    /**
+    /*
      * Unpins this message in this channel
      */
     suspend fun unpin(reason: String? = null) = client.buildRestAction<Unit> {
@@ -142,13 +142,13 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
         this.reason = reason
     }
 
-    /**
+    /*
      * The message reference is sent when e.g. a message replies to another message
      */
     @Serializable
     data class Reference(@SerialName("message_id") val messageId: Snowflake? = null, @SerialName("guild_id") val guildId: Snowflake? = null, @SerialName("channel_id") val channelId: Snowflake? = null, @get:JvmName("failIfNotExists") @SerialName("fail_if_not_exists") val failIfNotExists: Boolean = true)
 
-    enum class Flag(override val offset: Int) : SerializableEnum<Flag> {
+    enum class Flag(override val offset: Int) : FlagEnum<Flag> {
         CROSSPOSTED(0),
         IS_CROSSPOST(1),
         SUPPRESS_EMBEDS(2),
@@ -162,7 +162,7 @@ sealed interface Message : SnowflakeEntity, BaseEntity, CacheEntity {
 
     }
 
-    /**
+    /*
      * The message interaction object is sent when it was sent by an interaction
      */
     class MessageInteraction(

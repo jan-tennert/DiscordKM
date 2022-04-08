@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -13,7 +13,7 @@ import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.Serializable
 
-/**
+/*
  * A user status says whether the user is online, idling, offline etc.
  */
 enum class PresenceStatus(override val value: String) : EnumWithValue<String> {

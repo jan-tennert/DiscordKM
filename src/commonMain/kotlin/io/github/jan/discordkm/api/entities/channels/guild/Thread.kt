@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.channels.guild
 
 import com.soywiz.klock.DateTimeTz
@@ -40,14 +49,14 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
     override val cache: ThreadCacheEntry?
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? ThreadCacheEntry
 
-    /**
+    /*
      * Joins this thread.
      */
     suspend fun join() = client.buildRestAction<Unit> {
         route = Route.Thread.JOIN_THREAD(id).put()
     }
 
-    /**
+    /*
      * Leaves this thread.
      */
     suspend fun leave() = client.buildRestAction<Unit> {
@@ -104,7 +113,7 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<ThreadCacheEntry>(data, guild)
     }
 
-    /**
+    /*
      * Represents the time when a thread is getting archived
      */
     @JvmInline

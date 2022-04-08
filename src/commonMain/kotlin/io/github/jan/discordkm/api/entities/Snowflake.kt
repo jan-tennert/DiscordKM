@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -44,7 +44,7 @@ object SnowflakeSerializer : KSerializer<Snowflake> {
 
 }
 
-/**
+/*
  * Objects like [Member], [Role] or [Guild] are Snowflake entities,
  * but if you want a snowflake entity without an object use [fromSnowflake]
  */

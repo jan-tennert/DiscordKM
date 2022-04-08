@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -9,7 +9,7 @@
  */
 package io.github.jan.discordkm.internal.exceptions
 
-class RestException(message: String, val errorCode: Int, val statusCode: Int, val body: String?, val url: String, val fullError: String) : Exception("""
+class RestException(message: String, errorCode: Int, statusCode: Int, body: String?, val url: String, fullError: String) : Exception("""
     Error $errorCode: $message (Status Code: $statusCode)
     URL: $url
     Full Error: $fullError

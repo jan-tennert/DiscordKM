@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.guild
 
 import com.soywiz.klock.DateTimeTz
@@ -12,7 +21,7 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/**
+/*
  * Represents a member's voice state in a guild.
  *
  * @param guild The guild where this voice state is located.
@@ -44,19 +53,19 @@ class VoiceStateCacheEntry(
     val requestToSpeakTimestamp: DateTimeTz?
 ) : GuildEntity {
 
-    /**
+    /*
      * Whether the user is in a voice channel.
      */
     val isInVoiceChannel: Boolean
         get() = channel != null
 
-    /**
+    /*
      * Whether this user is the bot
      */
     val isSelfUser: Boolean
         get() = client.selfUser.id == user.id
 
-    /**
+    /*
      * Invites this user to speak in stage channel
      */
     suspend fun inviteToSpeak() = client.buildRestAction<Unit> {
@@ -68,7 +77,7 @@ class VoiceStateCacheEntry(
         transform {  }
     }
 
-    /**
+    /*
      * Accepts his speak request
      */
     suspend fun acceptSpeakRequest() = client.buildRestAction<Unit> {
@@ -79,7 +88,7 @@ class VoiceStateCacheEntry(
         transform {  }
     }
 
-    /**
+    /*
      * Declines his speak request
      */
     suspend fun declineSpeakRequest() = client.buildRestAction<Unit> {

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -39,78 +39,78 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlin.jvm.JvmName
 
-/**
+/*
  * An invite is used to easily let a user join a guild, voice channel, stage instance, event etc.
  */
 class Invite(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity {
 
-    /**
+    /*
      * The code of the [Invite]
      */
     val code = data.getOrThrow<String>("code")
 
-    /**
+    /*
      * Approximate count of online members, returned from the GET /invites/<code> endpoint when with_counts is true
      */
     val approximatePresenceCount = data.getOrNull<Int>("approximate_presence_count")
 
-    /**
+    /*
      * Approximate count of total members, returned from the GET /invites/<code> endpoint when with_counts is true
      */
     val approximateMemberCount = data.getOrNull<Int>("approximate_member_count")
 
-    /**
+    /*
      * The invite link of the invite. Looks like this:
      *
      * https://discord.gg/[code]
      */
     val url = "https://discord.gg/$code"
 
-    /**
+    /*
      * The guild, if it is an invite to a guild channel
      */
     val guild = data["guild"]?.jsonObject?.get("id")?.snowflake?.let { Guild(it, client) }
 
-    /**
+    /*
      * The channel this invite is for
      */
     val channel = data["channel_id"]?.snowflake?.let { Channel(it, ChannelType.UNKNOWN, client) }
 
-    /**
+    /*
      * The inviter who created this invite
      */
     val inviter = data["inviter"]?.jsonObject?.let { User(it, client) }
 
-    /**
+    /*
      * The type of the invite
      */
     val type = TargetType[data["type"]!!.int]
 
-    /**
+    /*
      * The target user for this invite, if this an invite to a stream
      */
     val targetUser = data["target_user"]?.jsonObject?.let { User(it, client) }
 
     val application = data["target_application"]?.jsonObject?.let { InviteApplication(client, it) }
 
-    /**
+    /*
      * The invite expiration date
      */
     val expiresAt = ISO8601.DATETIME_UTC_COMPLETE.tryParse(data.getOrNull<String>("expires_at") ?: "")
 
-    /**
+    /*
      * The guild scheduled event when linked to an [ScheduledEvent]
      */
     val guildScheduledEvent = data["guild_scheduled_event"]?.jsonObject?.let { ScheduledEventSerializer.deserialize(it, client) }
 
-    /**
+    /*
      * [Metadata] for this invite. It is always null except when you retrieve it
      */
     val metadata = if(data.getOrNull<Int>("uses") != null) Json {
         ignoreUnknownKeys = true
     }.decodeFromString<Metadata>(data.toString()) else null
 
-    /**
+    /*
      * Deletes this invite
      */
     suspend fun delete() = client.buildRestAction<Unit> {

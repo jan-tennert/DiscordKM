@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
 
 interface Component {
 
-    /**
+    /*
      * The type of the component
      */
     val type: ComponentType

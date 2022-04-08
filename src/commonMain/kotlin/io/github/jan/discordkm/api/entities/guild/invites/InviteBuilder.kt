@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -17,7 +17,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/**
+/*
  * Represents an invite target.
  * Use [TargetType] to create one
  */
@@ -25,28 +25,28 @@ data class InviteTarget internal constructor(val targetId: Snowflake, val type: 
 
 class InviteBuilder : JsonModifier {
 
-    /**
+    /*
      * The duration of invite in seconds before expire.
      * (0-604800). 0 means never
      */
     var maxAge: Int? = null
 
-    /**
+    /*
      * Max number of uses (0-100). 0 means unlimited
      */
     var maxUses: Int? = null
 
-    /**
+    /*
      * "Whether this invite only grants temporary membership"
      */
     var isTemporary: Boolean? = null
 
-    /**
+    /*
      * "If true, don't try to reuse a similar invite (useful for creating many unique one time use invites)"
      */
     var isUnique: Boolean? = null
 
-    /**
+    /*
      * The target of this invite. Can refer to a EmbeddedApplication or a user's stream
      */
     var target: InviteTarget? = null

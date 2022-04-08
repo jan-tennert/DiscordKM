@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -47,8 +47,8 @@ import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.post
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.FlagEnum
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
-import io.github.jan.discordkm.internal.serialization.SerializableEnum
 import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.utils.EnumWithValue
@@ -61,7 +61,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import kotlin.reflect.KProperty
 
-/**
+/*
  * A guild can contain channels and members.
  */
 sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEntity, CommandHolder,
@@ -86,7 +86,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
     override val commands: CommandContainer
         get() = CommandContainer(this, "/applications/${client.selfUser.id}/guilds/$id/commands")
 
-    /**
+    /*
      * Retrieves the audit log for this guild.
      * @param userId The user ID to filter the audit log by.
      * @param action The action to filter the audit log by.
@@ -109,7 +109,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         transform { AuditLog(it.toJsonObject(), this@Guild) }
     }
 
-    /**
+    /*
      * Retrieves all bans for this guild
      */
     suspend fun retrieveBans(limit: Int = 1000, before: Snowflake? = null, after: Snowflake? = null) = client.buildRestAction<List<Ban>> {
@@ -121,7 +121,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         transform { it.toJsonArray().map { ban -> GuildSerializer.deserializeBan(ban.jsonObject, this@Guild) } }
     }
 
-    /**
+    /*
      * Leaves the voice channel in this guild (if connected)
      *
      * Requires a websocket connection.
@@ -139,7 +139,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         throw UnsupportedOperationException("You can't leave a voice channel without having a gateway connection!")
     }
 
-    /**
+    /*
      * Retrieves a ban by its id
      */
     suspend fun retrieveBan(userId: Snowflake) = client.buildRestAction<Ban> {
@@ -147,14 +147,14 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         transform { GuildSerializer.deserializeBan(it.toJsonObject(), this@Guild) }
     }
 
-    /**
+    /*
      * Leaves this guild
      */
     suspend fun leave() = client.buildRestAction<Unit> {
         route = Route.User.LEAVE_GUILD(id).delete()
     }
 
-    /**
+    /*
      * Deletes this guild.
      *
      * The bot must be the owner of the guild.
@@ -164,7 +164,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
 
     }
 
-    /**
+    /*
      * Creates a new invite for this guild
      * @param channelId The channel to create the invite for.
      */
@@ -174,7 +174,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         transform { Invite(client, it.toJsonObject()) }
     }
 
-    /***
+    /**
      * Retrieves all templates for this guild
      */
     suspend fun retrieveTemplates() = client.buildRestAction<List<GuildTemplate>> {
@@ -182,7 +182,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         transform { data -> data.toJsonArray().map { GuildSerializer.deserializeGuildTemplate(it.jsonObject, client) } }
     }
 
-    /**
+    /*
      * Creates a guild template upon this guild
      */
     suspend fun createTemplate(name: String, description: String?) = client.buildRestAction<GuildTemplate> {
@@ -193,7 +193,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         transform { GuildSerializer.deserializeGuildTemplate(it.toJsonObject(), client) }
     }
 
-    /**
+    /*
      * Modifies this guild
      */
     override suspend fun modify(reason: String?, modifier: GuildModifier.() -> Unit) = client.buildRestAction<Unit> {
@@ -201,7 +201,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         this.reason = reason
     }
 
-    /**
+    /*
      * Set's the bots nickname. When [nickname] is null, it will reset the nickname (and will use the bot's username).
      */
     suspend fun modifyOwnNickname(nickname: String?, reason: String? = null) = client.buildRestAction<Unit> {
@@ -211,7 +211,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         this.reason = reason
     }
 
-    /**
+    /*
      * Retrieves the welcome screen for this guild
      */
     suspend fun retrieveWelcomeScreen() = client.buildRestAction<WelcomeScreen> {
@@ -219,7 +219,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         transform { GuildSerializer.deserializeWelcomeScreen(it.toJsonObject(), this@Guild) }
     }
 
-    /**
+    /*
      * Modifies the welcome screen for this guild
      */
     suspend fun modifyWelcomeScreen(builder: WelcomeScreenModifier.() -> Unit) = client.buildRestAction<WelcomeScreen> {
@@ -227,12 +227,12 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         transform { GuildSerializer.deserializeWelcomeScreen(it.toJsonObject(), this@Guild) }
     }
 
-    /**
+    /*
      * An unavailable guild is sent on the [ReadyEvent] when the bot is on this guild but the guild currently has some issues and isn't loaded in the cache
      */
     data class Unavailable(val id: Long)
 
-    /**
+    /*
      * The [NSFWLevel]
      */
     enum class NSFWLevel : EnumWithValue<Int> {
@@ -247,7 +247,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         companion object : EnumWithValueGetter<NSFWLevel, Int>(values())
     }
 
-    /**
+    /*
      * A guild with a higher premium tier has more features like higher attachment size
      */
     enum class PremiumTier : EnumWithValue<Int> {
@@ -262,28 +262,28 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         companion object : EnumWithValueGetter<PremiumTier, Int>(values())
     }
 
-    /**
+    /*
      * The [VerificationLevel] for the guild
      */
     enum class VerificationLevel : EnumWithValue<Int> {
         NONE,
 
-        /**
+        /*
          * The users must have a verified email address
          */
         LOW,
 
-        /**
+        /*
          * The users must also be registered on Discord for longer than 5 minutes
          */
         MEDIUM,
 
-        /**
+        /*
          * The users must also be on this discord server for more than 10 minutes
          */
         HIGH,
 
-        /**
+        /*
          * The users must have a verified phone on their account
          */
         VERY_HIGH;
@@ -294,7 +294,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         companion object : EnumWithValueGetter<VerificationLevel, Int>(values())
     }
 
-    /**
+    /*
      * The [NotificationLevel] sets the default notification level for all guild channels
      */
     enum class NotificationLevel : EnumWithValue<Int> {
@@ -308,7 +308,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
 
     }
 
-    /**
+    /*
      * The [ExplicitContentFilter] sets which message should be scanned from discord
      */
     enum class ExplicitContentFilter : EnumWithValue<Int> {
@@ -322,7 +322,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         companion object : EnumWithValueGetter<ExplicitContentFilter, Int>(values())
     }
 
-    /**
+    /*
      * A Guild Feature specifies which features a guild can use. For example if a guild has the feature "BANNER" it means that the guild can use the banner feature
      */
     enum class Feature : EnumWithValue<String> {
@@ -373,7 +373,7 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
 
     }
 
-    /**
+    /*
      * Represents a ban on a guild
      *
      * @property user The user that was banned
@@ -385,10 +385,10 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
         val user: UserCacheEntry
     ) : GuildEntity
 
-    /**
+    /*
      * See [Discord Docs](https://discord.com/developers/docs/resources/guild#guild-object-system-channel-flags) for more information
      */
-    enum class SystemChannelFlag(override val offset: Int) : SerializableEnum<SystemChannelFlag> {
+    enum class SystemChannelFlag(override val offset: Int) : FlagEnum<SystemChannelFlag> {
         UNKNOWN(-1),
         SUPPRESS_JOIN_NOTIFICATIONS(0),
         SUPPRESS_PREMIUM_SUBSCRIPTIONS(1),

@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -9,13 +9,13 @@
  */
 package io.github.jan.discordkm.api.entities.guild
 
+import io.github.jan.discordkm.internal.serialization.FlagEnum
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
-import io.github.jan.discordkm.internal.serialization.SerializableEnum
 
-/**
+/*
  * Roles and Members can have specific permission to restrict their access on the guild
  */
-enum class Permission(override val offset: Int) : SerializableEnum<Permission> {
+enum class Permission(override val offset: Int) : FlagEnum<Permission> {
 
     CREATE_INSTANT_INVITE(0),
     KICK_MEMBERS(1),

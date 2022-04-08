@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -16,7 +16,7 @@ import io.github.jan.discordkm.api.entities.clients.Intent
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
 
-/**
+/*
  * Sent when someone sends a message into a message channel
  *
  * Requires the intent [Intent.GUILD_MESSAGES] or [Intent.DIRECT_MESSAGES]
@@ -27,14 +27,14 @@ class MessageCreateEvent(
     override val channel: MessageChannel
 ) : MessageEvent, MessageCacheEntry by message
 
-/**
+/*
  * Sent when someone deletes a message
  *
  * Requires the intent [Intent.GUILD_MESSAGES] or [Intent.DIRECT_MESSAGES]
  */
 class MessageDeleteEvent(override val client: DiscordClient, val id: Snowflake, val channel: MessageChannel) : Event
 
-/**
+/*
  * Sent when someone deletes multiple messages at once
  *
  * Requires the intent [Intent.GUILD_MESSAGES] or [Intent.DIRECT_MESSAGES]

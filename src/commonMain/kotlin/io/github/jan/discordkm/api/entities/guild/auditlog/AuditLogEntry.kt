@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -26,7 +26,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 
-/**
+/*
  * @param targetId The id of the affected entity (role, member, etc...)
  * @param changes The changes made to [targetId]
  * @param userId The user who made these changes
@@ -49,7 +49,7 @@ class AuditLogEntry(
     val options: AuditLogInfo? = null
 ) : SnowflakeEntity
 
-/**
+/*
  * @param key The [audit log change](https://discord.com/developers/docs/resources/audit-log#audit-log-change-object-audit-log-change-key) key
  */
 @Serializable
@@ -61,7 +61,7 @@ class AuditLogChange(
     val key: String
 ) {
 
-    /**
+    /*
      * Can be a [Snowflake] a boolean, an int, a string, a [PermissionOverwrite] or a pair of role name and id
      */
     @Transient
@@ -75,7 +75,7 @@ class AuditLogChange(
         }
     }
 
-    /**
+    /*
      * Can be a [Snowflake] a boolean, an int, a string, a [PermissionOverwrite] or a pair of role name and id
      */
     @Transient
@@ -91,7 +91,7 @@ class AuditLogChange(
 
 }
 
-/**
+/*
  * @param channelId The channel id for member move, message (un)pin, message delete, and stage instance actions
  * @param count The amount of entities that were targeted (message (bulk) delete, member disconnect, member move)
  * @param deleteMemberDays Number of days after which inactive members were kicked (member prune)

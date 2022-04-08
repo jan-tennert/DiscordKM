@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -26,7 +26,7 @@ import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/**
+/*
  * Represents a guild template
  * @param code The template code
  * @param name The name of this template
@@ -52,14 +52,14 @@ data class GuildTemplate(
 ) : BaseEntity {
 
 
-    /**
+    /*
      * Deletes this guild template
      */
     suspend fun delete() = client.buildRestAction<Unit> {
         route = Route.Template.DELETE_GUILD_TEMPLATE(sourceGuild.id, code).delete()
     }
 
-    /**
+    /*
      * Modifies this guild template
      * @param name The new name of the template
      * @param description The new description of the template
@@ -72,7 +72,7 @@ data class GuildTemplate(
         transform { copy(name = name ?: this@GuildTemplate.name, description = description ?: this@GuildTemplate.name) }
     }
 
-    /**
+    /*
      * Syncs the template to the source guild's current state
      */
     suspend fun sync() = client.buildRestAction<GuildTemplate> {

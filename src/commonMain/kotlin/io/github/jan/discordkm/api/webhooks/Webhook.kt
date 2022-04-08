@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -13,8 +13,8 @@ import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
+import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.messages.DataMessage
 import io.github.jan.discordkm.api.entities.messages.MessageBuilder
 import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
@@ -42,12 +42,12 @@ import kotlinx.serialization.json.JsonObject
 
 class Webhook(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity, WebhookExecutor {
 
-    /**
+    /*
      * The id of the webhook
      */
     override val id = data.getId()
 
-    /**
+    /*
      * The [WebhookType] of the webhook
      */
     val type = WebhookType[data["type"]!!.int]
@@ -56,14 +56,14 @@ class Webhook(override val client: DiscordClient, override val data: JsonObject)
 
     val channelId = data.getOrNull<Snowflake>("channel_id")
 
-    /**
+    /*
      * The name of the webhook
      */
     val name = data.getOrThrow<String>("name")
 
     val avatarUrl = data.getOrNull<String>("avatar")?.let { DiscordImage.userAvatar(id, it) }
 
-    /**
+    /*
      * The token for the webhook. Can be empty
      */
     override val token = data.getOrNull<String>("token") ?: ""
@@ -76,7 +76,7 @@ class Webhook(override val client: DiscordClient, override val data: JsonObject)
     override val requester: Requester
         get() = client.requester
 
-    /**
+    /*
      * Deletes this webhook
      */
     suspend fun delete() = client.buildRestAction<Unit> {
@@ -88,7 +88,7 @@ class Webhook(override val client: DiscordClient, override val data: JsonObject)
         transform {  }
     }
 
-    /**
+    /*
      * Modifies this webhook
      */
     suspend fun modify(modifier: WebhookModifier.() -> Unit) = client.buildRestAction<Webhook> {
@@ -129,7 +129,9 @@ class Webhook(override val client: DiscordClient, override val data: JsonObject)
 
             override val http = HttpClient()
 
-            override val requester = Requester(ClientConfig("", logging = LoggerConfig(Logger.Level.DEBUG), httpClientConfig = {}))
+            override val requester = Requester(ClientConfig(mapOf(
+                "logging" to LoggerConfig(Logger.Level.DEBUG)
+            )))
 
         }
 

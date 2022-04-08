@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.guild
 
 import com.soywiz.klock.DateTimeTz
@@ -39,142 +48,142 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 
-/**
+/*
  * A guild cache entry contains all information given by the Discord API
 **/
 interface GuildCacheEntry : Guild, Nameable, CacheEntry {
 
-    /**
+    /*
      * The channel where members get moved to when they are longer afk than [afkTimeout]
      */
     val afkChannel: VoiceChannel?
 
-    /**
+    /*
      * The timeout after an afk member gets moved to [afkChannel]
      */
     val afkTimeout: TimeSpan
 
-    /**
+    /*
      * The verification level of the guild
      */
     val verificationLevel: Guild.VerificationLevel
 
-    /**
+    /*
      * The default message notifications of the guild
      */
     val defaultMessageNotifications: Guild.NotificationLevel
 
-    /**
+    /*
      * The explicit content filter of the guild
      */
     val explicitContentFilter: Guild.ExplicitContentFilter
 
-    /**
+    /*
      * The features of the guild
      */
     val features: Set<String>
 
-    /**
+    /*
      * The mfa level of the guild
      */
     val mfaLevel: Guild.MfaLevel
 
-    /**
+    /*
      * The id of the application that created the guild, if it was created by an application
      */
     val applicationId: Snowflake?
 
-    /**
+    /*
      * Whether widgets are enabled, or not
      */
     val widgetEnabled: Boolean
 
-    /**
+    /*
      * The channel the widget referred to
      */
     val widgetChannel: GuildChannel?
 
-    /**
+    /*
      * The channel the system messages are sent to
      */
     val systemChannel: GuildTextChannel?
 
-    /**
+    /*
      * The flags of the [systemChannel]
      */
     val systemChannelFlags: Set<Guild.SystemChannelFlag>
 
-    /**
+    /*
      * The channel where the rules are posted
      */
     val rulesChannel: GuildTextChannel?
 
-    /**
+    /*
      * The time the user joined the guild
      */
     val joinedAt: DateTimeTz?
 
-    /**
+    /*
      * Whether the guild is considered as large or not
      */
     val isLarge: Boolean
 
-    /**
+    /*
      * Whether the guild is unavailable or not
      */
     val isUnavailable: Boolean
 
-    /**
+    /*
      * The member count of the guild
      */
     val memberCount: Int
 
-    /**
+    /*
      * The vanity url code of the guild
      */
     val vanityUrlCode: String?
 
-    /**
+    /*
      * The description of the guild
      */
     val description: String?
 
-    /**
+    /*
      * The boost level of the guild
      */
     val premiumTier: Guild.PremiumTier
 
-    /**
+    /*
      * The amount of people boosting the guild
      */
     val premiumSubscriptionCount: Int
 
-    /**
+    /*
      * The preferred locale of the guild
      */
     val preferredLocale: DiscordLocale
 
-    /**
+    /*
      * The public updates channel of the guild
      */
     val publicUpdatesChannel: GuildTextChannel?
 
-    /**
+    /*
      * The owner of the guild
      */
     val owner: User
 
-    /**
+    /*
      * The screen shown when a new member joins the guild
      */
     val welcomeScreen: WelcomeScreen?
 
-    /**
+    /*
      * Whether the guild enabled premium progress bar
      */
     val hasPremiumProgressBarEnabled: Boolean
 
-    /**
+    /*
      * The NSFW Level of the guild
      */
     val nsfwLevel: Guild.NSFWLevel
@@ -190,35 +199,35 @@ interface GuildCacheEntry : Guild, Nameable, CacheEntry {
     override val emotes: CacheEmoteContainer
     override val scheduledEvents: CacheScheduledEventContainer
 
-    /**
+    /*
      * The @everyone role of this guild
      */
     val publicRole: RoleCacheEntry
         get() = cacheManager.roleCache.safeValues.first { it.id == id }
 
-    /**
+    /*
      * The discovery image shown on the discovery tab
      */
     val discoveryImageUrl: String?
 
-    /**
+    /*
      * The icon of this guild
      */
     val iconUrl: String?
 
-    /**
+    /*
      * The banner of this guild
      */
     val bannerUrl: String?
 
-    /**
+    /*
      * The splash of this guild
      */
     val splashUrl: String?
 
-    val shardId get() = (if (client.config.totalShards != -1) (id.long shr 22) % client.config.totalShards else 0).toInt()
+    val shardId get() = (if (client.config.map<Int>("totalShards") != -1) (id.long shr 22) % client.config.map<Int>("totalShards") else 0).toInt()
 
-    /**
+    /*
      * Requests the guild's members from the gateway and updates the guild's cache
      * @param query The member's username should start with
      * @param limit The maximum amount of members to request (required when using [query])
@@ -313,29 +322,29 @@ internal class GuildCacheEntryImpl(
     override val systemChannel = systemChannelId?.let { GuildTextChannel(it, this) }
     override val rulesChannel = rulesChannelId?.let { GuildTextChannel(it, this) }
 
-    override val shardId get() = (if (client.config.totalShards != -1) (id.long shr 22) % client.config.totalShards else 0).toInt()
+    override val shardId get() = (if (client.config.map<Int>("totalShards") != -1) (id.long shr 22) % client.config.map<Int>("totalShards") else 0).toInt()
 
-    /**
+    /*
      * The discovery image shown on the discovery tab
      */
     override val discoveryImageUrl = discoveryHash?.let { DiscordImage.guildDiscoverySplash(id, it) }
 
-    /**
+    /*
      * The icon of this guild
      */
     override val iconUrl= iconHash?.let { DiscordImage.guildIcon(id, it) }
 
-    /**
+    /*
      * The banner of this guild
      */
     override val bannerUrl= bannerHash?.let { DiscordImage.guildBanner(id, it) }
 
-    /**
+    /*
      * The splash of this guild
      */
     override val splashUrl= splashHash?.let { DiscordImage.guildSplash(id, it) }
 
-    /**
+    /*
      * Requests the guild's members from the gateway and updates the guild's cache
      * @param query The member's username should start with
      * @param limit The maximum amount of members to request (required when using [query])
@@ -354,7 +363,7 @@ internal class GuildCacheEntryImpl(
         }
     }
 
-    /**
+    /*
      * Requests the guild's members from the gateway and updates the guild's cache
      * @param query The member's username should start with
      * @param limit The maximum amount of members to request (required when using [query])

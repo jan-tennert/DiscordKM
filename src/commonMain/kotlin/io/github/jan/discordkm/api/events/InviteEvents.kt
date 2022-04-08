@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -14,7 +14,7 @@ import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.invites.Invite
 
-/**
+/*
  * Sent when an invite was created
  */
 class InviteCreateEvent(val invite: Invite) : Event {
@@ -24,7 +24,7 @@ class InviteCreateEvent(val invite: Invite) : Event {
 
 }
 
-/**
+/*
  * Sent when an invite was deleted
  */
 class InviteDeleteEvent(val channel: GuildChannel, override val guild: Guild, val inviteCode: String) : GuildEvent

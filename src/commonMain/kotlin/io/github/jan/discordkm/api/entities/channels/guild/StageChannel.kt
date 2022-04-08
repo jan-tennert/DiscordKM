@@ -1,3 +1,12 @@
+/*
+ * DiscordKM is a kotlin multiplatform Discord API Wrapper
+ * Copyright (C) 2021 Jan Tennert
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+ */
 package io.github.jan.discordkm.api.entities.channels.guild
 
 import io.github.jan.discordkm.api.entities.Snowflake
@@ -30,7 +39,7 @@ sealed interface StageChannel : VoiceChannel {
     override val cache: StageChannelCacheEntry?
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? StageChannelCacheEntry
 
-    /**
+    /*
      * Creates a new stage instance in this [StageChannel]
      *
      * @param topic The topic of this stage instance
@@ -46,7 +55,7 @@ sealed interface StageChannel : VoiceChannel {
         this.reason = reason
     }
 
-    /**
+    /*
      * Retrieves the current stage instance, if this stage channel has one
      */
     suspend fun retrieveInstance() = client.buildRestAction<StageInstance> {
@@ -55,12 +64,12 @@ sealed interface StageChannel : VoiceChannel {
     }
 
     companion object : GuildChannelBuilder<VoiceChannelModifier, StageChannel>, ScheduledEventModifiable<ScheduledEventVoiceChannel> {
-        override fun create(modifier: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(ChannelType.GUILD_STAGE_VOICE).apply(modifier)
+        override fun createChannel(modifier: VoiceChannelModifier.() -> Unit) = VoiceChannelModifier(ChannelType.GUILD_STAGE_VOICE).apply(modifier)
 
         operator fun invoke(id: Snowflake, guild: Guild): StageChannel = StageChannelImpl(id, guild)
         operator fun invoke(data: JsonObject, guild: Guild) = ChannelSerializer.deserializeChannel<StageChannelCacheEntry>(data, guild)
 
-        override fun build(modifier: ScheduledEventVoiceChannel.() -> Unit) = ScheduledEventVoiceChannel(true).apply(modifier).build()
+        override fun createScheduledEvent(modifier: ScheduledEventVoiceChannel.() -> Unit) = ScheduledEventVoiceChannel(true).apply(modifier).build()
     }
 
 }

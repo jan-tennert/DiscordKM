@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -23,22 +23,22 @@ import kotlinx.serialization.json.jsonObject
 
 class AuditLog(override val data: JsonObject, override val guild: Guild) : GuildEntity, SerializableEntity {
 
-    /**
+    /*
      * A list of users in this audit log
      */
     val users = data.getValue("users").jsonArray.map { User(it.jsonObject, client) }
 
-    /**
+    /*
      * A list of threads in this audit log
      */
     val threads = data.getValue("threads").jsonArray.map { Thread(it.jsonObject, guild) }
 
-    /**
+    /*
      * A list of webhooks in this audit log
      */
     val webhooks = data.getValue("webhooks").jsonArray.map { Webhook(client, it.jsonObject) }
 
-    /**
+    /*
      * A list of audit log entries
      */
     val entries = data.getValue("audit_log_entries").jsonArray.map { Json.decodeFromJsonElement<AuditLogEntry>(it.jsonObject) }

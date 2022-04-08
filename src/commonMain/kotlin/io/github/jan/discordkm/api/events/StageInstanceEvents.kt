@@ -1,4 +1,4 @@
-/**
+/*
  * DiscordKM is a kotlin multiplatform Discord API Wrapper
  * Copyright (C) 2021 Jan Tennert
  *
@@ -21,7 +21,7 @@ interface StageInstanceEvent : Event {
 
 }
 
-/**
+/*
  * Sent when a stage instance was created
  */
 class StageInstanceCreateEvent(override val stageInstance: StageInstanceCacheEntry) : StageInstanceEvent, StageInstanceCacheEntry by stageInstance {
@@ -31,7 +31,7 @@ class StageInstanceCreateEvent(override val stageInstance: StageInstanceCacheEnt
 
 }
 
-/**
+/*
  * Sent when a stage instance was updated
  */
 class StageInstanceDeleteEvent(override val stageInstance: StageInstanceCacheEntry) : StageInstanceEvent, StageInstanceCacheEntry by stageInstance {
@@ -41,7 +41,7 @@ class StageInstanceDeleteEvent(override val stageInstance: StageInstanceCacheEnt
 
 }
 
-/**
+/*
  * Sent when a stage instance was deleted
  */
 class StageInstanceUpdateEvent(override val stageInstance: StageInstanceCacheEntry, val oldStageInstance: StageInstance?) : StageInstanceEvent
