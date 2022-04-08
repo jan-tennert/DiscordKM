@@ -43,7 +43,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-internal object ChannelSerializer : GuildEntitySerializer<Channel> {
+@PublishedApi internal object ChannelSerializer : GuildEntitySerializer<Channel> {
 
     override fun deserialize(data: JsonObject, value: Guild): GuildChannelCacheEntry = when(ChannelType[data["type"]!!.int]) {
         ChannelType.GUILD_TEXT -> deserializeChannel<TextChannelCacheEntry>(data, value)
