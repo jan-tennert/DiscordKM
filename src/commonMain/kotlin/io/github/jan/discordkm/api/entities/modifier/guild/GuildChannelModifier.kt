@@ -7,13 +7,13 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.modifiers.guild
+package io.github.jan.discordkm.api.entities.modifier.guild
 
 import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
-import io.github.jan.discordkm.api.entities.modifiers.JsonModifier
+import io.github.jan.discordkm.api.entities.modifier.JsonModifier
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject

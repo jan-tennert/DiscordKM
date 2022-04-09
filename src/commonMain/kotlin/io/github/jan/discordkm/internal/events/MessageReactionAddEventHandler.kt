@@ -16,7 +16,7 @@ import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.member.Member
-import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.message.Message
 import io.github.jan.discordkm.api.events.MessageReactionAddEvent
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.utils.get

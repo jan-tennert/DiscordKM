@@ -12,8 +12,8 @@ package io.github.jan.discordkm.api.entities.containers
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Emoji
-import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.api.entities.messages.MessageReaction
+import io.github.jan.discordkm.api.entities.message.Message
+import io.github.jan.discordkm.api.entities.message.MessageReaction
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.get

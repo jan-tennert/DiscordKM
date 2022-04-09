@@ -7,26 +7,20 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.messages
+package io.github.jan.discordkm.api.entities.modifier.guild
 
 import io.github.jan.discordkm.api.entities.Snowflake
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import io.github.jan.discordkm.internal.utils.modify
+import io.github.jan.discordkm.internal.utils.putOptional
+import kotlinx.serialization.json.JsonObject
 
-@Serializable
-data class MessageAttachment(
-    val id: Snowflake,
-    @SerialName("filename")
-    val fileName: String,
-    val description: String? = null,
-    @SerialName("content_type")
-    val contentType: String? = null,
-    val size: Int,
-    val url: String,
-    @SerialName("proxy_url")
-    val proxyUrl: String,
-    val height: Int? = null,
-    val width: Int? = null,
-    @SerialName("ephemeral")
-    val isEphemeral: Boolean = false
-)
+sealed class ParentalModifier : GuildChannelModifier() {
+
+    var parentId: Snowflake? = null
+
+    override val data: JsonObject
+        get() = super.data.modify {
+            putOptional("parent_id", parentId)
+        }
+
+}

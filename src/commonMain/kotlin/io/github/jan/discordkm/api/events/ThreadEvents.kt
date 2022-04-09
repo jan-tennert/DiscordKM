@@ -17,6 +17,8 @@ import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntry
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.message.DataMessage
+import io.github.jan.discordkm.api.entities.message.MessageCacheEntry
 
 interface ThreadEvent : Event {
 
@@ -29,12 +31,28 @@ interface ThreadEvent : Event {
 /*
  * Sent when a thread was created
  */
-class ThreadCreateEvent(override val thread: Thread) : ThreadEvent
+class ThreadCreateEvent(override val thread: ThreadCacheEntry) : ThreadEvent, ThreadCacheEntry by thread {
+
+    override val client = thread.client
+
+    override suspend fun send(message: DataMessage): MessageCacheEntry {
+        return thread.send(message)
+    }
+
+}
 
 /*
  * Sent when a thread was updated
  */
-class ThreadUpdateEvent(override val thread: Thread, val oldThread: Thread?) : ThreadEvent
+class ThreadUpdateEvent(override val thread: ThreadCacheEntry, val oldThread: ThreadCacheEntry?) : ThreadEvent, ThreadCacheEntry by thread {
+
+    override val client = thread.client
+
+    override suspend fun send(message: DataMessage): MessageCacheEntry {
+        return thread.send(message)
+    }
+
+}
 
 /*
  * Sent when a thread was deleted

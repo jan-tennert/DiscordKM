@@ -110,7 +110,7 @@ import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
 import kotlin.coroutines.coroutineContext
 
-class DiscordGateway(
+class DiscordGateway internal constructor(
     private val config: ClientConfig,
     val client: WSDiscordClient,
     val shardId: Int = 0,

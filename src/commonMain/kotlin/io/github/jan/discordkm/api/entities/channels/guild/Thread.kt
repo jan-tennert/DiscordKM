@@ -20,12 +20,10 @@ import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.containers.ThreadMemberContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.cacheManager
-import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.ThreadModifier
+import io.github.jan.discordkm.api.entities.modifier.Modifiable
+import io.github.jan.discordkm.api.entities.modifier.guild.ThreadModifier
 import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
@@ -100,7 +98,7 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
         val autoArchiveDuration: ThreadDuration,
         @SerialName("archive_timestamp")
         @Serializable(with = ISO8601Serializer::class)
-        val archiveTimestamp: DateTimeTz,
+        val archiveDate: DateTimeTz,
         @SerialName("locked")
         val isLocked: Boolean,
         @SerialName("invitable")
@@ -116,8 +114,8 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
     /*
      * Represents the time when a thread is getting archived
      */
-    @JvmInline
     @Serializable(with = ThreadDurationSerializer::class)
+    @JvmInline
     value class ThreadDuration private constructor(val duration: TimeSpan) {
 
         companion object {
@@ -131,31 +129,11 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
         }
 
     }
-
 }
 
 internal class ThreadImpl(override val id: Snowflake, override val guild: Guild, override val type: ChannelType) : Thread {
 
     override fun toString(): String = "Thread(id=$id, type=$type)"
-    override fun equals(other: Any?): Boolean = other is Thread && other.id == id && other.guild.id == guild.id
-    override fun hashCode(): Int = id.hashCode()
-
-}
-
-class ThreadCacheEntry(
-    override val guild: Guild,
-    override val permissionOverwrites: Set<PermissionOverwrite>,
-    override val slowModeTime: TimeSpan,
-    override val parent: GuildTextChannel,
-    override val id: Snowflake,
-    override val name: String,
-    override val type: ChannelType,
-    val metadata: Thread.ThreadMetadata,
-) : Thread, GuildMessageChannelCacheEntry {
-
-    override val cacheManager = MessageCacheManager(client)
-
-    override fun toString(): String = "ThreadCacheEntry(id=$id, type=$type)"
     override fun equals(other: Any?): Boolean = other is Thread && other.id == id && other.guild.id == guild.id
     override fun hashCode(): Int = id.hashCode()
 

@@ -25,11 +25,11 @@ import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.Button
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.components.SelectionMenu
-import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
-import io.github.jan.discordkm.api.entities.messages.MessageCacheEntryImpl
-import io.github.jan.discordkm.api.entities.messages.MessageType
-import io.github.jan.discordkm.api.entities.messages.componentJson
+import io.github.jan.discordkm.api.entities.message.Message
+import io.github.jan.discordkm.api.entities.message.MessageCacheEntry
+import io.github.jan.discordkm.api.entities.message.MessageCacheEntryImpl
+import io.github.jan.discordkm.api.entities.message.MessageType
+import io.github.jan.discordkm.api.entities.message.componentJson
 import io.github.jan.discordkm.internal.serialization.BaseEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.get

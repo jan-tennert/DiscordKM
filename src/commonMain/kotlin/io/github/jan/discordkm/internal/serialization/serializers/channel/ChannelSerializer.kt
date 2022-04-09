@@ -17,20 +17,26 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Category
 import io.github.jan.discordkm.api.entities.channels.guild.CategoryCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.CategoryCacheEntryImpl
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.channels.guild.NewsChannelCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.NewsChannelCacheEntryImpl
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannelCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.StageChannelCacheEntryImpl
 import io.github.jan.discordkm.api.entities.channels.guild.TextChannelCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.TextChannelCacheEntryImpl
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.ThreadCacheEntryImpl
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannelCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannelCacheEntryImpl
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
-import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.message.Message
 import io.github.jan.discordkm.internal.serialization.GuildEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.get
@@ -81,7 +87,7 @@ import kotlinx.serialization.json.jsonObject
         val regionId = data["rtc_region", true]?.string //guild
         val videoQualityMode = data["video_quality_mode", true]?.int?.let { VoiceChannel.VideoQualityMode.get(it) } //guild
         return when(T::class) {
-            TextChannelCacheEntry::class -> TextChannelCacheEntry(guild,
+            TextChannelCacheEntry::class -> TextChannelCacheEntryImpl(guild,
                 position!!,
                 permissionOverwrites!!,
                 slowModeTime!!,
@@ -92,7 +98,7 @@ import kotlinx.serialization.json.jsonObject
                 id,
                 name!!
             )
-            NewsChannelCacheEntry::class -> NewsChannelCacheEntry(guild,
+            NewsChannelCacheEntry::class -> NewsChannelCacheEntryImpl(guild,
                 position!!,
                 permissionOverwrites!!,
                 slowModeTime!!,
@@ -103,7 +109,7 @@ import kotlinx.serialization.json.jsonObject
                 id,
                 name!!
             )
-            StageChannelCacheEntry::class -> StageChannelCacheEntry(userLimit!!,
+            StageChannelCacheEntry::class -> StageChannelCacheEntryImpl(userLimit!!,
                 regionId,
                 bitrate!!,
                 videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO,
@@ -114,7 +120,7 @@ import kotlinx.serialization.json.jsonObject
                 permissionOverwrites!!,
                 parentId?.let { Category(it, guild) },
             )
-            VoiceChannelCacheEntry::class -> VoiceChannelCacheEntry(userLimit!!,
+            VoiceChannelCacheEntry::class -> VoiceChannelCacheEntryImpl(userLimit!!,
                 regionId,
                 bitrate!!,
                 videoQualityMode ?: VoiceChannel.VideoQualityMode.AUTO,
@@ -124,8 +130,8 @@ import kotlinx.serialization.json.jsonObject
                 position!!,
                 permissionOverwrites!!,
                 parentId?.let { Category(it, guild) })
-            CategoryCacheEntry::class -> CategoryCacheEntry(guild, position!!, permissionOverwrites!!, id, name!!)
-            ThreadCacheEntry::class -> ThreadCacheEntry(
+            CategoryCacheEntry::class -> CategoryCacheEntryImpl(guild, position!!, permissionOverwrites!!, id, name!!)
+            ThreadCacheEntry::class -> ThreadCacheEntryImpl(
                 guild,
                 permissionOverwrites ?: emptySet(),
                 slowModeTime!!,

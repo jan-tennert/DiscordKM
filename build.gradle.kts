@@ -155,13 +155,13 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
-                implementation("com.google.guava:guava:${Versions.GUAVA}")
-                implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
+                api("com.google.guava:guava:${Versions.GUAVA}")
+                api("io.ktor:ktor-client-cio:${Versions.KTOR}")
             }
         }
         val jsMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-js:${Versions.KTOR}")
+                api("io.ktor:ktor-client-js:${Versions.KTOR}")
             }
         }
     }

@@ -37,8 +37,8 @@ import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreen
 import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreenModifier
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
-import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildModifier
+import io.github.jan.discordkm.api.entities.modifier.Modifiable
+import io.github.jan.discordkm.api.entities.modifier.guild.GuildModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity
 import io.github.jan.discordkm.internal.delete

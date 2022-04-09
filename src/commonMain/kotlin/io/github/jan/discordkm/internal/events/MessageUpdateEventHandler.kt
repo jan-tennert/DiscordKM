@@ -11,7 +11,7 @@ package io.github.jan.discordkm.internal.events
 
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
-import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.message.Message
 import io.github.jan.discordkm.api.events.MessageUpdateEvent
 import io.github.jan.discordkm.internal.utils.snowflake
 import kotlinx.serialization.json.JsonObject

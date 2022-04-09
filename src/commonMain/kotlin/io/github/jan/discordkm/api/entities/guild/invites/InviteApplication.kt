@@ -18,7 +18,7 @@ import io.github.jan.discordkm.internal.utils.getOrThrow
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 
-data class InviteApplication(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity {
+class InviteApplication(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity {
 
     val id = data.getId()
 

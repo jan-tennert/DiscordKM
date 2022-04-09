@@ -76,6 +76,21 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
     }
 
     /*
+     * Modifies a user command
+    */
+    suspend fun modifyUserCommand(id: Snowflake, builder: ApplicationCommandBuilder.() -> Unit) = modify(id, ApplicationCommandBuilder(ApplicationCommandType.USER).apply(builder))
+
+    /*
+     * Modifies a message command
+    */
+    suspend fun modifyMessageCommand(id: Snowflake, builder: ApplicationCommandBuilder.() -> Unit) = modify(id, ApplicationCommandBuilder(ApplicationCommandType.MESSAGE).apply(builder))
+
+    /*
+     * Modifies a chat input command
+    */
+    suspend fun modifyChatInputCommand(id: Snowflake, builder: ChatInputCommandBuilder.() -> Unit) = modify(id, chatInputCommand(holder.client as? WSDiscordClient, builder))
+
+    /*
      * Deletes an application command
      */
     suspend fun delete(id: Snowflake) = holder.client.buildRestAction<Unit> {

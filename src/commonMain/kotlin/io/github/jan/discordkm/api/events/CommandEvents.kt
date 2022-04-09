@@ -13,7 +13,7 @@ import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.containers.OptionContainer
 import io.github.jan.discordkm.api.entities.interactions.ApplicationCommandInteraction
-import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.message.Message
 
 interface CommandEvent : InteractionCreateEvent {
     val commandName: String

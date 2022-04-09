@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.internal.serialization.serializers
 
+import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.role.RoleCacheEntry
@@ -38,7 +39,7 @@ internal object RoleSerializer : GuildEntitySerializer<RoleCacheEntry> {
         isMentionable = data["mentionable"]!!.boolean,
         guild = value,
         iconHash = data["icon", true]?.string,
-        unicodeEmoji = data["unicode_emoji", true]?.string,
+        unicodeEmoji = data["unicode_emoji", true]?.string?.let { Emoji.fromUnicode(it) },
         tags = data["tags"]?.let { Json.decodeFromJsonElement(it) },
     )
 

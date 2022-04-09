@@ -12,14 +12,13 @@ package io.github.jan.discordkm.api.entities.channels.guild
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.PrivacyLevel
 import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifiable
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventVoiceChannel
 import io.github.jan.discordkm.api.entities.guild.stage.StageInstance
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
-import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
+import io.github.jan.discordkm.api.entities.modifier.guild.GuildChannelBuilder
+import io.github.jan.discordkm.api.entities.modifier.guild.VoiceChannelModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
@@ -82,21 +81,3 @@ internal class StageChannelImpl(override val id: Snowflake, override val guild: 
 
 }
 
-class StageChannelCacheEntry(
-    userLimit: Int,
-    regionId: String?,
-    bitrate: Int,
-    videoQualityMode: VoiceChannel.VideoQualityMode,
-    guild: Guild,
-    override val id: Snowflake,
-    override val name: String,
-    override val position: Int,
-    override val permissionOverwrites: Set<PermissionOverwrite>,
-    parent: Category?,
-) : StageChannel, VoiceChannelCacheEntry(userLimit, regionId, bitrate, videoQualityMode, guild, id, name, position, permissionOverwrites, parent) {
-
-    override fun toString(): String = "StageChannelCacheEntry(id=$id, type=$type, name=$name)"
-    override fun equals(other: Any?): Boolean = other is StageChannel && other.id == id && other.guild.id == guild.id
-    override fun hashCode(): Int = id.hashCode()
-
-}

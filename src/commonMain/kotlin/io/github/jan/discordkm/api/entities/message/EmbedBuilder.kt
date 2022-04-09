@@ -7,7 +7,7 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.messages
+package io.github.jan.discordkm.api.entities.message
 
 import com.soywiz.klock.DateTimeTz
 import io.github.jan.discordkm.api.entities.misc.Color

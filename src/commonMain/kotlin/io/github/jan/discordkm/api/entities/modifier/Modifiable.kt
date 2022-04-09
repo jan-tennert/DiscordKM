@@ -7,16 +7,14 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.guild.invites
+package io.github.jan.discordkm.api.entities.modifier
 
-import io.github.jan.discordkm.api.entities.Snowflake
+interface Modifiable<M : JsonModifier, T> {
 
-object EmbeddedApplication {
-
-    val YOUTUBE_TOGETHER = Snowflake(755600276941176913)
-    val POKER = Snowflake(755827207812677713)
-    val BETRAYAL = Snowflake(773336526917861400)
-    val FISHINGTON = Snowflake(814288819477020702)
-    val CHESS = Snowflake(832012586023256104)
+    /*
+     * Modifies this entity
+     * @param reason The reason which will be displayed in the audit logs
+     */
+    suspend fun modify(reason: String? = null, modifier: M.() -> Unit): T
 
 }

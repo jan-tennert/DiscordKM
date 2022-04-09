@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 /*
  * A user status says whether the user is online, idling, offline etc.
  */
+@Serializable(with = PresenceStatus.Companion::class)
 enum class PresenceStatus(override val value: String) : EnumWithValue<String> {
     ONLINE("online"),
     DO_NOT_DISTURB("dnd"),
@@ -29,7 +30,7 @@ enum class PresenceStatus(override val value: String) : EnumWithValue<String> {
 
 @Serializable
 class ClientStatus(
-    val desktop: String? = null,
-    val mobile: String? = null,
-    val web: String? = null
+    val desktop: PresenceStatus? = null,
+    val mobile: PresenceStatus? = null,
+    val web: PresenceStatus? = null
 )

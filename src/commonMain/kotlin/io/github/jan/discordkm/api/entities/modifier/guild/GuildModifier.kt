@@ -7,13 +7,13 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.modifiers.guild
+package io.github.jan.discordkm.api.entities.modifier.guild
 
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.member.Member
-import io.github.jan.discordkm.api.entities.modifiers.JsonModifier
+import io.github.jan.discordkm.api.entities.modifier.JsonModifier
 import io.github.jan.discordkm.api.media.Image
 import io.github.jan.discordkm.internal.serialization.rawValue
 import io.github.jan.discordkm.internal.utils.ifNotEmpty

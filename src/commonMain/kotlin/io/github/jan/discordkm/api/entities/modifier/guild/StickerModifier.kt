@@ -7,9 +7,9 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.modifiers.guild
+package io.github.jan.discordkm.api.entities.modifier.guild
 
-import io.github.jan.discordkm.api.entities.modifiers.MultipartModifier
+import io.github.jan.discordkm.api.entities.modifier.MultipartModifier
 import io.github.jan.discordkm.api.media.Attachment
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData

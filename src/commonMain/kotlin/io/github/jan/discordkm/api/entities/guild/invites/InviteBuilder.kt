@@ -11,7 +11,7 @@ package io.github.jan.discordkm.api.entities.guild.invites
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.guild.invites.Invite.TargetType
-import io.github.jan.discordkm.api.entities.modifiers.JsonModifier
+import io.github.jan.discordkm.api.entities.modifier.JsonModifier
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject

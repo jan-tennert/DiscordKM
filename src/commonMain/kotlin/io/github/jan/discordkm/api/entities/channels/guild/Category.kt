@@ -12,11 +12,10 @@ package io.github.jan.discordkm.api.entities.channels.guild
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.cacheManager
-import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.CategoryModifier
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
+import io.github.jan.discordkm.api.entities.modifier.Modifiable
+import io.github.jan.discordkm.api.entities.modifier.guild.CategoryModifier
+import io.github.jan.discordkm.api.entities.modifier.guild.GuildChannelBuilder
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
@@ -56,20 +55,6 @@ sealed interface Category : GuildChannel, Modifiable<CategoryModifier, CategoryC
 internal class CategoryImpl(override val id: Snowflake, override val guild: Guild) : Category {
 
     override fun toString(): String = "Category(id=$id, type=$type)"
-    override fun equals(other: Any?): Boolean = other is Category && other.id == id && other.guild.id == guild.id
-    override fun hashCode(): Int = id.hashCode()
-
-}
-
-class CategoryCacheEntry(
-    override val guild: Guild,
-    override val position: Int,
-    override val permissionOverwrites: Set<PermissionOverwrite>,
-    override val id: Snowflake,
-    override val name: String
-) : Category, GuildChannelCacheEntry, IPositionable {
-
-    override fun toString(): String = "CategoryCacheEntry(id=$id, type=$type)"
     override fun equals(other: Any?): Boolean = other is Category && other.id == id && other.guild.id == guild.id
     override fun hashCode(): Int = id.hashCode()
 

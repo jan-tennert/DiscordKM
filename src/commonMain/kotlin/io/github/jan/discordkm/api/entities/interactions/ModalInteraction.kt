@@ -10,7 +10,7 @@
 package io.github.jan.discordkm.api.entities.interactions
 
 import io.github.jan.discordkm.api.entities.interactions.modals.ModalBuilder
-import io.github.jan.discordkm.api.entities.messages.componentJson
+import io.github.jan.discordkm.api.entities.message.componentJson
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.post

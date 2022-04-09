@@ -12,6 +12,7 @@ package io.github.jan.discordkm.api.entities.clients
 import co.touchlab.stately.collections.IsoMutableMap
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
+import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
@@ -21,7 +22,7 @@ import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
 import io.github.jan.discordkm.api.entities.containers.CacheThreadContainer
 import io.github.jan.discordkm.api.entities.containers.CacheUserContainer
 import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
-import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.message.Message
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.api.events.Event
 import io.github.jan.discordkm.api.events.EventListener
@@ -32,6 +33,7 @@ import io.github.jan.discordkm.internal.caching.ClientCacheManager
 import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.serialization.UpdatePresencePayload
 import io.github.jan.discordkm.internal.utils.LoggerConfig
+import io.github.jan.discordkm.internal.utils.log
 import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
@@ -43,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 
 sealed interface WSDiscordClient : DiscordClient {
 
@@ -88,10 +91,14 @@ internal class WSDiscordClientImpl internal constructor(
     override val threads: CacheThreadContainer
         get() = CacheThreadContainer(cacheManager.guildCache.safeValues.map { it.threads.values }.flatten())
     override lateinit var selfUser: UserCacheEntry
+    private val LOGGER = config.map<LoggerConfig>("logging")("DiscordKM")
 
     init {
         if (config.map<Set<Int>>("shards").isEmpty()) shardConnections[0] = DiscordGateway(config, this, 0) else config.map<Set<Int>>("shards").forEach {
             shardConnections[it] = DiscordGateway(config, this, it)
+        }
+        LOGGER.log(true, Logger.Level.WARN) {
+            "Warning: This is a beta version of DiscordKM, please report any bugs you find!"
         }
     }
 
@@ -229,7 +236,7 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
             "status" to activity.status,
             "encoding" to encoding,
             "compression" to compression,
-            "mexResumeTries" to maxResumeTries,
+            "maxResumeTries" to maxResumeTries,
             "translationManager" to translationManager
         ))
     )
@@ -249,11 +256,12 @@ inline fun <reified E : Event> WSDiscordClient.on(
     crossinline predicate: (E) -> Boolean = { true },
     crossinline onEvent: suspend E.() -> Unit
 ) {
-    eventListeners += EventListener {
+    val eventListener = EventListener {
         if (it is E && predicate(it)) {
             onEvent(it)
         }
     }
+    eventListeners += eventListener
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -272,3 +280,7 @@ suspend inline fun <reified E : Event> WSDiscordClient.awaitEvent(crossinline pr
             eventListeners -= listener
         }
     }
+
+suspend inline fun <reified E : Event> WSDiscordClient.awaitEventWithTimeout(timeout: TimeSpan, crossinline predicate: (E) -> Boolean = { true }) = withTimeoutOrNull(timeout.millisecondsLong) {
+    awaitEvent(predicate)
+}

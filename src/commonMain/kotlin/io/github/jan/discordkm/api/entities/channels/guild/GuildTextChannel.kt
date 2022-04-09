@@ -18,8 +18,8 @@ import io.github.jan.discordkm.api.entities.containers.CacheGuildThreadContainer
 import io.github.jan.discordkm.api.entities.containers.GuildThreadContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.cacheManager
-import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.TextChannelModifier
+import io.github.jan.discordkm.api.entities.modifier.Modifiable
+import io.github.jan.discordkm.api.entities.modifier.guild.TextChannelModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
@@ -135,7 +135,7 @@ internal class GuildTextChannelImpl(override val id: Snowflake, override val gui
 sealed interface GuildTextChannelCacheEntry : GuildTextChannel, GuildMessageChannelCacheEntry, IPositionable {
 
     val threads: GuildThreadContainer
-        get() = guild.cache?.cacheManager?.threadCache?.filter { it.value.parent.id == id }?.values?.let {
+        get() = guild.cache?.cacheManager?.threadCache?.filter { it.value.parent?.id == id }?.values?.let {
             CacheGuildThreadContainer(
                 guild,
                 it

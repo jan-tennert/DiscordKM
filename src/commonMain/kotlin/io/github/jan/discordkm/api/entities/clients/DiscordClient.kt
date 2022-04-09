@@ -52,7 +52,6 @@ interface DiscordClient : CommandHolder, BaseEntity {
     val threads: CacheThreadContainer
     val requester: Requester
 
-
     /*
      * Retrieves a guild template
      */

@@ -7,14 +7,21 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.modifiers
+package io.github.jan.discordkm.api.entities.message
 
-interface Modifiable<M : JsonModifier, T> {
+import io.github.jan.discordkm.api.entities.guild.Emoji
+import kotlinx.serialization.Serializable
 
-    /*
-     * Modifies this entity
-     * @param reason The reason which will be displayed in the audit logs
-     */
-    suspend fun modify(reason: String? = null, modifier: M.() -> Unit): T
-
-}
+/*
+ * Represents a reaction of a message
+ *
+ * @param count The amount of users that have reacted to the message
+ * @param me Whether the bot has reacted to the message
+ * @param emoji The reaction emoji
+ */
+@Serializable
+data class MessageReaction(
+    val count: Int,
+    val me: Boolean,
+    val emoji: Emoji
+)

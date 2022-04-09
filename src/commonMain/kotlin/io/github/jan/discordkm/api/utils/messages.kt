@@ -13,7 +13,7 @@ import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.entities.clients.awaitEvent
-import io.github.jan.discordkm.api.entities.messages.Message
+import io.github.jan.discordkm.api.entities.message.Message
 import io.github.jan.discordkm.api.events.MessageCreateEvent
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeoutOrNull

@@ -11,8 +11,7 @@ package io.github.jan.discordkm.api.events
 
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
-import io.github.jan.discordkm.api.entities.clients.Intent
-import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
+import io.github.jan.discordkm.api.entities.message.MessageCacheEntry
 
 /*
  * Sent when someone updates his message

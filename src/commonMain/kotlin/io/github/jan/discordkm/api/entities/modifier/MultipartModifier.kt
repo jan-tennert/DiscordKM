@@ -7,9 +7,8 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.modifiers
+package io.github.jan.discordkm.api.entities.modifier
 
-import kotlinx.serialization.json.JsonObject
+import io.ktor.client.request.forms.MultiPartFormDataContent
 
-interface JsonModifier : BaseModifier<JsonObject> {
-}
+interface MultipartModifier : BaseModifier<MultiPartFormDataContent>

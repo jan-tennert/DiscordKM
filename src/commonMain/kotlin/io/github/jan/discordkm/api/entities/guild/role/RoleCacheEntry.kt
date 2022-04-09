@@ -14,6 +14,7 @@ import io.github.jan.discordkm.api.entities.PermissionHolder
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.guild.Emoji
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
@@ -38,7 +39,7 @@ interface RoleCacheEntry : Role, PermissionHolder, Nameable, CacheEntry {
     /*
      * The emoji appearing next to the roles name in the chat & in the user list
      */
-    val unicodeEmoji: String?
+    val unicodeEmoji: Emoji?
     
     /*
      * The position of the role in the guild
@@ -87,7 +88,7 @@ internal class RoleCacheEntryImpl(
     override val color: Color,
     override val isHoist: Boolean,
     iconHash: String?,
-    override val unicodeEmoji: String?,
+    override val unicodeEmoji: Emoji?,
     override val position: Int,
     override val isManagedByAnIntegration: Boolean,
     override val isMentionable: Boolean,

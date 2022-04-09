@@ -9,20 +9,17 @@
  */
 package io.github.jan.discordkm.api.entities.channels.guild
 
-import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.PermissionOverwrite
 import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventModifiable
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventVoiceChannel
-import io.github.jan.discordkm.api.entities.modifiers.Modifiable
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
-import io.github.jan.discordkm.api.entities.modifiers.guild.VoiceChannelModifier
+import io.github.jan.discordkm.api.entities.modifier.Modifiable
+import io.github.jan.discordkm.api.entities.modifier.guild.GuildChannelBuilder
+import io.github.jan.discordkm.api.entities.modifier.guild.VoiceChannelModifier
 import io.github.jan.discordkm.internal.Route
-import io.github.jan.discordkm.internal.caching.MessageCacheManager
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction
@@ -83,30 +80,6 @@ internal class VoiceChannelImpl(override val id: Snowflake, override val guild: 
         }
 
     override fun toString(): String = "VoiceChannel(id=$id, type=$type)"
-    override fun equals(other: Any?): Boolean = other is VoiceChannel && other.id == id && other.guild.id == guild.id
-    override fun hashCode(): Int = id.hashCode()
-
-}
-
-open class VoiceChannelCacheEntry(
-    val userLimit: Int,
-    val regionId: String?,
-    val bitrate: Int,
-    val videoQualityMode: VoiceChannel.VideoQualityMode,
-    final override val guild: Guild,
-    override val id: Snowflake,
-    override val name: String,
-    override val position: Int,
-    override val permissionOverwrites: Set<PermissionOverwrite>,
-    override val parent: Category?
-) : VoiceChannel, GuildChannelCacheEntry, IPositionable, GuildMessageChannelCacheEntry {
-
-    override val cacheManager = MessageCacheManager(guild.client)
-
-    override val slowModeTime: TimeSpan
-        get() = throw UnsupportedOperationException("A text channel in a voice chanel cannot have a slow mode enabled")
-
-    override fun toString(): String = "VoiceChannelCacheEntry(id=$id, type=$type, name=$name)"
     override fun equals(other: Any?): Boolean = other is VoiceChannel && other.id == id && other.guild.id == guild.id
     override fun hashCode(): Int = id.hashCode()
 

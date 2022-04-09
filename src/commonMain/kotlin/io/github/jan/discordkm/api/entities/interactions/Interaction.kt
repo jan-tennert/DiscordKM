@@ -23,7 +23,7 @@ import io.github.jan.discordkm.api.entities.guild.member.Member
 import io.github.jan.discordkm.api.entities.guild.member.MemberCacheEntry
 import io.github.jan.discordkm.api.entities.guild.role.Role
 import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
-import io.github.jan.discordkm.api.entities.messages.MessageAttachment
+import io.github.jan.discordkm.api.entities.message.MessageAttachment
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import io.github.jan.discordkm.internal.utils.get

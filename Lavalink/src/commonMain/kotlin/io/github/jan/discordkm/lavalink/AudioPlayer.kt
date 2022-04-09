@@ -11,12 +11,12 @@ package io.github.jan.discordkm.lavalink
 
 import io.github.jan.discordkm.api.entities.clients.on
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.internal.restaction.RestAction.Companion.put
 import io.github.jan.discordkm.lavalink.events.TrackEndEvent
 import io.github.jan.discordkm.lavalink.tracks.AudioTrack
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
 sealed interface AudioPlayer {

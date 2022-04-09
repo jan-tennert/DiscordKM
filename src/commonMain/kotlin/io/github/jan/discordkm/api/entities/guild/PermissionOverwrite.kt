@@ -27,8 +27,8 @@ import kotlinx.serialization.json.put
  */
 class PermissionOverwrite(
     val holderId: Snowflake,
-    val allow: MutableSet<Permission> = mutableSetOf(),
-    val deny: MutableSet<Permission> = mutableSetOf(),
+    val allow: Set<Permission> = mutableSetOf(),
+    val deny: Set<Permission> = mutableSetOf(),
     val type: HolderType
 ) {
 
@@ -47,9 +47,9 @@ class PermissionOverwrite(
     companion object {
         operator fun invoke(data: JsonObject) = PermissionOverwrite(
             Snowflake(data["id"]!!.long),
-            Permission.decode(data["allow"]!!.long).toMutableSet(),
-            Permission.decode(data["deny"]!!.long).toMutableSet(),
-            HolderType.get(data["type"]!!.int)
+            Permission.decode(data["allow"]!!.long),
+            Permission.decode(data["deny"]!!.long),
+            HolderType[data["type"]!!.int]
         )
     }
 

@@ -24,8 +24,8 @@ import io.github.jan.discordkm.api.entities.guild.role.RoleCacheEntry
 import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEventCacheEntry
 import io.github.jan.discordkm.api.entities.guild.stage.StageInstanceCacheEntry
 import io.github.jan.discordkm.api.entities.guild.sticker.Sticker
-import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
-import io.github.jan.discordkm.api.entities.messages.MessageReaction
+import io.github.jan.discordkm.api.entities.message.MessageCacheEntry
+import io.github.jan.discordkm.api.entities.message.MessageReaction
 
 sealed class CacheManager <T : CacheManager<T>>{
     private val caches = mutableListOf<IsoMutableMap<*, *>>()

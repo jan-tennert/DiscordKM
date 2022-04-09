@@ -7,8 +7,26 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.modifiers
+package io.github.jan.discordkm.api.entities.message
 
-import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.github.jan.discordkm.api.entities.Snowflake
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-interface MultipartModifier : BaseModifier<MultiPartFormDataContent>
+@Serializable
+data class MessageAttachment(
+    val id: Snowflake,
+    @SerialName("filename")
+    val fileName: String,
+    val description: String? = null,
+    @SerialName("content_type")
+    val contentType: String? = null,
+    val size: Int,
+    val url: String,
+    @SerialName("proxy_url")
+    val proxyUrl: String,
+    val height: Int? = null,
+    val width: Int? = null,
+    @SerialName("ephemeral")
+    val isEphemeral: Boolean = false
+)

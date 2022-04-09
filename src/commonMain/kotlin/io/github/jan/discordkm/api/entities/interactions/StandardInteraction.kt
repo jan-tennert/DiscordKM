@@ -11,11 +11,11 @@ package io.github.jan.discordkm.api.entities.interactions
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
-import io.github.jan.discordkm.api.entities.messages.DataMessage
-import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.api.entities.messages.MessageBuilder
-import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
-import io.github.jan.discordkm.api.entities.messages.buildMessage
+import io.github.jan.discordkm.api.entities.message.DataMessage
+import io.github.jan.discordkm.api.entities.message.Message
+import io.github.jan.discordkm.api.entities.message.MessageBuilder
+import io.github.jan.discordkm.api.entities.message.MessageCacheEntry
+import io.github.jan.discordkm.api.entities.message.buildMessage
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.get

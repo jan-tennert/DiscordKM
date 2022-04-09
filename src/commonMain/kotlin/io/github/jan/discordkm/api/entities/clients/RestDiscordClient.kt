@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.api.entities.clients
 
+import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
@@ -21,6 +22,7 @@ import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.utils.LoggerConfig
+import io.github.jan.discordkm.internal.utils.log
 import io.ktor.client.HttpClientConfig
 
 /*
@@ -35,6 +37,13 @@ class RestDiscordClient internal constructor(override val config: ClientConfig, 
     override val members = CacheMemberContainer(emptyList())
     override val channels = CacheChannelContainer(emptyList())
     override val threads = CacheThreadContainer(emptyList())
+    private val LOGGER = config.map<LoggerConfig>("logging")("DiscordKM")
+
+    init {
+        LOGGER.log(true, Logger.Level.WARN) {
+            "Warning: This is a beta version of DiscordKM, please report any bugs you find!"
+        }
+    }
 
     override suspend fun disconnect() {
         requester.http.close()
@@ -73,4 +82,4 @@ class RestOnlyClientBuilder @DiscordKMInternal constructor(var token: String, va
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
 @OptIn(DiscordKMInternal::class)
-inline fun buildRestOnlyClient(token: String, botId: Snowflake, builder: RestOnlyClientBuilder.() -> Unit) =  RestOnlyClientBuilder(token, botId).apply(builder).build()
+inline fun buildRestClient(token: String, botId: Snowflake, builder: RestOnlyClientBuilder.() -> Unit) =  RestOnlyClientBuilder(token, botId).apply(builder).build()

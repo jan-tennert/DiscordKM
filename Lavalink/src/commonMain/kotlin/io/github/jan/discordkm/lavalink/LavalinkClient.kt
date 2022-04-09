@@ -11,7 +11,6 @@ package io.github.jan.discordkm.lavalink
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
-import io.github.jan.discordkm.internal.utils.putJsonObject
 import io.ktor.client.features.websocket.DefaultClientWebSocketSession
 import io.ktor.http.cio.websocket.send
 import kotlinx.serialization.json.JsonObjectBuilder
@@ -32,9 +31,9 @@ internal class LavalinkClientImpl(override val client: WSDiscordClient): Lavalin
 }
 
 suspend fun DefaultClientWebSocketSession.send(opCode: String, guildId: Snowflake, builder: JsonObjectBuilder.() -> Unit = {}) = send(buildJsonObject {
-    putJsonObject(buildJsonObject(builder))
+    builder()
     put("guildId", guildId.string)
     put("op", opCode)
-}.toString())
+}.toString().also(::println))
 
 fun WSDiscordClient.createLavalinkClient(): LavalinkClient = LavalinkClientImpl(this)

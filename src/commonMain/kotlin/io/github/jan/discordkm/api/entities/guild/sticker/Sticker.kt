@@ -9,17 +9,13 @@
  */
 package io.github.jan.discordkm.api.entities.guild.sticker
 
-import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
-import io.github.jan.discordkm.api.entities.User
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
-import io.github.jan.discordkm.api.entities.guild.scheduled.event.ScheduledEvent
-import io.github.jan.discordkm.api.entities.modifiers.guild.StickerModifier
+import io.github.jan.discordkm.api.entities.modifier.guild.StickerModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
-import io.github.jan.discordkm.internal.entities.DiscordImage
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.patch
 import io.github.jan.discordkm.internal.restaction.buildRestAction

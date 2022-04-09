@@ -26,8 +26,8 @@ import io.github.jan.discordkm.api.entities.interactions.commands.CommandOption
 import io.github.jan.discordkm.api.entities.interactions.components.ActionRow
 import io.github.jan.discordkm.api.entities.interactions.components.ComponentType
 import io.github.jan.discordkm.api.entities.interactions.modals.components.TextInput
-import io.github.jan.discordkm.api.entities.messages.Message
-import io.github.jan.discordkm.api.entities.messages.MessageAttachment
+import io.github.jan.discordkm.api.entities.message.Message
+import io.github.jan.discordkm.api.entities.message.MessageAttachment
 import io.github.jan.discordkm.api.events.AutoCompleteEvent
 import io.github.jan.discordkm.api.events.ButtonClickEvent
 import io.github.jan.discordkm.api.events.InteractionCreateEvent

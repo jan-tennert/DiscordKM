@@ -7,7 +7,7 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.messages
+package io.github.jan.discordkm.api.entities.message
 
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.BaseEntity
@@ -19,7 +19,6 @@ import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.containers.ReactionContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.Permission
 import io.github.jan.discordkm.api.entities.interactions.InteractionType
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.caching.CacheEntity

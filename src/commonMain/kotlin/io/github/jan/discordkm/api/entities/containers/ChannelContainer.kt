@@ -13,8 +13,8 @@ import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.GuildEntity
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelBuilder
-import io.github.jan.discordkm.api.entities.modifiers.guild.GuildChannelModifier
+import io.github.jan.discordkm.api.entities.modifier.guild.GuildChannelBuilder
+import io.github.jan.discordkm.api.entities.modifier.guild.GuildChannelModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.get
 import io.github.jan.discordkm.internal.invoke
@@ -37,8 +37,8 @@ open class GuildChannelContainer(override val guild: Guild) : GuildEntity {
 
     /*
      * Creates a guild channel
-     * @param type The type
-     **/
+     * @param type The type like [VoiceChannel], [TextChannel] etc.
+     */
     suspend inline fun <reified C: GuildChannel, M: GuildChannelModifier, T : GuildChannelBuilder<M, C>> create(type: T, reason: String? = null, noinline builder: M.() -> Unit) : C = guild.client.buildRestAction<C> {
         route = Route.Channel.CREATE_CHANNEL(guild.id).post(type.createChannel(builder).data)
         transform { ChannelSerializer.deserializeChannel(it.toJsonObject(), guild) as C }

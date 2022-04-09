@@ -15,11 +15,11 @@ import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
-import io.github.jan.discordkm.api.entities.messages.DataMessage
-import io.github.jan.discordkm.api.entities.messages.MessageBuilder
-import io.github.jan.discordkm.api.entities.messages.MessageCacheEntry
-import io.github.jan.discordkm.api.entities.messages.buildMessage
-import io.github.jan.discordkm.api.entities.modifiers.WebhookModifier
+import io.github.jan.discordkm.api.entities.message.DataMessage
+import io.github.jan.discordkm.api.entities.message.MessageBuilder
+import io.github.jan.discordkm.api.entities.message.MessageCacheEntry
+import io.github.jan.discordkm.api.entities.message.buildMessage
+import io.github.jan.discordkm.api.entities.modifier.WebhookModifier
 import io.github.jan.discordkm.internal.Route
 import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.entities.DiscordImage

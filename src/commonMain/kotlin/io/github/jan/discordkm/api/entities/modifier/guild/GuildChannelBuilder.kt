@@ -7,21 +7,13 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.messages
+package io.github.jan.discordkm.api.entities.modifier.guild
 
-import io.github.jan.discordkm.api.entities.guild.Emoji
-import kotlinx.serialization.Serializable
+import io.github.jan.discordkm.api.entities.channels.guild.GuildChannel
+import io.github.jan.discordkm.api.entities.modifier.JsonModifier
 
-/*
- * Represents a reaction of a message
- *
- * @param count The amount of users that have reacted to the message
- * @param me Whether the bot has reacted to the message
- * @param emoji The reaction emoji
- */
-@Serializable
-data class MessageReaction(
-    val count: Int,
-    val me: Boolean,
-    val emoji: Emoji
-)
+interface GuildChannelBuilder <M : JsonModifier, C : GuildChannel> {
+
+    fun createChannel(modifier: M.() -> Unit) : M
+
+}

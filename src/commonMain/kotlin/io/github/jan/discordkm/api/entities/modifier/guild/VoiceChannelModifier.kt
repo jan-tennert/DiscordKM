@@ -7,16 +7,14 @@
  * You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
  */
-package io.github.jan.discordkm.api.entities.modifiers.guild
+package io.github.jan.discordkm.api.entities.modifier.guild
 
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.misc.NullableLimitedInt
 import io.github.jan.discordkm.internal.utils.modify
-import io.github.jan.discordkm.internal.utils.putJsonObject
 import io.github.jan.discordkm.internal.utils.putOptional
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
 
 class VoiceChannelModifier(private val type: ChannelType) : ParentalModifier() {
 

@@ -9,6 +9,7 @@
  */
 package io.github.jan.discordkm.http
 
+import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
@@ -20,6 +21,7 @@ import io.github.jan.discordkm.api.entities.containers.CacheUserContainer
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.utils.LoggerConfig
+import io.github.jan.discordkm.internal.utils.log
 import io.github.jan.discordkm.internal.websocket.handleRawEvent
 import io.ktor.application.call
 import io.ktor.client.HttpClientConfig
@@ -34,7 +36,7 @@ import io.ktor.server.engine.embeddedServer
 class HttpInteractionClient internal constructor(override val config: ClientConfig) : DiscordClient {
 
     private lateinit var server: ApplicationEngine
-    private val LOGGER = config.map<LoggerConfig>("logging")("Http-Server")
+    private val HTTP_LOGGER = config.map<LoggerConfig>("logging")("Http-Server")
     override var selfUser: UserCacheEntry = throw IllegalStateException("HttpInteractionClient does not support selfUser")
     override val guilds = CacheGuildContainer(this, emptyList())
     override val users = CacheUserContainer(this, emptyList())
@@ -42,6 +44,13 @@ class HttpInteractionClient internal constructor(override val config: ClientConf
     override val members = CacheMemberContainer(emptyList())
     override val threads = CacheThreadContainer(emptyList())
     override val requester = Requester(config)
+    private val LOGGER = config.map<LoggerConfig>("logging")("DiscordKM")
+
+    init {
+        LOGGER.log(true, Logger.Level.WARN) {
+            "Warning: This is a beta version of DiscordKM, please report any bugs you find!"
+        }
+    }
 
     override suspend fun disconnect() {
         server.stop(1000, 1000)
@@ -51,7 +60,7 @@ class HttpInteractionClient internal constructor(override val config: ClientConf
         server = embeddedServer(CIO, port = config.map<Int>("port"), host = config.map<String>("host")) {
             routing {
                 post(config.map<String>("route")) {
-                    handleRawEvent(this.call.receive(), LOGGER)
+                    handleRawEvent(this.call.receive(), HTTP_LOGGER)
                 }
             }
         }.start()
