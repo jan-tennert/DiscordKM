@@ -9,7 +9,7 @@
  */
 object Versions {
 
-    const val KOTLIN = "1.6.10"
+    const val KOTLIN = "1.6.20"
     const val DOKKA = "1.6.10"
     const val KTOR = "1.6.8"
     const val SERIALIZATION = "1.3.2"
