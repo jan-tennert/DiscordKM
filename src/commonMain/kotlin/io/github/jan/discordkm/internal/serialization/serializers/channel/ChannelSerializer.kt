@@ -13,11 +13,14 @@ import com.soywiz.klock.minutes
 import com.soywiz.klock.seconds
 import io.github.jan.discordkm.api.entities.channels.Channel
 import io.github.jan.discordkm.api.entities.channels.ChannelCacheEntry
+import io.github.jan.discordkm.api.entities.channels.ChannelFlag
 import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.channels.MessageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Category
 import io.github.jan.discordkm.api.entities.channels.guild.CategoryCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.CategoryCacheEntryImpl
+import io.github.jan.discordkm.api.entities.channels.guild.ForumChannelCacheEntry
+import io.github.jan.discordkm.api.entities.channels.guild.ForumChannelCacheEntryImpl
 import io.github.jan.discordkm.api.entities.channels.guild.GuildChannelCacheEntry
 import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.channels.guild.NewsChannelCacheEntry
@@ -41,6 +44,7 @@ import io.github.jan.discordkm.internal.serialization.GuildEntitySerializer
 import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.int
+import io.github.jan.discordkm.internal.utils.long
 import io.github.jan.discordkm.internal.utils.snowflake
 import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.Json
@@ -63,6 +67,7 @@ import kotlinx.serialization.json.jsonObject
         ChannelType.GUILD_PUBLIC_THREAD -> deserializeChannel<ThreadCacheEntry>(data, value)
         ChannelType.GUILD_PRIVATE_THREAD -> deserializeChannel<ThreadCacheEntry>(data, value)
         ChannelType.GUILD_STAGE_VOICE -> deserializeChannel<StageChannelCacheEntry>(data, value)
+        ChannelType.GUILD_FORUM -> deserializeChannel<ForumChannelCacheEntry>(data, value)
         else -> TODO()
     }
 
@@ -86,6 +91,7 @@ import kotlinx.serialization.json.jsonObject
         val parentId = data["parent_id", true]?.snowflake //parent for channel
         val regionId = data["rtc_region", true]?.string //guild
         val videoQualityMode = data["video_quality_mode", true]?.int?.let { VoiceChannel.VideoQualityMode.get(it) } //guild
+        val channelFlags = data["flags", true]?.long?.let { ChannelFlag.decode(it) } ?: emptySet()
         return when(T::class) {
             TextChannelCacheEntry::class -> TextChannelCacheEntryImpl(guild,
                 position!!,
@@ -139,7 +145,18 @@ import kotlinx.serialization.json.jsonObject
                 id,
                 name!!,
                 type,
-                Json.decodeFromJsonElement(data["thread_metadata"]!!)
+                Json.decodeFromJsonElement(data["thread_metadata"]!!),
+                ChannelFlag.PINNED in channelFlags
+            )
+            ForumChannelCacheEntry::class -> ForumChannelCacheEntryImpl(
+                id,
+                guild,
+                parentId?.let { Category(it, guild) },
+                name!!,
+                permissionOverwrites!!,
+                position!!,
+                topic!!,
+                slowModeTime!!,
             )
             else -> TODO()
         } as T

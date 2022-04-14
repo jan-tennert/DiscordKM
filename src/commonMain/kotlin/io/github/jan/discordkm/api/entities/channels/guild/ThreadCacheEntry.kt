@@ -23,6 +23,11 @@ interface ThreadCacheEntry : Thread, GuildMessageChannelCacheEntry {
      */
     val metadata: Thread.ThreadMetadata
 
+    /**
+     * Whether this thread is pinned in it parent forum channel
+     */
+    val isPinned: Boolean
+
 }
 
 @PublishedApi
@@ -30,11 +35,12 @@ internal class ThreadCacheEntryImpl(
     override val guild: Guild,
     override val permissionOverwrites: Set<PermissionOverwrite>,
     override val slowModeTime: TimeSpan,
-    override val parent: GuildTextChannel,
+    override val parent: ThreadParent?,
     override val id: Snowflake,
     override val name: String,
     override val type: ChannelType,
     override val metadata: Thread.ThreadMetadata,
+    override val isPinned: Boolean,
 ) : ThreadCacheEntry {
 
     override val cacheManager = MessageCacheManager(client)

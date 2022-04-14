@@ -45,6 +45,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonArray
@@ -173,9 +174,10 @@ class DataMessage @DiscordKMInternal constructor(
         put("attachments", Json.encodeToJsonElement(oldAttachments))
     }
 
-    fun build(ephemeral: Boolean = false, enableStickers: Boolean = true): Any = if(attachments.isEmpty()) {
+    fun build(ephemeral: Boolean = false, enableStickers: Boolean = true, extraParameters: JsonObjectBuilder.() -> Unit = {}): Any = if(attachments.isEmpty()) {
         buildJsonObject {
             putJsonObject(buildJson(enableStickers))
+            putJsonObject(buildJsonObject(extraParameters))
             if(ephemeral) put("flags", 1 shl 6)
         }
     } else {

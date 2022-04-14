@@ -21,6 +21,7 @@ import io.github.jan.discordkm.api.entities.channels.ChannelType
 import io.github.jan.discordkm.api.entities.containers.ThreadMemberContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.cacheManager
+import io.github.jan.discordkm.api.entities.message.Message
 import io.github.jan.discordkm.api.entities.modifier.Modifiable
 import io.github.jan.discordkm.api.entities.modifier.guild.ThreadModifier
 import io.github.jan.discordkm.internal.Route
@@ -44,6 +45,8 @@ sealed interface Thread : GuildMessageChannel, Modifiable<ThreadModifier, Thread
 
     val members: ThreadMemberContainer
         get() = ThreadMemberContainer(this)
+    val firstMessage: Message
+        get() = Message(id, this)
     override val cache: ThreadCacheEntry?
         get() = guild.cache?.cacheManager?.channelCache?.get(id) as? ThreadCacheEntry
 

@@ -14,6 +14,7 @@ import io.github.jan.discordkm.api.entities.channels.guild.GuildTextChannel
 import io.github.jan.discordkm.api.entities.channels.guild.StageChannel
 import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
+import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.entities.guild.Guild
 import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.events.ThreadCreateEvent
@@ -32,6 +33,7 @@ internal class ThreadCreateEventHandler(val client: DiscordClient) : InternalEve
     override suspend fun handle(data: JsonObject): ThreadCreateEvent {
         val guild = Guild(data["guild_id"]!!.snowflake, client)
         val thread = Thread(data, guild)
+        thread.parent?.let { (client as? WSDiscordClientImpl)?.lastThreads?.set(it.id, thread) }
         guild.cache?.cacheManager?.threadCache?.set(thread.id, thread)
         return ThreadCreateEvent(thread)
     }

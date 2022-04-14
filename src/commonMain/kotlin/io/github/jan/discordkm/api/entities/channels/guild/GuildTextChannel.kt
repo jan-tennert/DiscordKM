@@ -14,10 +14,7 @@ import com.soywiz.klock.ISO8601
 import com.soywiz.klock.TimeSpan
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.ChannelType
-import io.github.jan.discordkm.api.entities.containers.CacheGuildThreadContainer
-import io.github.jan.discordkm.api.entities.containers.GuildThreadContainer
 import io.github.jan.discordkm.api.entities.guild.Guild
-import io.github.jan.discordkm.api.entities.guild.cacheManager
 import io.github.jan.discordkm.api.entities.modifier.Modifiable
 import io.github.jan.discordkm.api.entities.modifier.guild.TextChannelModifier
 import io.github.jan.discordkm.internal.Route
@@ -35,7 +32,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 
 
-interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier, GuildTextChannelCacheEntry>, InvitableGuildChannel {
+interface GuildTextChannel : GuildMessageChannel, Modifiable<TextChannelModifier, GuildTextChannelCacheEntry>, InvitableGuildChannel, ThreadParent {
 
     /*
      * Creates a new public thread in this channel.
@@ -134,13 +131,6 @@ internal class GuildTextChannelImpl(override val id: Snowflake, override val gui
 
 sealed interface GuildTextChannelCacheEntry : GuildTextChannel, GuildMessageChannelCacheEntry, IPositionable {
 
-    val threads: GuildThreadContainer
-        get() = guild.cache?.cacheManager?.threadCache?.filter { it.value.parent?.id == id }?.values?.let {
-            CacheGuildThreadContainer(
-                guild,
-                it
-            )
-        } ?: CacheGuildThreadContainer(guild, emptyList())
     val isNSFW: Boolean
     val topic: String?
     val defaultAutoArchiveDuration: Thread.ThreadDuration

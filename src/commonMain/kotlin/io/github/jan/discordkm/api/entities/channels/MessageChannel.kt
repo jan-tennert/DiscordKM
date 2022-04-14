@@ -11,7 +11,6 @@ package io.github.jan.discordkm.api.entities.channels
 
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
-import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClientImpl
 import io.github.jan.discordkm.api.entities.containers.MessageContainer
 import io.github.jan.discordkm.api.entities.message.DataMessage
@@ -89,9 +88,7 @@ interface MessageChannelCacheEntry : MessageChannel, ChannelCacheEntry {
 
     val cacheManager: MessageCacheManager
     val lastMessage: Message?
-        get() = if(client is WSDiscordClient) {
-            (client as WSDiscordClientImpl).lastMessages[id]
-        } else null
+        get() = (client as? WSDiscordClientImpl)?.lastMessages?.get(id)
     val messages: MessageContainer
         get() = MessageContainer(cacheManager.messageCache.values, this)
 

@@ -28,6 +28,7 @@ import io.github.jan.discordkm.internal.delete
 import io.github.jan.discordkm.internal.invoke
 import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagEnum
+import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
 import kotlinx.serialization.Serializable
@@ -90,4 +91,7 @@ enum class ChannelType(override val value: Int) : EnumWithValue<Int>{
 
 enum class ChannelFlag(override val offset: Int): FlagEnum<ChannelFlag> {
     PINNED(1);
+
+    companion object : FlagSerializer<ChannelFlag>(values())
+
 }

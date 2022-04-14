@@ -16,6 +16,7 @@ import com.soywiz.klogger.Logger
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.activity.PresenceModifier
+import io.github.jan.discordkm.api.entities.channels.guild.Thread
 import io.github.jan.discordkm.api.entities.containers.CacheChannelContainer
 import io.github.jan.discordkm.api.entities.containers.CacheGuildContainer
 import io.github.jan.discordkm.api.entities.containers.CacheMemberContainer
@@ -77,6 +78,7 @@ internal class WSDiscordClientImpl internal constructor(
 
     private val mutex = Mutex()
     val lastMessages = IsoMutableMap<Snowflake, Message>()
+    val lastThreads = IsoMutableMap<Snowflake, Thread>()
     val cacheManager = ClientCacheManager(this)
     override val requester = Requester(config)
     override val eventListeners = mutableListOf<EventListener>()
