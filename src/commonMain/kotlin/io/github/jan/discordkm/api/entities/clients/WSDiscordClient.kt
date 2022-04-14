@@ -39,7 +39,6 @@ import io.github.jan.discordkm.internal.utils.safeValues
 import io.github.jan.discordkm.internal.websocket.Compression
 import io.github.jan.discordkm.internal.websocket.DiscordGateway
 import io.github.jan.discordkm.internal.websocket.Encoding
-import io.ktor.client.HttpClientConfig
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -134,7 +133,7 @@ internal class WSDiscordClientImpl internal constructor(
 /*
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
-class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: String) {
+class WSClientBuilder @DiscordKMInternal constructor(var token: String) {
     /*
      * The encoding used for the websocket. Currently, only [Encoding.JSON] is supported
      */
@@ -179,7 +178,6 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
 
     private val shards = mutableSetOf<Int>()
 
-    private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
     /*
      * Specifies the total amount of shards. [Sharding](https://discord.com/developers/docs/topics/gateway#sharding)
      */
@@ -220,17 +218,12 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
         activity = PresenceModifier().apply(builder)
     }
 
-    fun httpClient(builder: HttpClientConfig<*>.() -> Unit) {
-        httpClientConfig = builder
-    }
-
     fun build(): WSDiscordClient = WSDiscordClientImpl(
         ClientConfig(mapOf(
             "token" to token,
             "intents" to intents,
             "logging" to logging,
             "enabledCache" to enabledCache,
-            "httpClientConfig" to httpClientConfig,
             "totalShards" to totalShards,
             "shards" to shards,
             "reconnectDelay" to reconnectDelay,
@@ -250,8 +243,8 @@ class DiscordWebSocketClientBuilder @DiscordKMInternal constructor(var token: St
  * Websocket Client, normally used for bots. You can receive events, automatically use cached entities
  */
 @OptIn(DiscordKMInternal::class)
-inline fun buildClient(token: String, builder: DiscordWebSocketClientBuilder.() -> Unit = {}) =
-    DiscordWebSocketClientBuilder(token).apply(builder).build()
+inline fun buildClient(token: String, builder: WSClientBuilder.() -> Unit = {}) =
+    WSClientBuilder(token).apply(builder).build()
 
 
 inline fun <reified E : Event> WSDiscordClient.on(

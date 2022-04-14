@@ -145,8 +145,8 @@ kotlin {
                 api("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.SERIALIZATION}")
                 api("com.soywiz.korlibs.klock:klock:${Versions.KORLIBS}")
                 api("com.soywiz.korlibs.klogger:klogger:${Versions.KORLIBS}")
-                api("io.ktor:ktor-client-core:${Versions.KTOR}")
-                api("io.ktor:ktor-client-websockets:${Versions.KTOR}")
+             //   api("io.ktor:ktor-client-core:${Versions.KTOR}")
+             //  api("io.ktor:ktor-client-websockets:${Versions.KTOR}")
                 api("co.touchlab:stately-iso-collections:${Versions.STATELY}")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.COROUTINES}")
                 api("com.soywiz.korlibs.korio:korio:${Versions.KORLIBS}")
@@ -156,12 +156,12 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("com.google.guava:guava:${Versions.GUAVA}")
-                implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
+               // implementation("io.ktor:ktor-client-cio:${Versions.KTOR}")
             }
         }
         val jsMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-js:${Versions.KTOR}")
+             //   implementation("io.ktor:ktor-client-js:${Versions.KTOR}")
             }
         }
     }

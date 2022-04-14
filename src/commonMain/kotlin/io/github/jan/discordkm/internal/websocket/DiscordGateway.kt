@@ -10,9 +10,10 @@
 package io.github.jan.discordkm.internal.websocket
 
 import com.soywiz.klock.TimeSpan
-import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Logger
+import com.soywiz.korio.net.ws.WebSocketClient
+import com.soywiz.korio.net.ws.WsCloseInfo
 import io.github.jan.discordkm.api.entities.activity.Presence
 import io.github.jan.discordkm.api.entities.activity.PresenceStatus
 import io.github.jan.discordkm.api.entities.clients.ClientConfig
@@ -73,7 +74,6 @@ import io.github.jan.discordkm.internal.events.ThreadUpdateEventHandler
 import io.github.jan.discordkm.internal.events.TypingStartEventHandler
 import io.github.jan.discordkm.internal.events.VoiceStateUpdateEventHandler
 import io.github.jan.discordkm.internal.events.WebhooksUpdateEventHandler
-import io.github.jan.discordkm.internal.restaction.ErrorHandler
 import io.github.jan.discordkm.internal.serialization.IdentifyPayload
 import io.github.jan.discordkm.internal.serialization.Payload
 import io.github.jan.discordkm.internal.serialization.rawValue
@@ -81,17 +81,8 @@ import io.github.jan.discordkm.internal.serialization.send
 import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.utils.generateWebsocketURL
 import io.github.jan.discordkm.internal.utils.log
-import io.ktor.client.HttpClient
-import io.ktor.client.features.HttpTimeout
-import io.ktor.client.features.timeout
-import io.ktor.client.features.websocket.DefaultClientWebSocketSession
-import io.ktor.client.features.websocket.WebSockets
-import io.ktor.client.features.websocket.webSocketSession
-import io.ktor.http.cio.websocket.CloseReason
-import io.ktor.http.cio.websocket.close
-import io.ktor.http.cio.websocket.readBytes
-import io.ktor.http.takeFrom
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -122,16 +113,12 @@ class DiscordGateway internal constructor(
     private var lastSequenceNumber: Int? = null
     var sessionId: String? = null
         internal set
-    private val http = HttpClient() {
-        install(WebSockets)
-        install(HttpTimeout)
-    }
     val mutex = Mutex()
     private var resumeTries = 0
     private var heartbeatSent = 0
     private var heartbeatReceived = 0
     private var authenticated = false
-    private lateinit var socket: DefaultClientWebSocketSession
+    private lateinit var socket: WebSocketClient
     var isConnected = false
         private set
     private lateinit var heartbeatTask: Job
@@ -142,15 +129,12 @@ class DiscordGateway internal constructor(
         if (delay) com.soywiz.korio.async.delay(config.map<TimeSpan>("reconnectDelay"))
         LOGGER.log(true, Logger.Level.INFO) { "Connecting to gateway..." }
         try {
-            socket = http.webSocketSession {
-                url.takeFrom(generateWebsocketURL(
-                    config.map("encoding"),
-                    config.map("compression")
-                ))
-                timeout { this.connectTimeoutMillis = 5000; this.socketTimeoutMillis = 2 * 60 * 1000 }
-            }
+            socket = WebSocketClient(generateWebsocketURL(
+                config.map("encoding"),
+                config.map("compression")
+            ))
             mutex.withLock { isConnected = true; authenticated = false }
-            with(socket) {
+           /* with(socket) {
                 LOGGER.log(true, Logger.Level.INFO) { "Connected to gateway!" }
                 while (isConnected) {
                     try {
@@ -163,6 +147,11 @@ class DiscordGateway internal constructor(
                         launch(kotlin.coroutines.coroutineContext) { start(delay = true) }
                     }
                     com.soywiz.korio.async.delay(100.milliseconds)
+                }
+            }*/
+            socket.onStringMessage {
+                com.soywiz.korio.async.launch(Dispatchers.Default) {
+                    onMessage(it)
                 }
             }
         } catch (e: Exception) {
@@ -296,7 +285,7 @@ class DiscordGateway internal constructor(
         LOGGER.warn { "Closing websocket connection on shard $shardId" }
         if(::heartbeatTask.isInitialized) heartbeatTask.cancel()
         if(::heartbeatWatcher.isInitialized) heartbeatWatcher.cancel()
-        socket.close(CloseReason(1000, "Normal closure"))
+        socket.close(WsCloseInfo(1000, "Normal closure"))
         mutex.withLock {
             heartbeatSent = 0
             heartbeatReceived = 0

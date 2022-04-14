@@ -10,6 +10,8 @@
 package io.github.jan.discordkm.api.webhooks
 
 import com.soywiz.klogger.Logger
+import com.soywiz.korio.net.http.HttpClient
+import com.soywiz.korio.net.http.createHttpClient
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
@@ -37,7 +39,6 @@ import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
 import io.github.jan.discordkm.internal.utils.toJsonObject
-import io.ktor.client.HttpClient
 import kotlinx.serialization.json.JsonObject
 
 class Webhook(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity, WebhookExecutor {
@@ -127,7 +128,7 @@ class Webhook(override val client: DiscordClient, override val data: JsonObject)
 
             override val token = token
 
-            override val http = HttpClient()
+            override val http = createHttpClient()
 
             override val requester = Requester(ClientConfig(mapOf(
                 "logging" to LoggerConfig(Logger.Level.DEBUG)

@@ -13,6 +13,10 @@ import co.touchlab.stately.collections.IsoMutableMap
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.milliseconds
 import com.soywiz.klogger.Logger
+import com.soywiz.korio.async.launch
+import com.soywiz.korio.net.http.Http
+import com.soywiz.korio.net.http.createHttpClient
+import com.soywiz.korio.net.ws.WebSocketClient
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.channels.guild.VoiceChannel
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
@@ -37,16 +41,7 @@ import io.github.jan.discordkm.lavalink.tracks.AudioTrack
 import io.github.jan.discordkm.lavalink.tracks.AudioTrackImpl
 import io.github.jan.discordkm.lavalink.tracks.EncodedTrack
 import io.github.jan.discordkm.lavalink.tracks.LoadType
-import io.ktor.client.HttpClient
-import io.ktor.client.features.websocket.DefaultClientWebSocketSession
-import io.ktor.client.features.websocket.WebSockets
-import io.ktor.client.features.websocket.webSocketSession
-import io.ktor.client.request.headers
-import io.ktor.client.request.request
-import io.ktor.http.HttpMethod
-import io.ktor.http.cio.websocket.close
-import io.ktor.http.cio.websocket.readBytes
-import io.ktor.http.takeFrom
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -95,10 +90,8 @@ sealed interface LavalinkNode {
 
 internal class LavalinkNodeImpl(private val ip: String, private val port: Int, private val password: String, override val shardId: Int = 0, override val client: WSDiscordClient): LavalinkNode {
 
-    lateinit var ws: DefaultClientWebSocketSession
-    private val http = HttpClient() {
-        install(WebSockets)
-    }
+    lateinit var ws: WebSocketClient
+    private val http = createHttpClient()
     private val baseUrl = "http://$ip:$port"
     private val audioPlayers = IsoMutableMap<Snowflake, AudioPlayer>()
     private val LOGGER = Logger("LavalinkNode-$shardId")
@@ -144,7 +137,7 @@ internal class LavalinkNodeImpl(private val ip: String, private val port: Int, p
     }
 
     override suspend fun loadTracks(identifier: String) : List<AudioTrack> {
-        val request = request(HttpMethod.Get, LavalinkRoute.LOAD_TRACK(identifier)).toJsonObject()
+        val request = request(Http.Method.GET, LavalinkRoute.LOAD_TRACK(identifier)).toJsonObject()
         val tracks = buildList<AudioTrack> {
             when(val loadType = LoadType.valueOf(request.getOrThrow("loadType"))) {
                 LoadType.SEARCH_RESULT -> TODO()
@@ -168,21 +161,19 @@ internal class LavalinkNodeImpl(private val ip: String, private val port: Int, p
     override suspend fun connect() = coroutineScope {
         LOGGER.info { "Connecting to the lavalink server..." }
         try {
-            ws = http.webSocketSession {
-                url.takeFrom("ws://$ip:$port")
-                method = HttpMethod.Get
-                headers {
-                    append("Authorization", password)
-                    append("Num-Shards", shardId.toString())
-                    append("User-Id", client.selfUser.id.string)
-                }
-            }
+            ws = WebSocketClient("ws://$ip:$port", headers = Http.Headers.build {
+                put("Authorization", password)
+                put("Num-Shards", shardId.toString())
+                put("User-Id", client.selfUser.id.string)
+            })
             isConnected = true
             LOGGER.info { "Connected to the lavalink server!" }
-            while (isConnected) {
-                val message = ws.incoming.receive().readBytes().decodeToString()
-                onMessage(message)
+            ws.onStringMessage {
+                launch(Dispatchers.Default) {
+                    onMessage(it)
+                }
             }
+            Unit
         } catch(err: Exception) {
             isConnected = false
             LOGGER.error { "Error on websocket: $err" }
@@ -220,15 +211,10 @@ internal class LavalinkNodeImpl(private val ip: String, private val port: Int, p
         )
     }
 
-    suspend fun request(method: HttpMethod, endpoint: String) = http.request<String> {
-        url.takeFrom(baseUrl + endpoint)
-        this.method = method
-        headers {
-            append("Authorization", password)
-        }
-    }
-
+    suspend fun request(method: Http.Method, endpoint: String) = http.request(method, baseUrl + endpoint, headers = Http.Headers.build {
+        put("Authorization", password)
+    }).readAllString()
 }
 
-internal val LavalinkNode.ws: DefaultClientWebSocketSession
+internal val LavalinkNode.ws: WebSocketClient
     get() = (this as LavalinkNodeImpl).ws

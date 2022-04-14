@@ -23,7 +23,6 @@ import io.github.jan.discordkm.internal.caching.CacheFlag
 import io.github.jan.discordkm.internal.restaction.Requester
 import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.utils.log
-import io.ktor.client.HttpClientConfig
 
 /*
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
@@ -55,12 +54,11 @@ class RestDiscordClient internal constructor(override val config: ClientConfig, 
 
 }
 
-class RestOnlyClientBuilder @DiscordKMInternal constructor(var token: String, var botId: Snowflake) {
+class RestDiscordClientBuilder @DiscordKMInternal constructor(var token: String, var botId: Snowflake) {
 
     var logging = LoggerConfig()
     var enabledCache = CacheFlag.values().toMutableSet()
     var translationManager = TranslationManager.empty()
-    private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
     fun build(): RestDiscordClient = RestDiscordClient(
         ClientConfig(
@@ -69,12 +67,9 @@ class RestOnlyClientBuilder @DiscordKMInternal constructor(var token: String, va
                 "logging" to logging,
                 "enabledCache" to enabledCache,
                 "translationManager" to translationManager,
-                "httpClientConfig" to httpClientConfig
             )
         ), botId
     )
-
-    fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
 
 }
 
@@ -82,4 +77,4 @@ class RestOnlyClientBuilder @DiscordKMInternal constructor(var token: String, va
  * The RestOnlyClient is used when you only want to make REST API requests. The cache will be always empty.
  */
 @OptIn(DiscordKMInternal::class)
-inline fun buildRestClient(token: String, botId: Snowflake, builder: RestOnlyClientBuilder.() -> Unit) =  RestOnlyClientBuilder(token, botId).apply(builder).build()
+inline fun buildRestClient(token: String, botId: Snowflake, builder: RestDiscordClientBuilder.() -> Unit) =  RestDiscordClientBuilder(token, botId).apply(builder).build()

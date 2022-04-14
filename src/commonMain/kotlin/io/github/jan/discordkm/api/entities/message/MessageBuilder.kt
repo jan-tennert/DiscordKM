@@ -28,15 +28,6 @@ import io.github.jan.discordkm.api.entities.interactions.modals.TextInputBuilder
 import io.github.jan.discordkm.api.media.Attachment
 import io.github.jan.discordkm.internal.DiscordKMInternal
 import io.github.jan.discordkm.internal.utils.putJsonObject
-import io.ktor.client.request.forms.FormBuilder
-import io.ktor.client.request.forms.FormPart
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
-import io.ktor.client.utils.buildHeaders
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
-import io.ktor.utils.io.core.buildPacket
-import io.ktor.utils.io.core.writeFully
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -181,7 +172,7 @@ class DataMessage @DiscordKMInternal constructor(
             if(ephemeral) put("flags", 1 shl 6)
         }
     } else {
-        MultiPartFormDataContent(
+        /*MultiPartFormDataContent(
             formData {
                 addAttachments(attachments)
                 append(FormPart("payload_json", buildJsonObject {
@@ -190,7 +181,8 @@ class DataMessage @DiscordKMInternal constructor(
                 }.toString(), headers = buildHeaders {
                     append(HttpHeaders.ContentType, "application/json")
                 }))
-            })
+            })*/
+        TODO()
     }
 
     fun buildCallback(type: Int, ephemeral: Boolean = false): Any = if(attachments.isEmpty()) {
@@ -202,7 +194,7 @@ class DataMessage @DiscordKMInternal constructor(
             })
         }
     } else {
-        MultiPartFormDataContent(
+        /*MultiPartFormDataContent(
             formData {
                 addAttachments(attachments)
                 append(FormPart("payload_json", buildJsonObject {
@@ -217,9 +209,11 @@ class DataMessage @DiscordKMInternal constructor(
                     append(HttpHeaders.ContentType, "application/json")
                 }))
             })
+        */
+        TODO()
     }
 
-    private fun FormBuilder.addAttachments(attachments: List<Attachment>) {
+    /*private fun FormBuilder.addAttachments(attachments: List<Attachment>) {
         var index = 1
         attachments.forEach {
             val name = if(it.spoiler) "SPOILER_${it.fileName}" else it.fileName
@@ -233,7 +227,7 @@ class DataMessage @DiscordKMInternal constructor(
             ) { buildPacket { writeFully(it.bytes) } }
             index++
         }
-    }
+    }*/
 
 }
 

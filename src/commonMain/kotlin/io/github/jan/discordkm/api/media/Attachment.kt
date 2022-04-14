@@ -15,6 +15,13 @@ import com.soywiz.korio.file.baseName
 
 class Attachment internal constructor(val bytes: ByteArray, val fileName: String, val size: Long, val spoiler: Boolean = false) {
 
+    val contentType = when(fileName.split(".").last()) {
+        "jpg", "jpeg" -> "image/jpeg"
+        "png" -> "image/png"
+        "gif" -> "image/gif"
+        else -> ""
+    }
+
     companion object {
 
         suspend fun fromFile(file: VfsFile, spoiler: Boolean = false, fileName: String = file.baseName) = Attachment(file.readBytes(), fileName, file.size(), spoiler)

@@ -11,12 +11,6 @@ package io.github.jan.discordkm.api.entities.modifier.guild
 
 import io.github.jan.discordkm.api.entities.modifier.MultipartModifier
 import io.github.jan.discordkm.api.media.Attachment
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
-import io.ktor.utils.io.core.buildPacket
-import io.ktor.utils.io.core.writeFully
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
