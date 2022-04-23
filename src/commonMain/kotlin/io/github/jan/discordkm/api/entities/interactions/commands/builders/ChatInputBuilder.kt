@@ -32,7 +32,7 @@ class ChatInputCommandBuilder(client: WSDiscordClient? = null) : ApplicationComm
     }
 
     @CommandBuilder
-    inline fun <T : AutoCompleteEvent<*>> onAutoComplete(
+    inline fun <T> onAutoComplete(
         optionName: String,
         subCommand: String? = null,
         subCommandGroup: String? = null,
