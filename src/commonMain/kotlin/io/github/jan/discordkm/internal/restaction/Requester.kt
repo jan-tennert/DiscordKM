@@ -31,7 +31,6 @@ class Requester(val config: ClientConfig) {
 
     suspend fun handle(request: Request) : HttpClient.Response {
         val response = rateLimiter.queue(request)
-        rateLimiter.updateRateLimits(request, response)
         ErrorHandler.handle(response)
         return response
     }

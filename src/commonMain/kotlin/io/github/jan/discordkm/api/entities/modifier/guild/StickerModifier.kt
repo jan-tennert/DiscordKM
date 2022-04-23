@@ -11,8 +11,6 @@ package io.github.jan.discordkm.api.entities.modifier.guild
 
 import io.github.jan.discordkm.api.entities.modifier.MultipartModifier
 import io.github.jan.discordkm.api.media.Attachment
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 
 class StickerModifier(private val edit: Boolean) : MultipartModifier {
 
@@ -21,8 +19,8 @@ class StickerModifier(private val edit: Boolean) : MultipartModifier {
     val tags = mutableListOf<String>()
     var file: Attachment? = null
 
-    override val data: MultiPartFormDataContent
-        get() {
+    override val data: String = TODO()
+     /*   get() {
             if(file == null && !edit) throw IllegalArgumentException("You have to provide a file when creating a sticker")
             return MultiPartFormDataContent(formData {
                 appendInput("file", headers = Headers.build {
@@ -34,5 +32,5 @@ class StickerModifier(private val edit: Boolean) : MultipartModifier {
                     put("tags", tags.joinToString())
                 }.toString())
             })
-        }
+        }*/
 }

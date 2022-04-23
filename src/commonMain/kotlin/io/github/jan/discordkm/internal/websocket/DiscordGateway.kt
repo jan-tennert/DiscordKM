@@ -105,7 +105,7 @@ import kotlin.coroutines.coroutineContext
 class DiscordGateway internal constructor(
     private val config: ClientConfig,
     val client: WSDiscordClient,
-    val shardId: Int = 0,
+    private val shardId: Int = 0,
 ) {
 
     internal val LOGGER = config.map<LoggerConfig>("logging")("Websocket")
@@ -149,10 +149,14 @@ class DiscordGateway internal constructor(
                     com.soywiz.korio.async.delay(100.milliseconds)
                 }
             }*/
+            socket.onClose {
+                LOGGER.info { "Closed websocket connection on shard $shardId. Reason: ${it.message}, Code: ${it.code}" }
+            }
+            socket.onError {
+                attemptToReconnect(it)
+            }
             socket.onStringMessage {
-                com.soywiz.korio.async.launch(Dispatchers.Default) {
-                    onMessage(it)
-                }
+                onMessage(it)
             }
         } catch (e: Exception) {
             mutex.withLock { isConnected = false }
@@ -166,12 +170,20 @@ class DiscordGateway internal constructor(
         socket.send(payload)
     }
 
-    private suspend fun onMessage(message: String) {
+    private fun attemptToReconnect(error: Throwable) {
+        LOGGER.error { "Error on gateway: ${error.stackTraceToString()}. Attempting to reconnect..." }
+        com.soywiz.korio.async.launch(Dispatchers.Default) {
+            close()
+            start(true)
+        }
+    }
+
+    private fun onMessage(message: String) {
         val json = Json.parseToJsonElement(message).jsonObject
         var data = json["d"]
         if (data is JsonNull) data = null
         if (data.toString() == "false") data = null
-        com.soywiz.korio.async.launch(coroutineContext) {
+        com.soywiz.korio.async.launch(Dispatchers.Default) {
             onEvent(
                 Payload(
                     json.getValue("op").jsonPrimitive.int,
@@ -397,7 +409,7 @@ suspend fun DiscordClient.handleRawEvent(payload: Payload, LOGGER: Logger) = cor
         runCatching {
             (client as WSDiscordClientImpl).handleEvent(event)
         }.onFailure {
-            LOGGER.error { "Error while handling event ${event::class.simpleName}: ${it::class.simpleName} ${it.message}" }
+            LOGGER.error { "Error while handling event ${event::class.simpleName}: ${it.stackTraceToString()}" }
         }
     }
 }

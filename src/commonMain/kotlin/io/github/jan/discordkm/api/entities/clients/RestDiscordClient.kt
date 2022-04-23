@@ -45,7 +45,7 @@ class RestDiscordClient internal constructor(override val config: ClientConfig, 
     }
 
     override suspend fun disconnect() {
-        requester.http.close()
+        //requester.http.close()
     }
 
     override suspend fun login() {

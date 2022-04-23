@@ -119,7 +119,7 @@ internal class WSDiscordClientImpl internal constructor(
     }
 
     override suspend fun disconnect() {
-        requester.http.close()
+       // requester.http.close()
         shardConnections.forEach { it.value.close() }
     }
 

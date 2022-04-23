@@ -169,9 +169,7 @@ internal class LavalinkNodeImpl(private val ip: String, private val port: Int, p
             isConnected = true
             LOGGER.info { "Connected to the lavalink server!" }
             ws.onStringMessage {
-                launch(Dispatchers.Default) {
-                    onMessage(it)
-                }
+                onMessage(it)
             }
             Unit
         } catch(err: Exception) {
@@ -188,11 +186,13 @@ internal class LavalinkNodeImpl(private val ip: String, private val port: Int, p
 
     override fun getPlayerByGuild(guildId: Snowflake) = audioPlayers.get(guildId)
 
-    private suspend fun onMessage(message: String) {
+    private fun onMessage(message: String) {
         val data = message.toJsonObject()
         if(data.getOrThrow<String>("op") == "stats") {
             val stats = Json { ignoreUnknownKeys = true }.decodeFromJsonElement<LavalinkStats>(data)
-            client.handleEvent(LavalinkStatsUpdateEvent(client, this, stats))
+            launch(Dispatchers.Default) {
+                client.handleEvent(LavalinkStatsUpdateEvent(client, this, stats))
+            }
             this.stats = stats
             return
         }
@@ -200,15 +200,17 @@ internal class LavalinkNodeImpl(private val ip: String, private val port: Int, p
         val type = data.getOrThrow<String>("type")
         val track = EncodedTrack(data.getOrNull<String>("track") ?: return, this)
         val player = getPlayerByGuild(data.getOrThrow<Snowflake>("guildId"))!!
-        (client).handleEvent(
-            when(type) {
-                "TrackStartEvent" -> TrackStartEvent(client, track, player)
-                "TrackEndEvent" -> TrackEndEvent(client, track, player, data.getOrThrow("reason"))
-                "TrackExceptionEvent" -> TrackExceptionEvent(client, track, player, Throwable(data.getOrThrow<String>("error")))
-                "TrackStuckEvent" -> TrackStuckEvent(client, track, player, data.getOrThrow<Long>("thresholdMs").milliseconds)
-                else -> throw IllegalStateException("Unsupported event: $message")
-            }
-        )
+        launch(Dispatchers.Default) {
+            (client).handleEvent(
+                when(type) {
+                    "TrackStartEvent" -> TrackStartEvent(client, track, player)
+                    "TrackEndEvent" -> TrackEndEvent(client, track, player, data.getOrThrow("reason"))
+                    "TrackExceptionEvent" -> TrackExceptionEvent(client, track, player, Throwable(data.getOrThrow<String>("error")))
+                    "TrackStuckEvent" -> TrackStuckEvent(client, track, player, data.getOrThrow<Long>("thresholdMs").milliseconds)
+                    else -> throw IllegalStateException("Unsupported event: $message")
+                }
+            )
+        }
     }
 
     suspend fun request(method: Http.Method, endpoint: String) = http.request(method, baseUrl + endpoint, headers = Http.Headers.build {

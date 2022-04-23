@@ -9,6 +9,4 @@
  */
 package io.github.jan.discordkm.api.entities.modifier
 
-import io.ktor.client.request.forms.MultiPartFormDataContent
-
-interface MultipartModifier : BaseModifier<MultiPartFormDataContent>
+interface MultipartModifier : BaseModifier<String>

@@ -15,7 +15,6 @@ import com.soywiz.klock.DateTime
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.korio.async.async
-import com.soywiz.korio.async.delay
 import com.soywiz.korio.net.http.HttpClient
 import io.github.jan.discordkm.internal.utils.LoggerConfig
 import kotlinx.coroutines.Job
@@ -28,21 +27,34 @@ class RateLimiter(logging: LoggerConfig) {
     private val jobs = IsoMutableSet<Job>()
 
     suspend fun queue(request: Request): HttpClient.Response {
-        while(jobs.isNotEmpty())
-        if(buckets[request.endpoint] != null && buckets[request.endpoint]!!.remaining == 0) {
-            val bucket = buckets[request.endpoint]!!
-            LOGGER.warn { "Rate limit exceeded for ${request.endpoint}. Sending requests in ${bucket.resetAfter}" }
-            delay(bucket.resetAfter)
-            return queue(request)
+        while(jobs.isNotEmpty());
+        val job = async(coroutineContext) {
+            if (request.endpoint in buckets) {
+                val bucket = buckets[request.endpoint]!!
+                if (bucket.remaining == 0) {
+                    LOGGER.warn { "Rate limit exceeded for ${request.endpoint}. Sending requests in ${bucket.resetAfter}" }
+                    executeAndUpdate(request)
+                } else {
+                    executeAndUpdate(request)
+                }
+            } else {
+                executeAndUpdate(request)
+            }
         }
-        val job = async(coroutineContext) { request.execute() }
-        jobs.add(job)
-        val result = job.await()
-        jobs.remove(job)
-        return result
+        jobs += job
+        job.invokeOnCompletion {
+            jobs -= job
+        }
+        return job.await()
     }
 
-    fun updateRateLimits(request: Request, response: HttpClient.Response) {
+    private suspend fun executeAndUpdate(request: Request): HttpClient.Response {
+        return request.execute().also {
+            updateRateLimits(request, it)
+        }
+    }
+
+    private fun updateRateLimits(request: Request, response: HttpClient.Response) {
         val headers = response.headers
         if(headers["X-ratelimit-bucket"] == null) return
         val bucket = Bucket(

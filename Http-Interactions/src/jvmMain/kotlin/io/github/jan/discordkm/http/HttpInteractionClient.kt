@@ -24,7 +24,6 @@ import io.github.jan.discordkm.internal.utils.LoggerConfig
 import io.github.jan.discordkm.internal.utils.log
 import io.github.jan.discordkm.internal.websocket.handleRawEvent
 import io.ktor.application.call
-import io.ktor.client.HttpClientConfig
 import io.ktor.request.receive
 import io.ktor.routing.post
 import io.ktor.routing.routing
@@ -74,18 +73,14 @@ class HttpInteractionClientBuilder @DiscordKMInternal constructor(var token: Str
     var port = 20000
     var host = "0.0.0.0"
     var route = "/interactions"
-    private var httpClientConfig: HttpClientConfig<*>.() -> Unit = {}
 
     fun build() = HttpInteractionClient(ClientConfig(mapOf(
         "token" to token,
         "logging" to logging,
-        "httpClientConfig" to httpClientConfig,
         "port" to port,
         "host" to host,
         "route" to route
     )))
-
-    fun httpClient(builder: HttpClientConfig<*>.() -> Unit) { httpClientConfig = builder }
 
 }
 
