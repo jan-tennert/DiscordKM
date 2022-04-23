@@ -81,7 +81,7 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, val clien
 class MessageCommandBuilder(client: WSDiscordClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.MESSAGE, client) {
 
     @CommandBuilder
-    inline fun onCommand(crossinline action: MessageCommandEvent.() -> Unit) {
+    inline fun onCommand(crossinline action: suspend MessageCommandEvent.() -> Unit) {
         client?.let { c -> c.on<MessageCommandEvent>(predicate = { it.commandName == name }) { action(this) } }
     }
 
@@ -90,7 +90,7 @@ class MessageCommandBuilder(client: WSDiscordClient? = null) : ApplicationComman
 class UserCommandBuilder(client: WSDiscordClient? = null) : ApplicationCommandBuilder(ApplicationCommandType.USER, client) {
 
     @CommandBuilder
-    inline fun onCommand(crossinline action: UserCommandEvent.() -> Unit) {
+    inline fun onCommand(crossinline action: suspend UserCommandEvent.() -> Unit) {
         client?.let { c -> c.on<UserCommandEvent>(predicate = { it.commandName == name }) { action(this) } }
     }
 
