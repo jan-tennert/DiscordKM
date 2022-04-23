@@ -27,8 +27,8 @@ class ChatInputCommandBuilder(client: WSDiscordClient? = null) : ApplicationComm
     private val options: MutableList<CommandOption> = mutableListOf()
 
     @CommandBuilder
-    inline fun onCommand(crossinline action: suspend SlashCommandEvent.() -> Unit) {
-        client?.let { c -> c.on<SlashCommandEvent>(predicate = { it.commandName == name }) { action(this) } }
+    inline fun onCommand(subCommand: String? = null, subCommandGroup: String? = null, crossinline action: suspend SlashCommandEvent.() -> Unit) {
+        client?.let { c -> c.on<SlashCommandEvent>(predicate = { it.commandName == name && if(subCommand != null) subCommand == it.subCommand else true && if(subCommandGroup != null) subCommandGroup == it.subCommandGroup else true }) { action(this) } }
     }
 
     @CommandBuilder
