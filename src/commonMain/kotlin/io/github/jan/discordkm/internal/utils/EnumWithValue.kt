@@ -41,7 +41,15 @@ open class EnumWithValueGetter <V : EnumWithValue<T>, T>(val values: Collection<
     })
 
     override fun deserialize(decoder: Decoder): V {
-        val value = decoder.decodeInt()
+        val value = when(values.first().value) {
+            is String -> decoder.decodeString() as V
+            is Int -> decoder.decodeInt() as V
+            is Long -> decoder.decodeLong() as V
+            is Float -> decoder.decodeFloat() as V
+            is Double -> decoder.decodeDouble() as V
+            is Boolean -> decoder.decodeBoolean() as V
+            else -> throw IllegalStateException("Unsupported type ${values.first().value!!::class.simpleName}")
+        }
         return values.first { it.value == value }
     }
 

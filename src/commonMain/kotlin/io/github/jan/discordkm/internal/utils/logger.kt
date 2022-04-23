@@ -35,7 +35,7 @@ object LoggerOutput : Logger.Output {
 
 }
 
-class LoggerConfig(var level: Logger.Level = Logger.Level.INFO, var output: Logger.Output = LoggerOutput) {
+class LoggerConfig(var level: Logger.Level = Logger.Level.INFO, var output: Logger.Output = LoggerOutput, var logRestActions: Boolean = false) {
 
     operator fun invoke(builder: LoggerConfig.() -> Unit) {
         val config = LoggerConfig().apply(builder)
