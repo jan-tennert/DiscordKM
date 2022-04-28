@@ -13,6 +13,7 @@ import io.github.jan.discordkm.api.entities.UserCacheEntry
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.containers.OptionContainer
 import io.github.jan.discordkm.api.entities.interactions.ApplicationCommandInteraction
+import io.github.jan.discordkm.api.entities.interactions.commands.permissions.ApplicationCommandPermissions
 import io.github.jan.discordkm.api.entities.message.Message
 
 interface CommandEvent : InteractionCreateEvent {
@@ -37,3 +38,8 @@ class MessageCommandEvent(override val client: DiscordClient, override val inter
  */
 class UserCommandEvent(override val client: DiscordClient, override val interaction: ApplicationCommandInteraction, override val commandName: String, val targetUser: UserCacheEntry) :
     CommandEvent
+
+/**
+ * Sent when the permissions for the [ApplicationCommandPermissions.commandId] get updated
+ */
+class ApplicationCommandsPermissionsUpdateEvent(private val applicationCommandPermissions: ApplicationCommandPermissions) : Event, ApplicationCommandPermissions by applicationCommandPermissions

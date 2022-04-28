@@ -34,6 +34,6 @@ suspend fun DefaultClientWebSocketSession.send(opCode: String, guildId: Snowflak
     builder()
     put("guildId", guildId.string)
     put("op", opCode)
-}.toString().also(::println))
+}.toString())
 
 fun WSDiscordClient.createLavalinkClient(): LavalinkClient = LavalinkClientImpl(this)

@@ -31,6 +31,7 @@ object ErrorHandler {
 
     suspend fun handle(response: HttpResponse) {
         if(response.status.value in 200..204) return
+        if(response.request.content !is TextContent) return
         val statusCode = response.status.value
         val data = response.receive<String>().toJsonObject()
         val message = data["message"]?.string ?: "Unknown error"

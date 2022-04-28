@@ -18,6 +18,7 @@ import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
+import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
@@ -40,7 +41,6 @@ class RestAction<T>(val requester: Requester) {
 
     @Suppress("UNCHECKED_CAST")
     suspend fun queue(): T {
-        println(route.body)
         val http = requester.http
         check()
         val request = Request(route.endpoint) {
@@ -102,6 +102,7 @@ class RestAction<T>(val requester: Requester) {
             }
         }
         val response = requester.handle(request)
+        println(response.readText())
         val result = if (!this::transformer.isInitialized) Unit as T else transformer(response.receive())
         onFinish(result)
         return result

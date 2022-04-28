@@ -28,7 +28,9 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, val clien
     var defaultMemberPermissions: MutableSet<Permission> = mutableSetOf()
     var name: String = ""
     var description: String = ""
+    var enabledInDirectMessages = true
     val translations = TranslationBuilder()
+    private var disabledByDefault = false
     internal var translationManager: TranslationManager? = null
 
     /*
@@ -52,7 +54,6 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, val clien
      *
      * **application.command.[name].options.*subCommandGroupName*.options.*subCommandName*.options.*optionName*.description**
      */
-    @DiscordKMUnstable
     open fun useTranslationManager(manager: TranslationManager) {
         translations {
             name.putAll(manager.getAll("application.command.${this@ApplicationCommandBuilder.name}.name"))
@@ -61,17 +62,20 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, val clien
         translationManager = manager
     }
 
-    @DiscordKMUnstable
     fun useDefaultTranslationManager() { client?.config?.map<TranslationManager>("translationManager")?.let { useTranslationManager(it) } }
 
-    @DiscordKMUnstable
     fun defaultPermissions(vararg permissions: Permission) { defaultMemberPermissions.addAll(permissions) }
+
+    fun disabledByDefault() {
+        disabledByDefault = true
+    }
 
     internal open fun build() = buildJsonObject {
         put("name", name)
         put("description", description)
         put("type", type.ordinal + 1)
-        put("default_member_permissions", Permission.encode(defaultMemberPermissions))
+        if(defaultMemberPermissions.isNotEmpty()) put("default_member_permissions", Permission.encode(defaultMemberPermissions))
+        if(disabledByDefault) put("default_member_permissions", 0)
         put("name_localizations", JsonObject(translations.name.map { it.key.value to JsonPrimitive(it.value) }.toMap()))
         put("description_localizations", JsonObject(translations.description.map { it.key.value to JsonPrimitive(it.value) }.toMap()))
     }

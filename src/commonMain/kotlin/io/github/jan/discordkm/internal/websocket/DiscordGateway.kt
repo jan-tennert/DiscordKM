@@ -25,6 +25,7 @@ import io.github.jan.discordkm.api.events.GuildBanRemoveEvent
 import io.github.jan.discordkm.api.events.RawEvent
 import io.github.jan.discordkm.api.events.ResumeEvent
 import io.github.jan.discordkm.api.events.VoiceServerUpdate
+import io.github.jan.discordkm.internal.events.ApplicationCommandsPermissionsUpdateEventHandler
 import io.github.jan.discordkm.internal.events.BanEventHandler
 import io.github.jan.discordkm.internal.events.ChannelCreateEventHandler
 import io.github.jan.discordkm.internal.events.ChannelDeleteEventHandler
@@ -368,6 +369,9 @@ suspend fun DiscordClient.handleRawEvent(payload: Payload, LOGGER: Logger) = cor
 
             //interactions
             "INTERACTION_CREATE" -> InteractionCreateEventHandler(client).handle(data)
+
+            //commands
+            "APPLICATION_COMMAND_PERMISSIONS_UPDATE" -> ApplicationCommandsPermissionsUpdateEventHandler(client).handle(data)
 
             //channels
             "CHANNEL_CREATE" -> ChannelCreateEventHandler(client).handle(data)

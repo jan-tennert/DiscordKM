@@ -33,7 +33,7 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
      */
     suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
         route = RestAction.post(baseURL, builder.build())
-        transform { println(it); ApplicationCommand(holder.client, it.toJsonObject()) }
+        transform { ApplicationCommand(holder.client, it.toJsonObject()) }
     }
 
     /*

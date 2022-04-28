@@ -37,6 +37,7 @@ import io.github.jan.discordkm.api.entities.guild.templates.GuildTemplate
 import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreen
 import io.github.jan.discordkm.api.entities.guild.welcome.screen.WelcomeScreenModifier
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
+import io.github.jan.discordkm.api.entities.interactions.commands.permissions.ApplicationCommandPermissions
 import io.github.jan.discordkm.api.entities.modifier.Modifiable
 import io.github.jan.discordkm.api.entities.modifier.guild.GuildModifier
 import io.github.jan.discordkm.internal.Route
@@ -50,6 +51,7 @@ import io.github.jan.discordkm.internal.restaction.buildRestAction
 import io.github.jan.discordkm.internal.serialization.FlagEnum
 import io.github.jan.discordkm.internal.serialization.FlagSerializer
 import io.github.jan.discordkm.internal.serialization.UpdateVoiceStatePayload
+import io.github.jan.discordkm.internal.serialization.serializers.ApplicationCommandPermissionSerializer
 import io.github.jan.discordkm.internal.serialization.serializers.GuildSerializer
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
@@ -225,6 +227,22 @@ sealed interface Guild : SnowflakeEntity, Reference<Guild>, BaseEntity, CacheEnt
     suspend fun modifyWelcomeScreen(builder: WelcomeScreenModifier.() -> Unit) = client.buildRestAction<WelcomeScreen> {
         route = Route.Guild.MODIFY_WELCOME_SCREEN(id).patch(WelcomeScreenModifier(this@Guild).apply(builder).data)
         transform { GuildSerializer.deserializeWelcomeScreen(it.toJsonObject(), this@Guild) }
+    }
+
+    /**
+     * Retrieves all guild application command permissions for this bot
+     */
+    suspend fun retrieveGuildApplicationCommandPermissions() = client.buildRestAction<List<ApplicationCommandPermissions>> {
+        route = Route.Guild.GET_GUILD_APPLICATION_COMMAND_PERMISSIONS(client.selfUser.id, id).get()
+        transform { data -> data.toJsonArray().map { ApplicationCommandPermissionSerializer.deserialize(it.jsonObject, client) } }
+    }
+
+    /**
+     * Retrieves all application command permissions for [commandId]
+     */
+    suspend fun retrieveApplicationCommandPermissions(commandId: Snowflake) = client.buildRestAction<ApplicationCommandPermissions> {
+        route = Route.Guild.GET_APPLICATION_COMMAND_PERMISSIONS(client.selfUser.id, id, commandId).get()
+        transform { data -> ApplicationCommandPermissionSerializer.deserialize(data.toJsonObject(), client) }
     }
 
     /*
