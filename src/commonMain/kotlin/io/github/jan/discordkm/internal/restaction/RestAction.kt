@@ -102,7 +102,7 @@ class RestAction<T>(val requester: Requester) {
             }
         }
         val response = requester.handle(request)
-        val result = if (!this::transformer.isInitialized) Unit as T else transformer(response.receive<String>().also(::println))
+        val result = if (!this::transformer.isInitialized) Unit as T else transformer(response.receive())
         onFinish(result)
         return result
     }
