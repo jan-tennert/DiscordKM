@@ -12,8 +12,9 @@ package io.github.jan.discordkm.api.entities.containers
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.clients.WSDiscordClient
 import io.github.jan.discordkm.api.entities.interactions.CommandHolder
-import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommand
+import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandCacheEntry
 import io.github.jan.discordkm.api.entities.interactions.commands.ApplicationCommandType
+import io.github.jan.discordkm.api.entities.interactions.commands.ChatInputCommandCacheEntry
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.ApplicationCommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.ChatInputCommandBuilder
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.chatInputCommand
@@ -21,6 +22,7 @@ import io.github.jan.discordkm.api.entities.interactions.commands.builders.messa
 import io.github.jan.discordkm.api.entities.interactions.commands.builders.userCommand
 import io.github.jan.discordkm.internal.restaction.RestAction
 import io.github.jan.discordkm.internal.restaction.buildRestAction
+import io.github.jan.discordkm.internal.serialization.serializers.channel.ApplicationCommandSerializer
 import io.github.jan.discordkm.internal.utils.toJsonArray
 import io.github.jan.discordkm.internal.utils.toJsonObject
 import kotlinx.serialization.json.JsonArray
@@ -31,15 +33,15 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
     /*
      * Creates a new application command
      */
-    suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
+    suspend fun create(builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommandCacheEntry> {
         route = RestAction.post(baseURL, builder.build())
-        transform { ApplicationCommand(holder.client, it.toJsonObject()) }
+        transform { ApplicationCommandSerializer.deserialize(it.toJsonObject(), holder.client) }
     }
 
     /*
      * Creates a new chat input command
      */
-    suspend fun createChatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) = create(chatInputCommand(holder.client as? WSDiscordClient, builder))
+    suspend fun createChatInputCommand(builder: ChatInputCommandBuilder.() -> Unit) = create(chatInputCommand(holder.client as? WSDiscordClient, builder)) as ChatInputCommandCacheEntry
 
     /*
      * Creates a new message command
@@ -54,25 +56,25 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
     /*
      * Retrieves all application commands
      */
-    suspend fun retrieveAll() = holder.client.buildRestAction<List<ApplicationCommand>> {
+    suspend fun retrieveAll() = holder.client.buildRestAction<List<ApplicationCommandCacheEntry>> {
         route = RestAction.get(baseURL)
-        transform { it.toJsonArray().map { json -> ApplicationCommand(holder.client, json.jsonObject) } }
+        transform { it.toJsonArray().map { json -> ApplicationCommandSerializer.deserialize(json.jsonObject, holder.client) } }
     }
 
     /*
      * Retrieves a specific application command
      */
-    suspend fun retrieve(id: Snowflake) = holder.client.buildRestAction<ApplicationCommand> {
+    suspend fun retrieve(id: Snowflake) = holder.client.buildRestAction<ApplicationCommandCacheEntry> {
         route = RestAction.get("$baseURL/$id")
-        transform { ApplicationCommand(holder.client, it.toJsonObject()) }
+        transform { ApplicationCommandSerializer.deserialize(it.toJsonObject(), holder.client) }
     }
 
     /*
      * Modifies an application command
      */
-    suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommand> {
+    suspend fun modify(id: Snowflake, builder: ApplicationCommandBuilder) = holder.client.buildRestAction<ApplicationCommandCacheEntry> {
         route = RestAction.patch("$baseURL/$id", builder.build())
-        transform { ApplicationCommand(holder.client, it.toJsonObject()) }
+        transform { ApplicationCommandSerializer.deserialize(it.toJsonObject(), holder.client) }
     }
 
     /*
@@ -100,9 +102,9 @@ open class CommandContainer(private val holder: CommandHolder, private val baseU
     /*
      * Overrides all application commands with new ones
      */
-    suspend fun override(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommand>> {
+    suspend fun override(commands: CommandBulkOverride.() -> Unit) = holder.client.buildRestAction<List<ApplicationCommandCacheEntry>> {
         route = RestAction.put(baseURL, JsonArray(CommandBulkOverride(holder.client as? WSDiscordClient).apply(commands).commands.map(ApplicationCommandBuilder::build)))
-        transform { it.toJsonArray().map { json -> ApplicationCommand(holder.client, json.jsonObject) } }
+        transform { it.toJsonArray().map { json -> ApplicationCommandSerializer.deserialize(json.jsonObject, holder.client) } }
     }
 
 }

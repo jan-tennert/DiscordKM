@@ -9,78 +9,90 @@
  */
 package io.github.jan.discordkm.api.entities.interactions.commands
 
+import io.github.jan.discordkm.api.entities.DiscordLocale
 import io.github.jan.discordkm.api.entities.Nameable
 import io.github.jan.discordkm.api.entities.SerializableEntity
 import io.github.jan.discordkm.api.entities.Snowflake
 import io.github.jan.discordkm.api.entities.SnowflakeEntity
 import io.github.jan.discordkm.api.entities.clients.DiscordClient
 import io.github.jan.discordkm.api.entities.guild.Guild
+import io.github.jan.discordkm.api.entities.guild.Permission
+import io.github.jan.discordkm.internal.DiscordKMUnstable
 import io.github.jan.discordkm.internal.utils.EnumWithValue
 import io.github.jan.discordkm.internal.utils.EnumWithValueGetter
+import io.github.jan.discordkm.internal.utils.boolean
 import io.github.jan.discordkm.internal.utils.get
 import io.github.jan.discordkm.internal.utils.getId
 import io.github.jan.discordkm.internal.utils.getOrNull
 import io.github.jan.discordkm.internal.utils.getOrThrow
 import io.github.jan.discordkm.internal.utils.int
+import io.github.jan.discordkm.internal.utils.long
+import io.github.jan.discordkm.internal.utils.string
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
-open class ApplicationCommand(override val client: DiscordClient, override val data: JsonObject) : SerializableEntity, SnowflakeEntity, Nameable {
+sealed interface ApplicationCommandCacheEntry : SnowflakeEntity, Nameable {
 
-    /*
-     * The type of the application command
-     */
+
     val type: ApplicationCommandType
-        get() = ApplicationCommandType[data["type", true]?.int ?: 1]
-
-    override val id: Snowflake
-        get() = data.getId()
-
-    /*
-     * The id of the application which created this application command
-     */
     val applicationId: Snowflake
-        get() = data.getOrThrow("application_id")
-
-    /*
-     * The id of the guild where this command was created in. Can be null if it's a global command
-     */
-    val guildId: Snowflake?
-        get() = data.getOrNull<Snowflake>("guild_id")
-
     val guild: Guild?
-        get() = client.guilds[guildId ?: Snowflake(0)]
-
-    override val name: String
-        get() = data.getOrThrow<String>("name")
-
-    /*
-     * The description of the command
-     */
     val description: String
-        get() = data.getOrThrow<String>("description")
-
-    /*
-     * The version of the command
-     */
+    val enabledInDMs: Boolean
+    val defaultMemberPermissions: Set<Permission>
+    val descriptionLocalizations: Map<String, DiscordLocale>
+    val nameLocalizations: Map<String, DiscordLocale>
     val version: Snowflake
-        get() = data.getOrThrow<Snowflake>("version")
-
-    override fun toString(): String = "ApplicationCommand(id=$id, name=$name, guildId=${guild?.id}, type=$type)"
-    override fun hashCode() = id.hashCode()
-    override fun equals(other: Any?): Boolean = other is ApplicationCommand && other.id == id
 
 }
 
-class ChatInputCommand(client: DiscordClient, data: JsonObject) : ApplicationCommand(client, data) {
+sealed interface ChatInputCommandCacheEntry : ApplicationCommandCacheEntry {
 
-    /*
-     * The options of the command
-     */
-    val options = data["options"]?.jsonArray?.map { Json { ignoreUnknownKeys = true }.decodeFromJsonElement<CommandOption>(it.jsonObject) } ?: emptyList()
+    val option: List<CommandOption>
+
+}
+
+internal class ApplicationCommandCacheEntryImpl(
+    override val id: Snowflake,
+    override val name: String,
+    override val type: ApplicationCommandType,
+    override val applicationId: Snowflake,
+    override val guild: Guild?,
+    override val description: String,
+    override val enabledInDMs: Boolean,
+    override val defaultMemberPermissions: Set<Permission>,
+    override val descriptionLocalizations: Map<String, DiscordLocale>,
+    override val nameLocalizations: Map<String, DiscordLocale>,
+    override val version: Snowflake
+) : ApplicationCommandCacheEntry {
+
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?) = other is ApplicationCommandCacheEntry && other.id == id
+    override fun toString() = "ApplicationCommandCacheEntry(id=$id, name=$name, type=$type, description=$description, version=$version)"
+
+}
+
+internal class ChatInputCommandCacheEntryImpl(
+    override val id: Snowflake,
+    override val name: String,
+    override val type: ApplicationCommandType,
+    override val applicationId: Snowflake,
+    override val guild: Guild?,
+    override val description: String,
+    override val enabledInDMs: Boolean,
+    override val defaultMemberPermissions: Set<Permission>,
+    override val descriptionLocalizations: Map<String, DiscordLocale>,
+    override val nameLocalizations: Map<String, DiscordLocale>,
+    override val version: Snowflake,
+    override val option: List<CommandOption>
+) : ChatInputCommandCacheEntry {
+
+    override fun hashCode() = id.hashCode()
+    override fun equals(other: Any?) = other is ApplicationCommandCacheEntry && other.id == id
+    override fun toString() = "ChatInputCommandCacheEntry(id=$id, name=$name, type=$type, description=$description, version=$version)"
 
 }
 

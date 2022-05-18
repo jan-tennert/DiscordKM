@@ -26,6 +26,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import kotlinx.serialization.json.put
@@ -95,6 +96,7 @@ val JsonElement.string : String get() = jsonPrimitive.contentOrNull ?: ""
 val JsonElement.snowflake : Snowflake get() = Snowflake(string)
 val JsonElement.isoTimestamp : DateTimeTz get() = ISO8601.DATETIME_UTC_COMPLETE.parse(string)
 val JsonElement.locale: DiscordLocale get() = DiscordLocale[string]
+val JsonElement.localeMap: Map<String, DiscordLocale> get() = jsonObject.map { (key, v) -> key to v.locale }.toMap()
 
 operator fun JsonObject.get(key: String, nonNull: Boolean): JsonElement? = this[key]?.let { it -> if(nonNull && it is JsonPrimitive && it.jsonPrimitive.content != "null") it else null }
 

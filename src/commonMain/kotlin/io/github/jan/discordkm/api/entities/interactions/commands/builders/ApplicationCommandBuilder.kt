@@ -17,7 +17,6 @@ import io.github.jan.discordkm.api.entities.interactions.commands.CommandBuilder
 import io.github.jan.discordkm.api.entities.misc.TranslationManager
 import io.github.jan.discordkm.api.events.MessageCommandEvent
 import io.github.jan.discordkm.api.events.UserCommandEvent
-import io.github.jan.discordkm.internal.DiscordKMUnstable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -28,7 +27,7 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, val clien
     var defaultMemberPermissions: MutableSet<Permission> = mutableSetOf()
     var name: String = ""
     var description: String = ""
-    var enabledInDirectMessages = true
+    var enabledInDMs = true
     val translations = TranslationBuilder()
     private var disabledByDefault = false
     internal var translationManager: TranslationManager? = null
@@ -74,6 +73,7 @@ open class ApplicationCommandBuilder(val type: ApplicationCommandType, val clien
         put("name", name)
         put("description", description)
         put("type", type.ordinal + 1)
+        put("dm_permission", enabledInDMs)
         if(defaultMemberPermissions.isNotEmpty()) put("default_member_permissions", Permission.encode(defaultMemberPermissions))
         if(disabledByDefault) put("default_member_permissions", 0)
         put("name_localizations", JsonObject(translations.name.map { it.key.value to JsonPrimitive(it.value) }.toMap()))
